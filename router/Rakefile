@@ -14,4 +14,8 @@ task :compile_and_launch => [:compile] do
   system "erl -eval \"croq_router:start(5000, 5001, 5002).\""
 end
 
+task :test => [:compile] do
+  require 'test/login_test'
+end
+
 task :default => [:compile_and_launch]

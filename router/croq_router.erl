@@ -33,7 +33,6 @@ start(Port, PolicyPort, SnapshotPort) ->
     do_accept_client_connections(ClientLSocket, RouterPid).
 
 
-
 %% Spawn a new client handler for each new connection
 
 do_accept_client_connections(LSocket, RouterPid) ->
