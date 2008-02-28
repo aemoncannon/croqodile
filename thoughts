@@ -1,0 +1,42 @@
+
+
+
+SnapshottingController sends the 'sunrise' message to the island IF it receives the SnapshotIsNotNecessary event.
+
+
+True:
+The island should only ever execute 'sunrise' once, for its entire history.
+It is not important where the sunrise message comes from.. only that the island executes this message.
+
+
+It is nice to use an external message to call 'sunrise' because it is executed with some Time. 
+It is executed with some distinct time, and is therefore, part of any snapshot that occurs AFTER
+that time. Also, it is NOT executed in the island object's contructor (before time begins).
+
+BUT, what happens if we are in a state where there are 0 island replicas, and then two replicas
+join at the same time? The snapshot server is handling messages on a single thread, so one of the replicas
+will receive SNAPSHOT_NOT_NECESSARY, and the other will receive a SNAPSHOT.
+
+The question becomes, can the first replica fulfill the SNAPSHOT request BEFORE it has executed the sunrise message?
+I think it can, which means that the snapshot sent to the second replica might now include the execution of sunrise.
+Totally screwed.
+
+
+So what we need to do is execute the sunrise message before time starts. But only for the replica that is NOT init'ed from 
+a snapshot.
+
+
+Ahhhhh, but the real issue comes to light: We want the 'sunrise' to trigger other messages, which may have future offsets, and which therefore need to take place AFTER the beginning of Time.
+
+So, is there a way to RELIABLY  send this message so that ONLY the first replica will receive it?
+
+In order to know that we are the first replica, we must connect to the snapshot server. But, once we are 
+connected the snapshot server, we are open to snapshot requests..... 
+Alternatively, is there a way to give the 
+
+
+
+
+
+
+

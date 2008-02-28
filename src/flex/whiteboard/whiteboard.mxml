@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+	<mx:Canvas x="10" y="10" width="618" height="309" backgroundColor="#ffffff" id="canvas" borderStyle="solid" backgroundAlpha="0.0"></mx:Canvas>
+
+	<mx:Button x="178" y="327" label="Connect" id="connectButton" click="onConnectButtonClicked()"/>
+
+	<mx:TextInput x="10" y="327" id="routerHostInput" text="localhost"/>	
+
+	<mx:ColorPicker x="636" y="10" id="colorPicker"/>	
+	
+	<mx:VSlider x="636" y="40" enabled="true" minimum="1" maximum="20" id="thicknessSlider"/>
+
+	<mx:Script source="whiteboard.as" />
+ 
+</mx:Application>

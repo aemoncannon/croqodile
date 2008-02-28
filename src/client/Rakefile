@@ -1,0 +1,100 @@
+#! ruby
+require 'fileutils'
+require 'webrick'
+require 'date'
+require 'net/http'
+require 'fcsh_serve'
+include WEBrick
+
+ENV["PATH"] = "C:\\flex3_b3\\bin\\;" + ENV["PATH"]
+
+SHARED_CLASS_PATH = [".",
+                     "C:/corelib/src",
+                     "C:/flexunit/src/trunk/src/actionscript3",
+                     "c:/actionscript/as3",
+                     "c:/my_system/src/as_dump/as3"
+                    ]
+
+UNIT_TEST_OPTIONS = ["+configname=flex",
+                     "-compiler.allow-source-path-overlap=true",
+                     "-compiler.warn-no-type-decl=false",
+                     "-compiler.optimize=true",
+                     "-compiler.source-path #{SHARED_CLASS_PATH.join(" ")}",
+                     "-default-background-color 0xAAAAAA",
+                     "-default-frame-rate 30",
+                     "-use-network=true",
+                     "-default-size 635 450"
+                    ]
+UNIT_TEST_SWF = "unit_tests.swf"
+
+ASDOC_OUTPUT_DIR = "asdocs"
+
+ASDOC_OPTIONS = ["+configname=flex",
+                 "-compiler.allow-source-path-overlap=true",
+                 "-compiler.warn-no-type-decl=false",
+                 "-compiler.optimize=true",
+                 "-compiler.source-path #{SHARED_CLASS_PATH.join(" ")}"
+                ]
+
+APP_OPTIONS = ["+configname=flex",
+               "-compiler.allow-source-path-overlap=true",
+               "-compiler.warn-no-type-decl=false",
+               "-compiler.source-path #{SHARED_CLASS_PATH.join(" ")}",
+               "-default-background-color 0xAAAAAA",
+               "-default-frame-rate 30",
+               "-default-size 1000 700"
+              ]
+APP_DESC_XML = "uvLayer-app.xml"
+
+
+LITE_OPTIONS = ["+configname=flex",
+                "-compiler.allow-source-path-overlap=true",
+                "-compiler.warn-no-type-decl=false",
+                "-compiler.source-path #{SHARED_CLASS_PATH.join(" ")}",
+                "-default-background-color 0xAAAAAA",
+                "-default-frame-rate 30",
+                "-default-size 800 600"
+               ]
+
+# 'fcsh' series of tasks will launch a fcsh process for a given build configuration, wrap
+# the process in a controlling http server, and then return the fcsh object
+#
+
+task :fcsh => [] do
+  options = APP_OPTIONS
+  compile_command = "mxmlc #{options.join(" ")}  -output=#{APP_SWF} com/croqodile/test/CroqTestRunner.as"
+  FcshServe.new(2001, compile_command, UNIT_TEST_SWF, "SAFlashPlayer.exe #{UNIT_TEST_SWF}")
+end
+
+task :asdoc => [] do
+  FileUtils.rm_rf Dir.glob("#{ASDOC_OUTPUT_DIR}/*")
+  system "asdoc.exe #{ASDOC_OPTIONS.join(" ")} -doc-sources ./com -output=#{ASDOC_OUTPUT_DIR}"
+end
+
+
+task :check_dependencies => [] do
+  SHARED_CLASS_PATH.each{ |ea| 
+    unless File.exist?(ea) 
+      puts "Couldn't locate #{ea}, referenced from SHARED_CLASS_PATH."
+    end
+  }
+end
+
+
+task :compile_debug => [:check_dependencies] do
+  options = APP_OPTIONS + ["-compiler.debug=true"]
+  compile_command = "mxmlc.exe #{options.join(" ")}  -output=#{APP_SWF} com/paneplayer/Main.as"
+  system compile_command
+end
+
+task :compile_debug_and_run => [:compile_debug, :run]
+
+task :units => [] do
+  FileUtils.rm_f UNIT_TEST_SWF
+  system "mxmlc.exe #{UNIT_TEST_OPTIONS.join(" ")} -output=#{UNIT_TEST_SWF} com/croqodile/test/CroqTestRunner.as"
+  if File.exist? UNIT_TEST_SWF
+    system "sa_flashplayer_9_debug.exe #{UNIT_TEST_SWF}"
+  end
+end
+
+task :default => [:compile_debug_and_run]

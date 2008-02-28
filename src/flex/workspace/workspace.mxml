@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"  applicationComplete="init()">
+
+	<mx:Button x="200" y="10" label="Connect" id="connectButton" click="onConnectButtonClicked()"/>
+
+	<mx:TextInput x="10" y="10" id="routerHostInput"/>
+
+	<mx:TextArea x="10" y="10" width="391" height="20" alpha="0.72" id="chatInput" visible="false"/>
+
+	<mx:Script source="workspace.as" />
+
+</mx:Application>
+
