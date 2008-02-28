@@ -1,0 +1,17 @@
+#! ruby
+require 'fileutils'
+require 'webrick'
+require 'date'
+require 'net/http'
+
+SOURCE_FILES = ["croq_utils.erl", "croq_logger.erl", "croq_policy_server.erl", "croq_router.erl", "croq_snapshot_server.erl"]
+
+task :compile => [] do
+  system "erlc #{SOURCE_FILES.join(" ")}"
+end
+
+task :compile_and_launch => [:compile] do
+  system "erl -eval \"croq_router:start(5000, 5001, 5002).\""
+end
+
+task :default => [:compile_and_launch]
