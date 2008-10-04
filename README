@@ -1,0 +1,8 @@
+Croqodile is an AS3/Erlang implementation of the Croquet project's TeaTime? protocol.
+
+Croqodile abstracts networking and state synchronization to allow for rapid development of multi-user, richly-collaborative flash applications.
+Brief Intro
+
+Croqodile differs from Croquet in many details (it is a far less ambitious project), but the general architecture is similar, so it is important that you read (or at least skim) the Croquet project http://www.opencroquet.org/index.php/System_Overview before continuing.
+
+A Croqodile system will consist of three components. Two of these components will run on the client's machine and are implemented entirely in Flash Actionscript. The third component is the router, a thin server implemented in erlang that will serve as a middle-man between the many clients. 
