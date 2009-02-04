@@ -4,7 +4,11 @@ require 'webrick'
 require 'date'
 require 'net/http'
 
-SOURCE_FILES = ["croq_utils.erl", "croq_logger.erl", "croq_policy_server.erl", "croq_router.erl", "croq_snapshot_server.erl"]
+
+rule '.beam' => '.erl' do |t|
+   sh "erlc #{t.source}"
+end
+
 
 task :compile => [] do
   system "erlc #{SOURCE_FILES.join(" ")}"
@@ -16,6 +20,11 @@ end
 
 task :test => [:compile] do
   require 'test/login_test'
+end
+
+ISLAND_MGR_TARGETS = FileList["*.erl"].gsub(".erl", ".beam")
+task :im => ISLAND_MGR_TARGETS do
+  sh "erl +A 1 +Ktrue +W w -sname im_appnode -pa /usr/lib/yaws/ebin -yaws embedded true -eval \"application:start(island_manager).\""
 end
 
 task :default => [:compile_and_launch]
