@@ -6,10 +6,23 @@
 
 -export([out/1, handle_request/3]).
 
+-define(TCP_OPTIONS,[binary, {packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]).
+
 out(Arg) ->
-  Req = Arg#arg.req,
-  ReqPath = get_path(Arg),
-  handle_request(Req#http_request.method, ReqPath, Arg).
+    _Req = Arg#arg.req,
+    _ReqPath = get_path(Arg),
+    Socket = Arg#arg.clisock,
+    inet:setopts(Socket, ?TCP_OPTIONS),
+    io:format("handling messages..~n"),
+    gen_tcp:send(Socket, "hello!!"),
+    case gen_tcp:recv(Socket, 0) of
+        {ok, Data} ->
+	    io:format("data: ~w", Data);
+        {error, closed} -> 
+	    io:format("oops"),
+	    ok
+    end,
+    exit(normal).
 
 get_path(Arg) ->
     Req = Arg#arg.req,
@@ -36,3 +49,11 @@ make_header(Type) ->
 
 make_all_response(Status, Headers, Message) ->
     [{status, Status}, {allheaders, Headers}, {html, Message}].
+
+handle_client_messages(Socket) ->
+    case gen_tcp:recv(Socket, 5) of
+        {ok, Data} ->
+	    io:format("data: ~w", Data),
+	    handle_client_messages(Socket);
+        {error, closed} -> ok
+    end.
