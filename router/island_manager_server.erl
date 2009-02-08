@@ -1,7 +1,6 @@
 -module(island_manager_server).
 -behaviour(gen_server).
 
--include("/usr/lib/erlang/lib/yaws-1.73/include/yaws.hrl").
 -include("island_manager.hrl").
 
 -export([
@@ -10,16 +9,22 @@
     terminate/2, code_change/3
 ]).
 
+-record(state, {islands=[1,2,3,4]}).
+
 start_link(Args) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, Args, []).
 
-init([Port, WorkingDir]) ->
+init([Port, _WorkingDir]) ->
     process_flag(trap_exit, true),
-    ServerPid = web_server:start(Port),
-    {ok, ServerPid}.
+    ServerPid = island_http_interface:start(Port, self()),
+    {ok, #state{}}.
 
+handle_call({directory}, _From, State=#state{islands=Islands}) ->
+    {reply, {response, io_lib:format("islands: ~w", [Islands])}, State};
 
-handle_call(Request, _From, State) -> {stop, {unknown_call, Request}, State}.
+handle_call(Request, _From, State) -> 
+    {reply, {unknown_call, Request}, State}.
+
 
 handle_cast(_Message, State) -> {noreply, State}.
 
