@@ -13,31 +13,11 @@
 start_link(Args) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, Args, []).
 
-init(Args) ->
+init([Port, WorkingDir]) ->
     process_flag(trap_exit, true),
-    case application:start(yaws) of
-        ok -> set_conf(Args);
-        Error -> {stop, Error}
-    end.
+    ServerPid = web_server:start(Port),
+    {ok, ServerPid}.
 
-set_conf([Port, WorkingDir]) ->
-    GC = #gconf{
-        trace = false,
-        logdir = WorkingDir ++ "/logs",
-        yaws = "Island Manager",
-        tmpdir = WorkingDir ++ "/.yaws"
-    },
-    SC = #sconf{
-        port = Port,
-        servername = "localhost",
-        listen = {0, 0, 0, 0},
-        docroot = "/tmp",
-        appmods = [{"/", island_manager_handler}]
-    },
-    case catch yaws_api:setconf(GC, [[SC]]) of
-        ok -> {ok, started};
-        Error -> {stop, Error}
-    end.
 
 handle_call(Request, _From, State) -> {stop, {unknown_call, Request}, State}.
 
@@ -45,8 +25,6 @@ handle_cast(_Message, State) -> {noreply, State}.
 
 handle_info(_Info, State) -> {noreply, State}.
 
-terminate(_Reason, _State) ->
-    application:stop(yaws),
-    ok.
+terminate(_Reason, _State) -> ok.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
