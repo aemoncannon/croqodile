@@ -19,6 +19,8 @@ init_schema() ->
     mnesia:stop().
 
 
+%% Note: start/0 must be called under same node as init_schema/0, otherwise they won't share the same
+%% data.
 start() ->
     ok = mnesia:start(),
     case mnesia:wait_for_tables([island], 5000) of
