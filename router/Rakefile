@@ -9,22 +9,35 @@ rule '.beam' => '.erl' do |t|
    sh "erlc #{t.source}"
 end
 
+#
+#task :compile => [] do
+#  system "erlc #{SOURCE_FILES.join(" ")}"
+#end
+#
+#task :compile_and_launch => [:compile] do
+#  system "erl -eval \"croq_router:start(5000, 5001, 5002).\""
+#end
+#
+#task :test => [:compile] do
+#  require 'test/login_test'
+#end
 
-task :compile => [] do
-  system "erlc #{SOURCE_FILES.join(" ")}"
+ALL_BEAMS = FileList["*.erl"].gsub(".erl", ".beam")
+
+task :im => ALL_BEAMS do
+  sh "erl -sname im_node -eval \"application:start(island_manager).\""
 end
 
-task :compile_and_launch => [:compile] do
-  system "erl -eval \"croq_router:start(5000, 5001, 5002).\""
+task :init_db => FileList["island_data.beam"] do
+  sh "erl -sname im_node -eval \"island_data:init_schema(),init:stop().\""
 end
 
-task :test => [:compile] do
-  require 'test/login_test'
+task :test => ALL_BEAMS do
+  sh "erl -sname im_test_node -eval \"island_data:init_schema(),init:stop().island_test:run().\""
 end
 
-ISLAND_MGR_TARGETS = FileList["*.erl"].gsub(".erl", ".beam")
-task :im => ISLAND_MGR_TARGETS do
-  sh "erl +A 1 +Ktrue +W w -sname im_appnode -eval \"application:start(island_manager).\""
+task :clean => [] do
+  rm FileList["*.beam"]
 end
 
 task :default => [:compile_and_launch]

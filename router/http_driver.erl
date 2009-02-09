@@ -187,6 +187,7 @@ parse_request(Str) ->
     end.
 
 parse_vsn("HTTP/1.0") -> {1,0};
+parse_vsn("HTTP/1.1") -> {1,1};
 parse_vsn(X) -> X.
 
 %% A typical URI looks
