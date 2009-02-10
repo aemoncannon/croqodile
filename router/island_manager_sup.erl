@@ -13,7 +13,7 @@ init(Args) ->
 
 get_init_result(Args) ->
     Flags = {one_for_one, 2, 10},
-    Children = [worker_spec(island_manager_yaws1, island_manager_server,  [Args])],
+    Children = [worker_spec(island_manager_app1, island_manager_server,  [Args])],
     {ok, {Flags, Children}}.
 
 worker_spec(Id, Module, Args) ->

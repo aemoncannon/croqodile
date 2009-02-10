@@ -29,11 +29,11 @@ task :im => ALL_BEAMS do
 end
 
 task :init_db => FileList["island_data.beam"] do
-  sh "erl -sname im_node -eval \"island_data:init_schema(),init:stop().\""
+  sh "erl -sname im_node -eval \"island_data:create_schema(),init:stop().\""
 end
 
 task :test => ALL_BEAMS do
-  sh "erl -sname im_test_node -eval \"island_data:init_schema(),init:stop().island_test:run().\""
+  sh "erl -sname im_test_node -eval \"island_test:run().\""
 end
 
 task :clean => [] do

@@ -4,8 +4,6 @@
 
 -import(http_driver, [classify/1, header/1]).
 -import(lists, [map/2]).
--import(mochijson2, [encode/1]).
-
 
 -record(state, {master_pid=undefined, island_mgr_pid=undefined}).
 
@@ -43,7 +41,7 @@ client_handler(Client, State=#state{island_mgr_pid=IslandMgrPid}) ->
 	    case F of
 		"/directory" -> 
 		    {response, IslandList} = gen_server:call(IslandMgrPid, {directory}, 5000),
-		    Client ! {self(), {header(text), encode(IslandList)}},
+		    Client ! {self(), {header(text), mochijson2:encode(IslandList)}},
 		    Client ! {self(), close};
 		_ -> 
 		    Client ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})

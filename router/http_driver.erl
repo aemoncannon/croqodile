@@ -32,13 +32,12 @@ relay(Socket, Server, State) ->
 	    Server ! {self(), closed};
 	{Server, close} ->
 	    gen_tcp:close(Socket);
-	{Server, {Headers, Data}} ->
-	    B1 = list_to_binary(Data),
-	    Len = size(B1),
-	    Headers1 = Headers ++ "Content-Length " ++ 
+	{Server, {Headers, BinaryData}} ->
+	    Len = size(BinaryData),
+	    Headers1 = Headers ++ "Content-Length: " ++ 
 		integer_to_list(Len) ++ "\r\n\r\n",
-	    %% io:format("--> ~p ~p~n", [Headers1, B1]),
-    	    gen_tcp:send(Socket, [Headers1, B1]),
+	    %% io:format("--> ~p ~p~n", [Headers1, BinaryData]),
+    	    gen_tcp:send(Socket, [Headers1, BinaryData]),
 	    relay(Socket, Server, State);
 	{'EXIT', Server, _} ->
 	    gen_tcp:close(Socket)
