@@ -5,8 +5,9 @@
 -import(http_driver, [classify/1, header/1]).
 -import(lists, [map/2]).
 
--record(state, {master_pid=undefined, island_mgr_pid=undefined}).
+-include("island_manager.hrl").
 
+-record(state, {master_pid=undefined, island_mgr_pid=undefined}).
 
 start(Port, IslandMgrPid) -> spawn_link(fun() -> server(Port, IslandMgrPid) end).
 
@@ -38,11 +39,22 @@ client_handler(Client, State=#state{island_mgr_pid=IslandMgrPid}) ->
 	{Client, closed} ->
 	    true;
 	{Client, {_, _Vsn, F, Args, _Env}} ->
+	    io:format("Received request for '~s'~n", [F]),
 	    case F of
 		"/directory" -> 
 		    {response, IslandList} = gen_server:call(IslandMgrPid, {directory}, 5000),
-		    Client ! {self(), {header(text), mochijson2:encode(IslandList)}},
-		    Client ! {self(), close};
+		    JsonList = map(fun island_data:island_to_json_obj/1, IslandList),
+		    Encoded = list_to_binary(lists:flatten([mochijson2:encode(JsonList)])),
+		    Client ! { self(), { header(text), Encoded } },
+		    Client ! { self(), close };
+		"/hup" -> 
+		    {response, ok} = gen_server:call(IslandMgrPid, {hup}, 5000),
+		    Client ! { self(), { header(text), <<>> } },
+		    Client ! { self(), close };
+		"/load_data" -> 
+		    {response, ok} = gen_server:call(IslandMgrPid, {load_data}, 5000),
+		    Client ! { self(), { header(text), <<>> } },
+		    Client ! { self(), close };
 		_ -> 
 		    Client ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
 	    end,
@@ -54,4 +66,6 @@ client_handler(Client, State=#state{island_mgr_pid=IslandMgrPid}) ->
 
 show(X) ->
     {header(text),[lists:flatten(io_lib:format("~p~n",[X]))]}.
+
+
 

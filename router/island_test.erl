@@ -9,32 +9,41 @@
 
 
 run() ->
+    %% Need to start for http..
+    application:start(inets),
+
+    %% Create a fresh schema
     island_data:destroy_schema(),
     island_data:start_and_create_schema(),
-    application:set_env(island_manager, port, 6666, 1000),
-    application:set_env(island_manager, working_dir, "", 1000),
-    {ok, AppPid} = island_manager:start(local, []),
-    test_simple_empty({AppPid}),
-    test_one_island({AppPid}),
-    io:format("All tests completed.~n"),
-    application:stop(island_manager),
+
+    TestState = island_manager_server:start_link([6666, ""]),
+
+    run_test(fun test_simple_empty/1, TestState),
+    run_test(fun test_one_island/1, TestState),
+
+    io:format("Done.~n"),
     ok.
 
-test_simple_empty(_State) ->
+%% Each test run gets a fresh state
+run_test(Fun, TestState) -> 
+    island_data:clear(),
+    Fun(TestState),
+    ok.
+
+
+test_simple_empty(_TestState) ->
     {ok, {{_Vsn, 200, _Reason}, _Headers, Body}} = http:request(get, {"http://localhost:6666/directory", []}, [], []),
     [] = mochijson2:decode(Body),
     ok.
 
-
-test_one_island(State) ->
-    mnesia:transaction(
-      fun()->
-	      ok = mnesia:write({island, 1, "An island."})
-      end),
-    {AppPid} = State,
+test_one_island(TestState) ->
+    NewIsland = #island{id=1, description="An island."},
+    mnesia:transaction(fun()-> ok = mnesia:write(NewIsland) end),
+    {ok, AppPid} = TestState,
     {response, ok} = gen_server:call(AppPid, {hup}, 5000),
     {ok, {_Status, _Headers, Body}} = http:request(get, {"http://localhost:6666/directory", []}, [], []),
-    [#island{id=1,description="An island."}] = mochijson2:decode(Body),
+    JsonObj = island_data:island_to_json_obj(NewIsland),
+    [JsonObj] = mochijson2:decode(Body),
     ok.
 
 

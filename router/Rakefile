@@ -24,16 +24,18 @@ end
 
 ALL_BEAMS = FileList["*.erl"].gsub(".erl", ".beam")
 
-task :im => ALL_BEAMS do
+task :build => ALL_BEAMS
+
+task :im => [:build] do
   sh "erl -sname im_node -eval \"application:start(island_manager).\""
 end
 
-task :init_db => FileList["island_data.beam"] do
-  sh "erl -sname im_node -eval \"island_data:create_schema(),init:stop().\""
+task :init_db => [:build] do
+  sh "erl -sname im_node -eval \"island_data:start_and_create_schema().\""
 end
 
-task :test => ALL_BEAMS do
-  sh "erl -sname im_test_node -eval \"island_test:run().\""
+task :test => [:build] do
+  sh "erl -sname im_test_node -eval \"island_test:run(),init:stop().\""
 end
 
 task :clean => [] do

@@ -6,7 +6,9 @@
 	 start_and_create_schema/0,
 	 select_all_islands/0,
 	 start/0,
-	 stop/0
+	 stop/0,
+	 island_to_json_obj/1,
+	 clear/0
 	]).
 
 -include("island_manager.hrl").
@@ -25,6 +27,9 @@ start_and_create_schema() ->
     end,
     ok.
 
+clear() ->
+    {atomic, ok} = mnesia:clear_table(island),
+    ok.
 
 %% Note: start/0 must be called under same node as start_and_create_schema/0, otherwise they won't share the same
 %% data.
@@ -33,7 +38,7 @@ start() ->
     case mnesia:wait_for_tables([island], 5000) of
 	{error, Reason} -> io:format("Error waiting for tables: ~w.~n", [Reason]);
 	{timeout, BadTables} -> io:format("Timed out waiting for tables: ~w.~n", [BadTables]);
-	ok -> io:format("mnesia ready.~n")
+	ok -> ok
     end.
 
 
@@ -47,4 +52,13 @@ do(Q) ->
     F = fun() -> qlc:e(Q) end,
     {atomic, Val} = mnesia:transaction(F),
     Val.
+
+
+island_to_json_obj(#island{id=Id, description=Description}) ->
+    {struct, [
+	      {<<"id">>, Id},
+	      {<<"description">>, list_to_binary(Description)}
+	     ]}.
+
+
 
