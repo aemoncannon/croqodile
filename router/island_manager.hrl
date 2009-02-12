@@ -2,6 +2,6 @@
 -define(MAX_TIME, 60).
 -define(SHUTDOWN_WAITING_TIME, 2000).
 
--record(island, {id="", type="", description=""}).
+-record(island, {id="", type="", description="", router_pid=undefined}).
 
 

@@ -17,7 +17,7 @@ start_link(Args) ->
 init([Port, _WorkingDir]) ->
     process_flag(trap_exit, true),
     island_data:start(),
-    _ServerPid = island_http_interface:start(Port, self()),
+    _HttpInterfacePid = island_http_interface:start(Port, self()),
     {ok, #manager_state{}}.
 
 handle_call({directory}, _From, State=#manager_state{islands=Islands}) ->
@@ -31,6 +31,25 @@ handle_call({create_new_island, Type}, _From, #manager_state{islands=Islands}) -
     Isl = island_data:new_island(Type),
     {reply, { response, Isl }, #manager_state{islands=[Isl | Islands]}};
 
+
+handle_call({join_island, Id, #client{pid=Pid}}, _From, #manager_state{islands=Islands}) ->
+    case island_by_id(Id) of
+	{value, Isl} -> 
+	    if 
+		Isl#island.pid = undefined -> 
+		    RouterPid = island_router:start(self(), Isl),
+		    UpdatedIsl = Isl#island{router_pid=RouterPid},
+		    {reply, { response, Isl }, #manager_state{islands=[UpdatedIsl | Islands]}}
+	    
+	    
+	       RouterPid = 
+	       
+	    UpdatedIsl = Isl#island{}
+	    
+    Isl = island_data:new_island(Type),
+    {reply, { response, Isl }, #manager_state{islands=[Isl | Islands]}};
+
+
 handle_call(Request, _From, State) -> 
     {reply, {unknown_call, Request}, State}.
 
@@ -41,3 +60,14 @@ handle_info(_Info, State) -> {noreply, State}.
 terminate(_Reason, _State) -> island_data:stop(), ok.
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.
+
+
+%% Utilities
+
+create_island_router(Island) ->
+    
+    Island#island{router_pid = Pid}.
+
+
+island_by_id(Id, Islands) -> lists:keysearch(Id, #island.id, Islands).    
+
