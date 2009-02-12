@@ -30,14 +30,13 @@ run_test(Fun, TestState) ->
     Fun(TestState),
     ok.
 
-
 test_simple_empty(_TestState) ->
     {ok, {{_Vsn, 200, _Reason}, _Headers, Body}} = http:request(get, {"http://localhost:6666/directory", []}, [], []),
     [] = mochijson2:decode(Body),
     ok.
 
 test_one_island(TestState) ->
-    NewIsland = #island{id=1, description="An island."},
+    NewIsland = #island{id=1, description="An island.", type="lsdkfj"},
     mnesia:transaction(fun()-> ok = mnesia:write(NewIsland) end),
     {ok, AppPid} = TestState,
     {response, ok} = gen_server:call(AppPid, {hup}, 5000),

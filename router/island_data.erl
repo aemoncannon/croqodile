@@ -8,7 +8,9 @@
 	 start/0,
 	 stop/0,
 	 island_to_json_obj/1,
-	 clear/0
+	 clear/0,
+	 guid/0,
+	 new_island/2
 	]).
 
 -include("island_manager.hrl").
@@ -45,6 +47,9 @@ start() ->
 stop() -> mnesia:stop(), ok.
 
 
+new_island(Type, Description) -> #island{id=guid(), type=Type, description=Description}.
+
+
 select_all_islands() -> do(qlc:q([X || X <- mnesia:table(island)])).
 
 
@@ -54,11 +59,16 @@ do(Q) ->
     Val.
 
 
-island_to_json_obj(#island{id=Id, description=Description}) ->
+island_to_json_obj(#island{id=Id, type=Type, description=Description}) ->
     {struct, [
 	      {<<"id">>, Id},
-	      {<<"description">>, list_to_binary(Description)}
+	      {<<"description">>, list_to_binary(Description)},
+	      {<<"type">>, list_to_binary(Type)}
 	     ]}.
+
+
+guid() -> <<I:128/integer>> = erlang:md5(term_to_binary({node(), make_ref(), now()})), 
+	  erlang:integer_to_list(I, 16). 
 
 
 

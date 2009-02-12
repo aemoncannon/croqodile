@@ -51,10 +51,6 @@ client_handler(Client, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		    {response, ok} = gen_server:call(IslandMgrPid, {hup}, 5000),
 		    Client ! { self(), { header(text), <<>> } },
 		    Client ! { self(), close };
-		"/load_data" -> 
-		    {response, ok} = gen_server:call(IslandMgrPid, {load_data}, 5000),
-		    Client ! { self(), { header(text), <<>> } },
-		    Client ! { self(), close };
 		_ -> 
 		    Client ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
 	    end,

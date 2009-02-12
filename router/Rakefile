@@ -38,6 +38,10 @@ task :test => [:build] do
   sh "erl -sname im_test_node -eval \"island_test:run(),init:stop().\""
 end
 
+task :repl => [:build] do
+  sh "erl"
+end
+
 task :clean => [] do
   rm FileList["*.beam"]
 end

@@ -25,14 +25,11 @@ handle_call({directory}, _From, State=#manager_state{islands=Islands}) ->
 
 handle_call({hup}, _From, _State) ->
     NewIslands = island_data:select_all_islands(),
-    {reply, {response, ok}, #manager_state{islands=NewIslands, snapshots=[]}};
+    {reply, {response, ok}, #manager_state{islands=NewIslands}};
 
-handle_call({load_data}, _From, State) ->
-    mnesia:transaction(
-      fun()->
-	      ok = mnesia:write({island, 1, "An island."})
-      end),
-    {reply, {response, ok}, State};
+handle_call({create_new_island, Type}, _From, #manager_state{islands=Islands}) ->
+    Isl = island_data:new_island(Type),
+    {reply, { response, Isl }, #manager_state{islands=[Isl | Islands]}};
 
 handle_call(Request, _From, State) -> 
     {reply, {unknown_call, Request}, State}.
