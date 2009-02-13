@@ -3,5 +3,6 @@
 -define(SHUTDOWN_WAITING_TIME, 2000).
 
 -record(island, {id="", type="", description="", router_pid=undefined}).
+-record(client, {id="", pid=undefined}).
 
 

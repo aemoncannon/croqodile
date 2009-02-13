@@ -55,7 +55,7 @@ parse_request({post, Buff, Len, X}, Socket, Server, Data) ->
         {yes,PostData,After} ->
             Args2 = parse_uri_args(PostData),
 	    {Op,Vsn,URI,Args1,Env} = X,
-	    Request = {Op,Vsn,URI,Args1++Args2,Env},
+	    Request = {Op,Vsn,URI,Args1++Args2,Env,Socket},
             Server ! {self(), Request},
 	    parse_request({header,[]}, Socket, Server, After);
         {no,Buff1, Len1} ->
@@ -70,7 +70,7 @@ got_header(Socket, Server, Header, After) ->
 	    case ContentLen of
 		0 ->
 		    %% Send the parsed request to the server
-		    Server ! {self(), {Op,Vsn,URI,Args,Env}},
+		    Server ! {self(), {Op,Vsn,URI,Args,Env,Socket}},
 		    %% go get the next request
 		    parse_request({header,[]}, Socket, Server, After);
 		_ ->

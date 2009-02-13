@@ -4,9 +4,14 @@
 
 -export([start/2]).
 
+-include("island_manager.hrl").
+
 -define(HEART_RATE, 20).
 
--record(client, {id=none, pid}).
+%%
+%% TODO: Use these. especially the no-delay!
+%%
+%%-define(TCP_OPTIONS,[list, {packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]).
 
 
 %% Start the router and its supporting cast.
@@ -22,12 +27,11 @@ start(IslandMgrPid, Island) ->
 run_router(Clients, LastTime) ->
     Time = next_time(LastTime),
     receive
-	{add_client, UserId, UserPid } ->
-	    Client = #client{id=UserId, pid=UserPid},
-	    io:format("Router: New client added: ~s~n", [Client#client.id]),
+	{join, Client } ->
+	    io:format("Router: New client joined: ~s~n", [Client#client.id]),
 	    run_router([Client | Clients], Time);
-        {remove_client, UserId} ->
-	    case client_by_id(UserId, Clients) of
+        {remove_client, ClientId} ->
+	    case client_by_id(ClientId, Clients) of
 		{value, Client} -> 
 		    io:format("Router: Client removed: ~s~n", [Client#client.id]),
 		    run_router(lists:delete(Client, Clients), Time);
@@ -35,11 +39,11 @@ run_router(Clients, LastTime) ->
 		    run_router(Clients, Time)
 	    end;
         {message, _FromPid, Data} ->
-	    Message = float_to_list(Time) ++ ?MESSAGE_SEP ++ Data ++ croq_utils:sentence_term(),
+	    Message = "hullo",%%float_to_list(Time) ++ ?MESSAGE_SEP ++ Data ++ croq_utils:sentence_term(),
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time);
         heartbeat ->
-	    Message = float_to_list(Time) ++ ?MESSAGE_SEP ++ "[\"heartbeat\"]" ++ croq_utils:sentence_term(),
+	    Message = float_to_list(Time),
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time);
 	Else ->
@@ -71,5 +75,37 @@ next_time(LastTime) ->
 client_by_id(Id, Clients) -> lists:keysearch(Id, #client.id, Clients).
 
 client_by_pid(Pid, Clients) -> lists:keysearch(Pid, #client.pid, Clients).
+
+
+% Should look roughly like this. BTW, we need to steal the socket, and have 
+% messages sent here isntead. OR switch to passive mode.
+%
+% relay(Socket, Server, State) ->
+%    receive
+%	{tcp, Socket, Bin} ->
+%	    Data = binary_to_list(Bin),
+%	    %% io:format("<-- ~s~n", [Data]),
+%	    parse_request(State, Socket, Server, Data);
+%	{tcp_closed, Socket} ->
+%	    Server ! {self(), closed};
+%	{Server, close} ->
+%	    gen_tcp:close(Socket);
+%	{Server, {Headers, BinaryData}} ->
+%	    Len = size(BinaryData),
+%	    Headers1 = Headers ++ "Content-Length: " ++ 
+%		integer_to_list(Len) ++ "\r\n\r\n",
+%	    %% io:format("--> ~p ~p~n", [Headers1, BinaryData]),
+%    	    gen_tcp:send(Socket, [Headers1, BinaryData]),
+%	    relay(Socket, Server, State);
+%	{'EXIT', Server, _} ->
+%	    gen_tcp:close(Socket)
+%    end.
+protocol_driver(Client, Island, Socket) ->
+    receive
+
+    after 5000 ->
+	    true
+    end.
+
 
 

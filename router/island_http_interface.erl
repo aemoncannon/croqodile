@@ -23,7 +23,7 @@ server(Port, IslandMgrPid) ->
 	      client_handler(Client, #state{
 			       island_mgr_pid=IslandMgrPid,
 			       master_pid=S
-			      }) 
+			      })
       end, 15),
     loop().
 
@@ -34,34 +34,50 @@ loop() ->
 	    loop()
     end.
 
-client_handler(Client, State=#state{island_mgr_pid=IslandMgrPid}) ->
+
+% Handle a single HTTP request
+client_handler(ClientPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
     receive
-	{Client, closed} ->
+	{ClientPid, closed} ->
 	    true;
-	{Client, {_, _Vsn, F, Args, _Env}} ->
+	{ClientPid, {_, _Vsn, F, Args, _Env, Socket}} ->
 	    io:format("Received request for '~s'~n", [F]),
 	    case F of
 		"/directory" -> 
 		    {response, IslandList} = gen_server:call(IslandMgrPid, {directory}, 5000),
 		    JsonList = map(fun island_data:island_to_json_obj/1, IslandList),
 		    Encoded = list_to_binary(lists:flatten([mochijson2:encode(JsonList)])),
-		    Client ! { self(), { header(text), Encoded } },
-		    Client ! { self(), close };
+		    ClientPid ! { self(), { header(text), Encoded } },
+		    ClientPid ! { self(), close };
 		"/hup" -> 
 		    {response, ok} = gen_server:call(IslandMgrPid, {hup}, 5000),
-		    Client ! { self(), { header(text), <<>> } },
-		    Client ! { self(), close };
+		    ClientPid ! { self(), { header(text), <<>> } },
+		    ClientPid ! { self(), close };
+		"/join_island" -> 
+		    case lookup_arg("id", Args) of
+			{value, IslandId} -> 
+			    IslandClient = #client{id=island_data:guid(), pid=self()},
+			    {response, Isl} = gen_server:call(IslandMgrPid, {join_island, IslandId, IslandClient}, 1000),
+			    island_router:protocol_driver(IslandClient, Isl, Socket);
+			_Else -> 
+			    ClientPid ! { self(), { header(text), <<>> } },
+			    ClientPid ! { self(), close }
+		    end;
 		_ -> 
-		    Client ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
+		    ClientPid ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
 	    end,
-	    client_handler(Client, State)
+	    client_handler(ClientPid, State)
     after 5000 ->
 	    true
     end.
 
 
+
+
 show(X) ->
     {header(text),[lists:flatten(io_lib:format("~p~n",[X]))]}.
+
+lookup_arg(Key, Args) -> lists:keysearch(Key, 0, Args).
 
 
 
