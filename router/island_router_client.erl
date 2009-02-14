@@ -48,12 +48,10 @@ protocol_driver(Socket, ClientPid, Buf) ->
 
 -define(TERMINATOR, [12,12]).
 
-sentence_term() -> ?TERMINATOR.
-
 %% Parse all sentences in the string Buf, return the sentences and the remainder of the string.
 parse_all_sentences(Buf, Sentences) ->
-    case string:str(Buf, sentence_term()) of
-	N when N /= 0 -> parse_all_sentences(string:substr(Buf, N + length(sentence_term())), 
+    case string:str(Buf, ?TERMINATOR) of
+	N when N /= 0 -> parse_all_sentences(string:substr(Buf, N + length(?TERMINATOR)), 
 					     Sentences ++ [string:substr(Buf, 1, N - 1)]);
 	
 	_ -> 		{Sentences, Buf}

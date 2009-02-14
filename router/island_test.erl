@@ -1,9 +1,6 @@
 -module(island_test).
 
--import(lists, [foreach/2]).
--export([
-	 run/0
-	]).
+-export([run/0]).
 
 -include("island_manager.hrl").
 

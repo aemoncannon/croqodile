@@ -8,11 +8,6 @@
 
 -define(HEART_RATE, 20).
 
-%%
-%% TODO: Use these. especially the no-delay!
-%%
-%%-define(TCP_OPTIONS,[list, {packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]).
-
 
 %% Start the router and its supporting cast.
 start(IslandMgrPid, Island) ->
@@ -22,8 +17,7 @@ start(IslandMgrPid, Island) ->
 
 
 %% This is the main loop of the router process.  It maintains
-%% the list of "clients" and performs the primary actions.
-
+%% the list of clients and performs the primary actions.
 run_router(Clients, LastTime, MgrPid, Island) ->
     Time = next_time(LastTime),
     receive
