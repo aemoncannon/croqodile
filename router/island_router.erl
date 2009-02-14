@@ -2,7 +2,7 @@
 
 -created_by('Aemon Cannon').
 
--export([start/2]).
+-export([start/2, run_router/4]).
 
 -include("island_manager.hrl").
 
@@ -16,7 +16,7 @@
 
 %% Start the router and its supporting cast.
 start(IslandMgrPid, Island) ->
-    RouterPid = spawn_link(?MODULE, run_router, [[], next_time(0)]),
+    RouterPid = spawn_link(?MODULE, run_router, [[], next_time(0), IslandMgrPid, Island]),
     start_heartbeat(RouterPid),
     RouterPid.
 
@@ -24,36 +24,39 @@ start(IslandMgrPid, Island) ->
 %% This is the main loop of the router process.  It maintains
 %% the list of "clients" and performs the primary actions.
 
-run_router(Clients, LastTime) ->
+run_router(Clients, LastTime, MgrPid, Island) ->
     Time = next_time(LastTime),
     receive
 	{join, Client } ->
 	    io:format("Router: New client joined: ~s~n", [Client#client.id]),
-	    run_router([Client | Clients], Time);
+	    run_router([Client | Clients], Time, MgrPid, Island);
         {remove_client, ClientId} ->
 	    case client_by_id(ClientId, Clients) of
 		{value, Client} -> 
 		    io:format("Router: Client removed: ~s~n", [Client#client.id]),
-		    run_router(lists:delete(Client, Clients), Time);
+		    run_router(lists:delete(Client, Clients), Time, MgrPid, Island);
 		false -> 
-		    run_router(Clients, Time)
+		    run_router(Clients, Time, MgrPid, Island)
 	    end;
-        {message, _FromPid, Data} ->
-	    Message = "hullo",%%float_to_list(Time) ++ ?MESSAGE_SEP ++ Data ++ croq_utils:sentence_term(),
+        {message, _FromPid, Message} ->
 	    send_to_active(Clients, Message),
-	    run_router(Clients, Time);
+	    run_router(Clients, Time, MgrPid, Island);
+        {client_closed, ClientPid} ->
+	    C = client_by_pid(ClientPid, Clients),
+	    self() ! { remove_client,  C#client.id},
+	    run_router(Clients, Time, MgrPid, Island);
         heartbeat ->
 	    Message = float_to_list(Time),
 	    send_to_active(Clients, Message),
-	    run_router(Clients, Time);
+	    run_router(Clients, Time, MgrPid, Island);
 	Else ->
 	    io:format("Unknown message: ~w.~n", [Else])
     end.
 
 
 %% Sends the given data to all clients that are 'active'
-send_to_active(Clients, Data) ->
-    lists:foreach(fun(C) -> gen_tcp:send(C#client.socket, Data) end, Clients),
+send_to_active(Clients, Message) ->
+    lists:foreach(fun(C) -> (C#client.pid ! {message, Message}) end, Clients),
     ok.
 
 %% Heartbeat generator
@@ -76,36 +79,6 @@ client_by_id(Id, Clients) -> lists:keysearch(Id, #client.id, Clients).
 
 client_by_pid(Pid, Clients) -> lists:keysearch(Pid, #client.pid, Clients).
 
-
-% Should look roughly like this. BTW, we need to steal the socket, and have 
-% messages sent here isntead. OR switch to passive mode.
-%
-% relay(Socket, Server, State) ->
-%    receive
-%	{tcp, Socket, Bin} ->
-%	    Data = binary_to_list(Bin),
-%	    %% io:format("<-- ~s~n", [Data]),
-%	    parse_request(State, Socket, Server, Data);
-%	{tcp_closed, Socket} ->
-%	    Server ! {self(), closed};
-%	{Server, close} ->
-%	    gen_tcp:close(Socket);
-%	{Server, {Headers, BinaryData}} ->
-%	    Len = size(BinaryData),
-%	    Headers1 = Headers ++ "Content-Length: " ++ 
-%		integer_to_list(Len) ++ "\r\n\r\n",
-%	    %% io:format("--> ~p ~p~n", [Headers1, BinaryData]),
-%    	    gen_tcp:send(Socket, [Headers1, BinaryData]),
-%	    relay(Socket, Server, State);
-%	{'EXIT', Server, _} ->
-%	    gen_tcp:close(Socket)
-%    end.
-protocol_driver(Client, Island, Socket) ->
-    receive
-
-    after 5000 ->
-	    true
-    end.
 
 
 

@@ -35,38 +35,36 @@ loop() ->
     end.
 
 
-% Handle a single HTTP request
-client_handler(ClientPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
+%% Handle a single HTTP request
+client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
     receive
-	{ClientPid, closed} ->
+	{DriverPid, closed} ->
 	    true;
-	{ClientPid, {_, _Vsn, F, Args, _Env, Socket}} ->
+	{DriverPid, {_, _Vsn, F, Args, _Env, Socket}} ->
 	    io:format("Received request for '~s'~n", [F]),
 	    case F of
 		"/directory" -> 
 		    {response, IslandList} = gen_server:call(IslandMgrPid, {directory}, 5000),
 		    JsonList = map(fun island_data:island_to_json_obj/1, IslandList),
 		    Encoded = list_to_binary(lists:flatten([mochijson2:encode(JsonList)])),
-		    ClientPid ! { self(), { header(text), Encoded } },
-		    ClientPid ! { self(), close };
+		    DriverPid ! { self(), { header(text), Encoded } },
+		    DriverPid ! { self(), close };
 		"/hup" -> 
 		    {response, ok} = gen_server:call(IslandMgrPid, {hup}, 5000),
-		    ClientPid ! { self(), { header(text), <<>> } },
-		    ClientPid ! { self(), close };
+		    DriverPid ! { self(), { header(text), <<>> } },
+		    DriverPid ! { self(), close };
 		"/join_island" -> 
 		    case lookup_arg("id", Args) of
 			{value, IslandId} -> 
-			    IslandClient = #client{id=island_data:guid(), pid=self()},
-			    {response, Isl} = gen_server:call(IslandMgrPid, {join_island, IslandId, IslandClient}, 1000),
-			    island_router:protocol_driver(IslandClient, Isl, Socket);
+			    {response, _Isl} = gen_server:call(IslandMgrPid, { join_island, IslandId, Socket }, 1000);
 			_Else -> 
-			    ClientPid ! { self(), { header(text), <<>> } },
-			    ClientPid ! { self(), close }
+			    DriverPid ! { self(), { header(text), <<>> } },
+			    DriverPid ! { self(), close }
 		    end;
 		_ -> 
-		    ClientPid ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
+		    DriverPid ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
 	    end,
-	    client_handler(ClientPid, State)
+	    client_handler(DriverPid, State)
     after 5000 ->
 	    true
     end.

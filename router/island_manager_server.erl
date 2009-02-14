@@ -32,28 +32,24 @@ handle_call({create_new_island, Type}, _From, #manager_state{islands=Islands}) -
     {reply, { response, Isl }, #manager_state{islands=[Isl | Islands]}};
 
 
-handle_call({ join_island, IslandId, Client }, _From, State=#manager_state{islands=Islands}) ->
-    case island_by_id(IslandId) of
+handle_call({join_island, IslandId, Socket}, _From, State=#manager_state{islands=Islands}) ->
+    ClientId = island_data:guid(),
+    case island_by_id(IslandId, Islands) of
 	{value, Isl} -> 
 	    if 
-		is_pid(Isl#island.pid) ->
-		    RouterPid = Isl#island.pid,
-		    RouterPid ! {join, Client},
+		is_pid(Isl#island.router_pid) ->
+		    create_router_client(Isl, ClientId, Socket),
 		    {reply, { response, Isl}, State};
 		true ->
 		    %% Start a router where none exists
 		    RouterPid = island_router:start(self(), Isl),
 		    UpdatedIsl = Isl#island{router_pid=RouterPid},
+		    create_router_client(UpdatedIsl, ClientId, Socket),
 		    UpdatedIslList = update_island(IslandId, Islands, UpdatedIsl),
-		    RouterPid ! {join, Client},
 		    {reply, { response, Isl}, State#manager_state{islands=UpdatedIslList}}
 	    end;
 	_else -> {reply, { response, invalid_island_id }, State}
     end.
-
-
-handle_call(Request, _From, State) -> 
-    {reply, {unknown_call, Request}, State}.
 
 handle_cast(_Message, State) -> {noreply, State}.
 
@@ -65,6 +61,13 @@ code_change(_OldVsn, State, _Extra) -> {ok, State}.
 
 
 %% Utilities
+
+create_router_client(Isl, ClientId, Socket) ->
+    RouterPid = Isl#island.router_pid,
+    C = #client{id=ClientId},
+    ClientPid = island_router_client:start(self(), Isl, C, Socket),
+    CWithPid = C#client{pid=ClientPid},
+    RouterPid ! {join, CWithPid}.
 
 
 island_by_id(Id, Islands) -> lists:keysearch(Id, #island.id, Islands).
