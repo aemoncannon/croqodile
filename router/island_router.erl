@@ -21,14 +21,14 @@ start(IslandMgrPid, Island) ->
 run_router(Clients, LastTime, MgrPid, Island) ->
     Time = next_time(LastTime),
     receive
-	{join, Client } ->
-	    io:format("Router: New client joined: ~s~n", [Client#client.id]),
-	    run_router([Client | Clients], Time, MgrPid, Island);
+	{join, C } ->
+	    io:format("Router: New client joined: ~s~n", [C#client.id]),
+	    run_router([C | Clients], Time, MgrPid, Island);
         {remove_client, ClientId} ->
 	    case client_by_id(ClientId, Clients) of
-		{value, Client} -> 
-		    io:format("Router: Client removed: ~s~n", [Client#client.id]),
-		    run_router(lists:delete(Client, Clients), Time, MgrPid, Island);
+		{value, C} -> 
+		    io:format("Router: Client removed: ~s~n", [C#client.id]),
+		    run_router(lists:delete(C, Clients), Time, MgrPid, Island);
 		false -> 
 		    run_router(Clients, Time, MgrPid, Island)
 	    end;
@@ -36,10 +36,14 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time, MgrPid, Island);
         {client_closed, ClientPid} ->
-	    C = client_by_pid(ClientPid, Clients),
-	    self() ! { remove_client,  C#client.id},
-	    run_router(Clients, Time, MgrPid, Island);
-        heartbeat ->
+	    case client_by_pid(ClientPid, Clients) of
+		{value, C} -> 
+		    self() ! {remove_client,  C#client.id},
+		    run_router(Clients, Time, MgrPid, Island);
+		false -> 
+		    run_router(Clients, Time, MgrPid, Island)
+	    end;
+	heartbeat ->
 	    Message = float_to_list(Time),
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time, MgrPid, Island);

@@ -1,6 +1,5 @@
 -module(island_data).
 
--import(lists, [foreach/2]).
 -export([
 	 destroy_schema/0,
 	 start_and_create_schema/0,
@@ -59,7 +58,7 @@ do(Q) ->
     Val.
 
 
-island_to_json_obj(#island{id=Id, type=Type, description=Description}) ->
+island_to_json_obj(#island{id=Id, type=Type, description=Description, router_pid=_RouterPid}) ->
     {struct, [
 	      {<<"id">>, Id},
 	      {<<"description">>, list_to_binary(Description)},

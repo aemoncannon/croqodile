@@ -16,7 +16,7 @@ start(IslandMgrPid, Island, Client, Socket) ->
 %% that driver, and from the router.
 init_client(Client, IslandMgrPid, Island, Socket) ->
     inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
-    DriverPid = spawn_link(?MODULE, protocol_driver, [self(), Socket, []]),
+    DriverPid = spawn_link(?MODULE, protocol_driver, [Socket, self(), []]),
     run_client(Client, IslandMgrPid, Island, DriverPid).
 
 
@@ -42,6 +42,9 @@ protocol_driver(Socket, ClientPid, Buf) ->
 	    lists:foreach(fun(M) -> ClientPid ! {driver_message, M } end, Messages),
 	    protocol_driver(Socket, ClientPid, RemainingBuffer);
         {error, closed} ->
+            ClientPid ! {driver_closed};
+        Else ->
+	    io:format("Received unexpeced response recv: ~w~n", [Else]),
             ClientPid ! {driver_closed}
     end.
 
@@ -53,6 +56,6 @@ parse_all_sentences(Buf, Sentences) ->
     case string:str(Buf, ?TERMINATOR) of
 	N when N /= 0 -> parse_all_sentences(string:substr(Buf, N + length(?TERMINATOR)), 
 					     Sentences ++ [string:substr(Buf, 1, N - 1)]);
-	
+
 	_ -> 		{Sentences, Buf}
     end.

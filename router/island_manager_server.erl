@@ -27,8 +27,8 @@ handle_call({hup}, _From, _State) ->
     NewIslands = island_data:select_all_islands(),
     {reply, {response, ok}, #manager_state{islands=NewIslands}};
 
-handle_call({create_new_island, Type}, _From, #manager_state{islands=Islands}) ->
-    Isl = island_data:new_island(Type),
+handle_call({create_new_island, Type, Description}, _From, #manager_state{islands=Islands}) ->
+    Isl = island_data:new_island(Type, Description),
     {reply, { response, Isl }, #manager_state{islands=[Isl | Islands]}};
 
 
@@ -48,7 +48,7 @@ handle_call({join_island, IslandId, Socket}, _From, State=#manager_state{islands
 		    UpdatedIslList = update_island(IslandId, Islands, UpdatedIsl),
 		    {reply, { response, Isl}, State#manager_state{islands=UpdatedIslList}}
 	    end;
-	_else -> {reply, { response, invalid_island_id }, State}
+	_else -> {reply, { response, no_such_island }, State}
     end.
 
 handle_cast(_Message, State) -> {noreply, State}.
@@ -67,7 +67,8 @@ create_router_client(Isl, ClientId, Socket) ->
     C = #client{id=ClientId},
     ClientPid = island_router_client:start(self(), Isl, C, Socket),
     CWithPid = C#client{pid=ClientPid},
-    RouterPid ! {join, CWithPid}.
+    RouterPid ! {join, CWithPid},
+    ClientPid.
 
 
 island_by_id(Id, Islands) -> lists:keysearch(Id, #island.id, Islands).

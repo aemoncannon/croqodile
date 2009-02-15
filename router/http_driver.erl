@@ -119,7 +119,11 @@ header(gif)  ->
     ["HTTP/1.0 200 Ok\r\n", powered_by(), content_type("image/gif")];
 header({redirect,To}) ->
     ["HTTP/1.0 302 Come and get it!\r\n",
-     powered_by(), "Location: " ++ To ++ "\r\n"].
+     powered_by(), "Location: " ++ To ++ "\r\n"];
+header(not_found)  -> 
+    ["HTTP/1.0 404 Not Found\r\n", powered_by()];
+header(error)  -> 
+    ["HTTP/1.0 500 Error\r\n", powered_by()].
 
 powered_by() ->
     "X-Powered-By: Erlang \r\n".

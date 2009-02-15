@@ -2,7 +2,7 @@
 
 -export([start/2, stop/1]).
 
--import(http_driver, [classify/1, header/1]).
+-import(http_driver, [header/1]).
 -import(lists, [map/2]).
 
 -include("island_manager.hrl").
@@ -55,10 +55,17 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		    DriverPid ! { self(), close };
 		"/join_island" -> 
 		    case lookup_arg("id", Args) of
-			{value, IslandId} -> 
-			    {response, _Isl} = gen_server:call(IslandMgrPid, { join_island, IslandId, Socket }, 1000);
+			{value, {"id", IslandId}} ->
+			    case gen_server:call(IslandMgrPid, { join_island, IslandId, Socket }, 1000) of
+				{response, #island{}} ->
+				    DriverPid ! { self(), { header(text), <<>> }},
+				    DriverPid ! { self(), close };
+				{response, no_such_island} ->
+				    DriverPid ! { self(), { header(not_found), <<>> } },
+				    DriverPid ! { self(), close }
+			    end;
 			_Else -> 
-			    DriverPid ! { self(), { header(text), <<>> } },
+			    DriverPid ! { self(), { header(error), <<>>} },
 			    DriverPid ! { self(), close }
 		    end;
 		_ -> 
@@ -75,7 +82,7 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 show(X) ->
     {header(text),[lists:flatten(io_lib:format("~p~n",[X]))]}.
 
-lookup_arg(Key, Args) -> lists:keysearch(Key, 0, Args).
+lookup_arg(Key, Args) -> lists:keysearch(Key, 1, Args).
 
 
 
