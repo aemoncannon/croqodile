@@ -26,7 +26,6 @@ relay(Socket, Server, State) ->
     receive
 	{tcp, Socket, Bin} ->
 	    Data = binary_to_list(Bin),
-	    %% io:format("<-- ~s~n", [Data]),
 	    parse_request(State, Socket, Server, Data);
 	{tcp_closed, Socket} ->
 	    Server ! {self(), closed};
@@ -36,7 +35,6 @@ relay(Socket, Server, State) ->
 	    Len = size(BinaryData),
 	    Headers1 = Headers ++ "Content-Length: " ++ 
 		integer_to_list(Len) ++ "\r\n\r\n",
-	    %% io:format("--> ~p ~p~n", [Headers1, BinaryData]),
     	    gen_tcp:send(Socket, [Headers1, BinaryData]),
 	    relay(Socket, Server, State);
 	{'EXIT', Server, _} ->

@@ -58,8 +58,8 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 			{value, {"id", IslandId}} ->
 			    case gen_server:call(IslandMgrPid, { join_island, IslandId, Socket }, 1000) of
 				{response, #island{}} ->
-				    DriverPid ! { self(), { header(text), <<>> }},
-				    DriverPid ! { self(), close };
+				    %% Send response, but don't close the socket..
+				    DriverPid ! { self(), { header(text), <<>> }};
 				{response, no_such_island} ->
 				    DriverPid ! { self(), { header(not_found), <<>> } },
 				    DriverPid ! { self(), close }

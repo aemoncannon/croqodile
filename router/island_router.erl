@@ -33,6 +33,7 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 		    run_router(Clients, Time, MgrPid, Island)
 	    end;
         {message, _FromPid, Message} ->
+	    io:format("Message from client: ~s~n", [Message]),
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time, MgrPid, Island);
         {client_closed, ClientPid} ->
@@ -46,15 +47,13 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 	heartbeat ->
 	    Message = float_to_list(Time),
 	    send_to_active(Clients, Message),
-	    run_router(Clients, Time, MgrPid, Island);
-	Else ->
-	    io:format("Unknown message: ~w.~n", [Else])
+	    run_router(Clients, Time, MgrPid, Island)
     end.
 
 
 %% Sends the given data to all clients that are 'active'
 send_to_active(Clients, Message) ->
-    lists:foreach(fun(C) -> (C#client.pid ! {message, Message}) end, Clients),
+    lists:foreach(fun(C) -> (C#client.pid ! {router_message, Message}) end, Clients),
     ok.
 
 %% Heartbeat generator
