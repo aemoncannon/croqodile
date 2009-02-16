@@ -138,10 +138,3 @@ parse_all_sentences(Buf, Sentences) ->
 
 	_ -> 		{Sentences, Buf}
     end.
-
-
-
-
-
-
-
