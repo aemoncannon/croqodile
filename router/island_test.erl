@@ -22,6 +22,7 @@ run() ->
 
     TestState = island_manager_server:start_link([?TEST_PORT, ""]),
 
+    run_test(fun test_protocol_parsing/1, TestState),
     run_test(fun test_simple_empty/1, TestState),
     run_test(fun test_one_island/1, TestState),
     run_test(fun test_join_no_island/1, TestState),
@@ -36,6 +37,26 @@ run_test(Fun, TestState) ->
     island_data:clear(),
     Fun(TestState),
     ok.
+
+
+test_protocol_parsing(_TestState) ->
+    {[],<<>>} = croq_utils:parse_all_messages(<<>>),
+
+    %% Parse one message.
+    {[{msg, 1, <<"hello">>}],<<>>} = croq_utils:parse_all_messages(<<1:8,5:32,"hello">>),
+
+    %% Parse to messages.
+    {[{msg, 1, <<"hello">>},{msg, 120, <<"121 &*">>}],<<>>} = 
+	croq_utils:parse_all_messages(<<1:8,5:32,"hello",120:8,6:32,"121 &*">>),
+    
+    %% Shouldn't parse anything if payload is too short..
+    {[],<<1:8,10:32,"hello">>} = croq_utils:parse_all_messages(<<1:8,10:32,"hello">>),
+
+    %% Should stop at terminator header (Type=0,Length=0)..
+    {[{msg, 1, <<"hello">>}],<<"don't read me'">>} = 
+	croq_utils:parse_all_messages(<<1:8,5:32,"hello",0:8,0:32,"don't read me'">>),
+    ok.
+
 
 test_simple_empty(_TestState) ->
     {ok, _Vsn, 200, _Reason, Body} = http_request(get, ?TEST_HOST, ?TEST_PORT, "/directory"),

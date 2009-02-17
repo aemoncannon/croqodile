@@ -4,30 +4,28 @@
 
 -created_by('Aemon Cannon').
 
--export([ parse_all_sentences/2, parse_one_sentence/1, sentence_term/0 ]).
+-export([ parse_all_messages/1, msg_term/0 ]).
 
--define(TERMINATOR, [12,12]).
 
-sentence_term() -> ?TERMINATOR.
+-define(TERMINATOR, "\r").
+msg_term() -> ?TERMINATOR.
 
-%% Parse all sentences in the string Buf, return the sentences and the remainder of the string.
-parse_all_sentences(Buf, Sentences) ->
-    case string:str(Buf, sentence_term()) of
-	N when N /= 0 -> parse_all_sentences(string:substr(Buf, N + length(sentence_term())), 
-					     Sentences ++ [string:substr(Buf, 1, N - 1)]);
-	
-	_ -> 		{Sentences, Buf}
+%% Parse all messages in the binary Buf, return the messages and the unparsed remainder Buf.
+%%
+parse_all_messages(Buf) -> parse_all_messages(Buf, []).
+parse_all_messages(Buf, Messages) ->
+    case Buf of
+	<<Type:8,Len:32,Rest/binary>> when ((size(Rest) >= Len) and (Len > 0)) ->
+	    {Payload, Remainder} = split_binary(Rest, Len),
+	    parse_all_messages(Remainder, [{msg, Type, Payload} | Messages]);
+
+	<<_Type:8,Len:32,Rest/binary>> when (size(Rest) < Len) ->
+	    {lists:reverse(Messages), Buf};
+
+	<<0:8,0:32,Rest/binary>> ->
+	    {lists:reverse(Messages), Rest};
+
+	_Else -> 
+	    {lists:reverse(Messages), Buf}
     end.
-
-%% Parse the first sentence in the string Buf, return the sentence and the remainder of the string.
-parse_one_sentence(Buf) ->
-    case string:str(Buf, sentence_term()) of
-	N when N /= 0 -> {ok,
-			  string:substr(Buf, 1, N - 1),
-			  string:substr(Buf, N + length(sentence_term()))};
-	
-	_ -> 		{none, Buf}
-    end.
-
-
 
