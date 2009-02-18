@@ -40,21 +40,23 @@ run_test(Fun, TestState) ->
 
 
 test_protocol_parsing(_TestState) ->
+    Time = 12345,
+
     {[],<<>>} = croq_utils:parse_all_messages(<<>>),
 
     %% Parse one message.
-    {[{msg, 1, <<"hello">>}],<<>>} = croq_utils:parse_all_messages(<<1:8,5:32,"hello">>),
+    {[{msg, 1, Time, <<"hello">>}],<<>>} = croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello">>),
 
     %% Parse to messages.
-    {[{msg, 1, <<"hello">>},{msg, 120, <<"121 &*">>}],<<>>} = 
-	croq_utils:parse_all_messages(<<1:8,5:32,"hello",120:8,6:32,"121 &*">>),
+    {[{msg, 1, Time, <<"hello">>},{msg, 120, Time, <<"121 &*">>}],<<>>} = 
+	croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello",120:8,Time:64,6:32,"121 &*">>),
     
     %% Shouldn't parse anything if payload is too short..
-    {[],<<1:8,10:32,"hello">>} = croq_utils:parse_all_messages(<<1:8,10:32,"hello">>),
+    {[],<<1:8,Time:64,10:32,"hello">>} = croq_utils:parse_all_messages(<<1:8,Time:64,10:32,"hello">>),
 
     %% Should stop at terminator header (Type=0,Length=0)..
-    {[{msg, 1, <<"hello">>}],<<"don't read me'">>} = 
-	croq_utils:parse_all_messages(<<1:8,5:32,"hello",0:8,0:32,"don't read me'">>),
+    {[{msg, 1, Time, <<"hello">>}],<<"don't read me'">>} = 
+	croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello",0:8,0:64,0:32,"don't read me'">>),
     ok.
 
 
@@ -133,7 +135,7 @@ mock_client_connected_to_router(Id, StatusPid, Socket) ->
 	    mock_client_connected_to_router(Id, StatusPid, Socket);
 	{message, Msg} -> 
 	    io:format("Sending message to router: ~s~n", [Msg]),
-	    gen_tcp:send(Socket, Msg ++ island_router_client:message_term()),
+	    gen_tcp:send(Socket, Msg),
 	    mock_client_connected_to_router(Id, StatusPid, Socket);
 	{disconnect} -> ok;
 	{close} -> ok
@@ -143,8 +145,7 @@ mock_client_connected_to_router(Id, StatusPid, Socket) ->
 mock_client_message_handler(Buf, Socket, CallbackPid) ->
     case gen_tcp:recv(Socket, 0) of
         {ok, Data} ->
-	    io:format("Got data from router: ~w~n", [Data]),
-	    {Messages, RemainingBuffer} = parse_all_sentences(Buf ++ Data, []),
+	    {Messages, RemainingBuffer} = croq_utils:parse_all_messages(list_to_binary([Buf,Data])),
 	    lists:foreach(fun(M) -> CallbackPid ! {router_message, M } end, Messages),
 	    mock_client_message_handler(RemainingBuffer, Socket, CallbackPid);
         {error, closed} ->
@@ -152,10 +153,3 @@ mock_client_message_handler(Buf, Socket, CallbackPid) ->
     end.
 
 
-parse_all_sentences(Buf, Sentences) ->
-    case string:str(Buf, island_router_client:message_term()) of
-	N when N /= 0 -> parse_all_sentences(string:substr(Buf, N + length(island_router_client:message_term())), 
-					     Sentences ++ [string:substr(Buf, 1, N - 1)]);
-
-	_ -> 		{Sentences, Buf}
-    end.

@@ -34,18 +34,19 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 	    end;
         {message, _FromPid, Message} ->
 	    io:format("Message from client: ~s~n", [Message]),
-	    send_to_active(Clients, Message),
+	    StampedMsg = croq_utils:stamp_message(Message, Time),
+	    send_to_active(Clients, StampedMsg),
 	    run_router(Clients, Time, MgrPid, Island);
         {client_closed, ClientPid} ->
 	    case client_by_pid(ClientPid, Clients) of
 		{value, C} -> 
 		    self() ! {remove_client,  C#client.id},
 		    run_router(Clients, Time, MgrPid, Island);
-		false -> 
+		false ->
 		    run_router(Clients, Time, MgrPid, Island)
 	    end;
 	heartbeat ->
-	    Message = float_to_list(Time),
+	    Message = croq_utils:create_heartbeat_message(Time),
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time, MgrPid, Island)
     end.
@@ -66,7 +67,7 @@ start_heartbeat(RouterPid) ->
 %% Router must guarantee that timestamps are always increasing, never repeating.
 next_time(LastTime) ->
     {MegaSecs, Secs, MicroSecs} = erlang:now(),
-    Time = (MegaSecs * 1000000000) + (Secs * 1000) + (MicroSecs/1000), 
+    Time = trunc((MegaSecs * 1000000000) + (Secs * 1000) + (MicroSecs/1000)), 
     case Time of
 	N when N =< LastTime -> LastTime + 1;
 	_  -> Time
