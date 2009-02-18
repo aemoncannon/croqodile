@@ -28,6 +28,7 @@ run() ->
     run_test(fun test_join_no_island/1, TestState),
     run_test(fun test_join_no_island_id/1, TestState),
     run_test(fun test_join_island_and_send_messages/1, TestState),
+%%    run_test(fun test_multiple_clients_joining_island/1, TestState),
 
     io:format("Done.~n"),
     ok.
@@ -59,7 +60,6 @@ test_protocol_parsing(_TestState) ->
 	croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello",0:8,0:64,0:32,"don't read me'">>),
     ok.
 
-
 test_simple_empty(_TestState) ->
     {ok, _Vsn, 200, _Reason, Body} = http_request(get, ?TEST_HOST, ?TEST_PORT, "/directory"),
     [] = mochijson2:decode(Body),
@@ -85,28 +85,63 @@ test_join_no_island_id(_TestState) ->
 
 test_join_island_and_send_messages({ok, AppPid}) ->
     {response, Isl} = gen_server:call(AppPid, {create_new_island, "House", "A nice one."}, 5000),
-    Id = Isl#island.id,
-    Pid = create_mock_client(island_data:guid(), self()),
-    Pid ! {connect_to_router, Id, ?TEST_HOST, ?TEST_PORT},
+    IslandId = Isl#island.id,
+    CliendId = island_data:guid(),
+    Pid = create_mock_client(CliendId, self()),
+    Pid ! {connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
     receive
-	{connected_to_router} -> ok
+	{router_message, CliendId, _Msg} -> ok
     end,
+    io:format("Got 1~n", []),
+
     Pid ! {message, {msg, 2, 0, <<"Hello">>}},
     receive
-	{router_message, {msg, 2, _Time1, <<"Hello">>}} -> ok
+	{router_message, CliendId, {msg, 2, _Time1, <<"Hello">>}} -> ok
     end,
+    io:format("Got 2~n", []),
     Pid ! {message, {msg, 2, 0, <<"Dude's are you out there?">>}},
     receive
-	{router_message, {msg, 2, _Time2, <<"Dude's are you out there?">>}} -> ok
+	{router_message, CliendId, {msg, 2, _Time2, <<"Dudes, are you out there?">>}} -> ok
     end,
     Pid ! {message, {msg, 2, 0, <<"'dsd %#@****">>}},
     receive
-	{router_message, {msg, 2, _Type, <<"'dsd %#@****">>}} -> ok
+	{router_message, CliendId, {msg, 2, _Type, <<"'dsd %#@****">>}} -> ok
+    end,
+    ok.
+
+test_multiple_clients_joining_island({ok, AppPid}) ->
+    {response, Isl} = gen_server:call(AppPid, {create_new_island, "House", "A nice one."}, 5000),
+    IslandId = Isl#island.id,
+    CliendId1 = island_data:guid(),
+    CliendId2 = island_data:guid(),
+    CliendId3 = island_data:guid(),
+
+    Pid1 = create_mock_client(CliendId1, self()),
+    Pid1 ! {connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
+
+    Pid2 = create_mock_client(CliendId2, self()),
+    Pid2 ! {connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
+
+    Pid3 = create_mock_client(CliendId3, self()),
+    Pid3 ! {connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
+    receive
+	{router_message, CliendId1, _Msg1} -> ok
+    end,
+    receive
+	{router_message, CliendId2, _Msg2} -> ok
+    end,
+    receive
+	{router_message, CliendId3, _Msg3} -> ok
     end,
     ok.
 
 
-%% Utilities
+
+
+
+%% Mock Client:
+%% A simulated client, communicating with the server via HTTP. 
+%%
 
 create_mock_client(Id, StatusPid) ->
     Pid = spawn_link(?MODULE, mock_client_init, [Id, StatusPid]),
@@ -121,7 +156,6 @@ mock_client_init(Id, StatusPid) ->
     end.    
 
 mock_client_connected_to_router_init(Id, BufferedData, Socket, StatusPid) ->
-    StatusPid ! {connected_to_router},
     spawn_link(?MODULE, mock_client_message_handler, [BufferedData, Socket, self()]),
     mock_client_connected_to_router(Id, StatusPid, Socket).
 
@@ -129,8 +163,7 @@ mock_client_connected_to_router_init(Id, BufferedData, Socket, StatusPid) ->
 mock_client_connected_to_router(Id, StatusPid, Socket) ->
     receive
 	{router_message, Msg} -> 
-	    io:format("Received msg from router: ~w~n", [Msg]),
-	    StatusPid ! { router_message, Msg },
+	    StatusPid ! { router_message, Id, Msg },
 	    mock_client_connected_to_router(Id, StatusPid, Socket);
 	{message, Msg} -> 
 	    io:format("Sending message to router: ~w~n", [Msg]),
