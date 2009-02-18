@@ -9,19 +9,6 @@ rule '.beam' => '.erl' do |t|
    sh "erlc #{t.source}"
 end
 
-#
-#task :compile => [] do
-#  system "erlc #{SOURCE_FILES.join(" ")}"
-#end
-#
-#task :compile_and_launch => [:compile] do
-#  system "erl -eval \"croq_router:start(5000, 5001, 5002).\""
-#end
-#
-#task :test => [:compile] do
-#  require 'test/login_test'
-#end
-
 ALL_BEAMS = FileList["*.erl"].gsub(".erl", ".beam")
 
 task :build => ALL_BEAMS

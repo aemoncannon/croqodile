@@ -6,10 +6,11 @@
 
 -export([ parse_all_messages/1, 
 	  stamp_message/2, 
-	  create_client_message/2, 
-	  create_heartbeat_message/1,
-	  create_snapshot_req_message/0,
-	  create_term_message/0
+	  make_client_message/2, 
+	  make_heartbeat_message/1,
+	  make_snapshot_req_message/0,
+	  make_term_message/0,
+	  encode_message/1
 	 ]).
 
 
@@ -37,19 +38,22 @@ parse_all_messages(Buf, Messages) ->
 	    {lists:reverse(Messages), Buf}
     end.
 
-stamp_message(<<Type:8,_Time:64,PayloadLen:32,Payload/binary>>, Time) ->
-    <<Type:8,Time:64,PayloadLen:32,Payload/binary>>.
+stamp_message({msg, Type, _Time, Payload}, Time) -> {msg, Type, Time, Payload}.
 
-create_client_message(Time, Payload) ->
-    PayloadLen = size(Payload),
-    <<?MSG_TYPE_NORMAL:8,Time:64,PayloadLen:32,Payload/binary>>.
+make_client_message(Time, Payload) ->
+    {msg, ?MSG_TYPE_NORMAL, Time, Payload}.
 
-create_heartbeat_message(Time) ->
-    <<?MSG_TYPE_HEARTBEAT:8,Time:64,0:32,0:8>>.
+make_heartbeat_message(Time) ->
+    {msg, ?MSG_TYPE_HEARTBEAT, Time, 0}.
 
-create_snapshot_req_message() ->
-    <<?MSG_TYPE_SNAPSHOT_REQ:8,0:64,0:32,0:8>>.
+make_snapshot_req_message() ->
+    {msg, ?MSG_TYPE_SNAPSHOT_REQ, 0, 0}.
 
-create_term_message() ->
-    <<?MSG_TYPE_TERM:8,0:64,0:32,0:8>>.
+make_term_message() ->
+    {msg, ?MSG_TYPE_TERM, 0, 0}.
+
+
+encode_message({msg, Type, Time, Payload}) ->
+    Len = size(Payload),
+    <<Type:8,Time:64,Len:32,Payload/binary>>.
      

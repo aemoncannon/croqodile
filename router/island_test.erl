@@ -91,20 +91,19 @@ test_join_island_and_send_messages({ok, AppPid}) ->
     receive
 	{connected_to_router} -> ok
     end,
-    Pid ! {message, "Hello"},
+    Pid ! {message, {msg, 2, 0, <<"Hello">>}},
     receive
-	{router_message, "Hello"} -> ok
+	{router_message, {msg, 2, _Time1, <<"Hello">>}} -> ok
     end,
-    Pid ! {message, "Dude's are you out there?"},
+    Pid ! {message, {msg, 2, 0, <<"Dude's are you out there?">>}},
     receive
-	{router_message, "Dude's are you out there?"} -> ok
+	{router_message, {msg, 2, _Time2, <<"Dude's are you out there?">>}} -> ok
     end,
-    Pid ! {message, "'dsd %#@****"},
+    Pid ! {message, {msg, 2, 0, <<"'dsd %#@****">>}},
     receive
-	{router_message, "'dsd %#@****"} -> ok
+	{router_message, {msg, 2, _Type, <<"'dsd %#@****">>}} -> ok
     end,
     ok.
-
 
 
 %% Utilities
@@ -130,12 +129,12 @@ mock_client_connected_to_router_init(Id, BufferedData, Socket, StatusPid) ->
 mock_client_connected_to_router(Id, StatusPid, Socket) ->
     receive
 	{router_message, Msg} -> 
-	    io:format("Received msg from router: ~s~n", [Msg]),
-	    StatusPid ! {router_message, Msg},
+	    io:format("Received msg from router: ~w~n", [Msg]),
+	    StatusPid ! { router_message, Msg },
 	    mock_client_connected_to_router(Id, StatusPid, Socket);
 	{message, Msg} -> 
-	    io:format("Sending message to router: ~s~n", [Msg]),
-	    gen_tcp:send(Socket, Msg),
+	    io:format("Sending message to router: ~w~n", [Msg]),
+	    gen_tcp:send(Socket, croq_utils:encode_message(Msg)),
 	    mock_client_connected_to_router(Id, StatusPid, Socket);
 	{disconnect} -> ok;
 	{close} -> ok

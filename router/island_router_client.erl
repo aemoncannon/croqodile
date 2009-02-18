@@ -24,7 +24,7 @@ init_client(Client, IslandMgrPid, Island, Socket) ->
 run_client(Client, IslandMgrPid, Island=#island{router_pid=RouterPid}, DriverPid, Socket) ->
     receive
 	{router_message, Msg} ->
-	    gen_tcp:send(Socket, Msg),
+	    gen_tcp:send(Socket, croq_utils:encode_message(Msg)),
 	    run_client(Client, IslandMgrPid, Island, DriverPid, Socket);
 	{driver_message, Msg} ->
 	    RouterPid ! {message, self(), Msg},

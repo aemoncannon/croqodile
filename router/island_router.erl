@@ -33,7 +33,7 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 		    run_router(Clients, Time, MgrPid, Island)
 	    end;
         {message, _FromPid, Message} ->
-	    io:format("Message from client: ~s~n", [Message]),
+	    io:format("Message from client: ~w~n", [Message]),
 	    StampedMsg = croq_utils:stamp_message(Message, Time),
 	    send_to_active(Clients, StampedMsg),
 	    run_router(Clients, Time, MgrPid, Island);
@@ -46,7 +46,7 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 		    run_router(Clients, Time, MgrPid, Island)
 	    end;
 	heartbeat ->
-	    Message = croq_utils:create_heartbeat_message(Time),
+	    Message = croq_utils:make_heartbeat_message(Time),
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time, MgrPid, Island)
     end.
