@@ -4,6 +4,9 @@
 
 -created_by('Aemon Cannon').
 
+-include("island_manager.hrl").
+
+
 -export([ parse_all_messages/1, 
 	  stamp_message/2, 
 	  make_client_message/2, 
@@ -13,10 +16,6 @@
 	  encode_message/1
 	 ]).
 
--define(MSG_TYPE_TERM, 0).
--define(MSG_TYPE_SNAPSHOT_REQ, 1).
--define(MSG_TYPE_NORMAL, 2).
--define(MSG_TYPE_HEARTBEAT, 3).
 
 %% Parse all messages in the binary Buf, return the messages and the unparsed remainder Buf.
 %%

@@ -28,7 +28,7 @@ run() ->
     run_test(fun test_join_no_island/1, TestState),
     run_test(fun test_join_no_island_id/1, TestState),
     run_test(fun test_join_island_and_send_messages/1, TestState),
-%%    run_test(fun test_multiple_clients_joining_island/1, TestState),
+    run_test(fun test_multiple_clients_joining_island/1, TestState),
 
     io:format("Done.~n"),
     ok.
@@ -90,22 +90,19 @@ test_join_island_and_send_messages({ok, AppPid}) ->
     Pid = create_mock_client(CliendId, self()),
     Pid ! {connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
     receive
-	{router_message, CliendId, _Msg} -> ok
+	{router_message, CliendId, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok
     end,
-    io:format("Got 1~n", []),
-
-    Pid ! {message, {msg, 2, 0, <<"Hello">>}},
+    Pid ! {message, {msg, ?MSG_TYPE_NORMAL, 0, <<"Hello">>}},
     receive
-	{router_message, CliendId, {msg, 2, _Time1, <<"Hello">>}} -> ok
+	{router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Time1, <<"Hello">>}} -> ok
     end,
-    io:format("Got 2~n", []),
-    Pid ! {message, {msg, 2, 0, <<"Dude's are you out there?">>}},
+    Pid ! {message, {msg, ?MSG_TYPE_NORMAL, 0, <<"Dudes, are you out there?">>}},
     receive
-	{router_message, CliendId, {msg, 2, _Time2, <<"Dudes, are you out there?">>}} -> ok
+	{router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Time2, <<"Dudes, are you out there?">>}} -> ok
     end,
-    Pid ! {message, {msg, 2, 0, <<"'dsd %#@****">>}},
+    Pid ! {message, {msg, ?MSG_TYPE_NORMAL, 0, <<"'dsd %#@****">>}},
     receive
-	{router_message, CliendId, {msg, 2, _Type, <<"'dsd %#@****">>}} -> ok
+	{router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Type, <<"'dsd %#@****">>}} -> ok
     end,
     ok.
 
@@ -124,14 +121,15 @@ test_multiple_clients_joining_island({ok, AppPid}) ->
 
     Pid3 = create_mock_client(CliendId3, self()),
     Pid3 ! {connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
+
     receive
-	{router_message, CliendId1, _Msg1} -> ok
+	{router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok
     end,
     receive
-	{router_message, CliendId2, _Msg2} -> ok
+	{router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok
     end,
     receive
-	{router_message, CliendId3, _Msg3} -> ok
+	{router_message, CliendId3, {msg, ?MSG_TYPE_HEARTBEAT, _T2, _X2}} -> ok
     end,
     ok.
 
