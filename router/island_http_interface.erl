@@ -1,6 +1,6 @@
 -module(island_http_interface).
 
--export([start/2, stop/1]).
+-export([start/2, stop/1, run_snapshot_liason/4]).
 
 -import(http_driver, [header/1]).
 -import(lists, [map/2]).
@@ -54,8 +54,8 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		    DriverPid ! { self(), { header(text), <<>> } },
 		    DriverPid ! { self(), close };
 		"/join_island" -> 
-		    case lookup_arg("id", Args) of
-			{value, {"id", IslandId}} ->
+		    case lookup_args(["id"], Args) of
+			[{"id", IslandId}] ->
 			    case gen_server:call(IslandMgrPid, { join_island, IslandId, Socket }, 1000) of
 				{response, #island{}} ->
 				    %% Send response, but don't close the socket..
@@ -64,6 +64,16 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 				    DriverPid ! { self(), { header(not_found), <<>> } },
 				    DriverPid ! { self(), close }
 			    end;
+			_Else -> 
+			    DriverPid ! { self(), { header(error), <<>>} },
+			    DriverPid ! { self(), close }
+		    end;
+		"/get_snapshot" -> 
+		    case lookup_args(["id", "clientId"], Args) of
+			[{"id", IslandId}, {"clientId", ClientId}] ->
+			    inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
+			    LiasonPid = create_snapshot_liason(ClientId, IslandId, DriverPid, Socket),
+			    gen_server:cast(IslandMgrPid, { get_snapshot, ClientId, IslandId, LiasonPid });
 			_Else -> 
 			    DriverPid ! { self(), { header(error), <<>>} },
 			    DriverPid ! { self(), close }
@@ -77,12 +87,35 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
     end.
 
 
+create_snapshot_liason(ClientId, IslandId, DriverPid, Socket) ->
+    Pid = spawn_link(?MODULE, run_snapshot_liason, [ClientId, IslandId, DriverPid, Socket]),
+    Pid.
+
+run_snapshot_liason(ClientId, IslandId, DriverPid, Socket) ->
+    receive
+	snapshot_not_available -> 
+	    gen_tcp:close(Socket),
+	    ok;
+	{partner, PartnerSocket } -> 
+	    croq_utils:socket_pipe(PartnerSocket, Socket),
+	    ok
+    end,
+    run_snapshot_liason(ClientId, IslandId, DriverPid, Socket).
+
 
 
 show(X) ->
     {header(text),[lists:flatten(io_lib:format("~p~n",[X]))]}.
 
-lookup_arg(Key, Args) -> lists:keysearch(Key, 1, Args).
+lookup_args(Keys, Args) -> lists:map(fun(Key) ->
+					     case lists:keysearch(Key, 1, Args) of
+						 {value, {Key, Val}} -> {Key, Val};
+						 _Else  -> false
+					     end
+				     end, 
+				     Keys).
+
+
 
 
 

@@ -13,7 +13,8 @@
 	  make_heartbeat_message/1,
 	  make_snapshot_req_message/0,
 	  make_term_message/0,
-	  encode_message/1
+	  encode_message/1,
+	  socket_pipe/2
 	 ]).
 
 
@@ -56,3 +57,12 @@ encode_message({msg, Type, Time, Payload}) ->
     Len = size(Payload),
     <<Type:8,Time:64,Len:32,Payload/binary>>.
      
+
+
+socket_pipe(FromSocket, ToSocket) ->
+    case gen_tcp:recv(FromSocket, 0) of
+        {ok, Data} ->
+	    gen_tcp:send(ToSocket, Data),
+	    socket_pipe(FromSocket, ToSocket);
+	{error, _Reason} -> ok
+    end.

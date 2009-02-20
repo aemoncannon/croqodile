@@ -37,6 +37,14 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 	    StampedMsg = croq_utils:stamp_message(Message, Time),
 	    send_to_active(Clients, StampedMsg),
 	    run_router(Clients, Time, MgrPid, Island);
+        {get_snapshot, ClientId, LiasonPid} ->
+	    io:format("Snapshot request from client.~n", []),
+	    case find_snapshot_partner(ClientId, Clients) of
+		{value, C} ->
+		    C#client.pid ! {router_message, croq_utils:make_snapshot_req_message()};
+		_Else -> LiasonPid ! snapshot_not_available
+	    end,
+	    run_router(Clients, Time, MgrPid, Island);
         {client_closed, ClientPid} ->
 	    case client_by_pid(ClientPid, Clients) of
 		{value, C} -> 
@@ -76,6 +84,16 @@ next_time(LastTime) ->
 client_by_id(Id, Clients) -> lists:keysearch(Id, #client.id, Clients).
 
 client_by_pid(Pid, Clients) -> lists:keysearch(Pid, #client.pid, Clients).
+
+%% Return the first Client record whose id does NOT match ClientId.
+find_snapshot_partner(_, []) -> false;
+find_snapshot_partner(ClientId, [C | Rest]) -> case C of
+						   #client{id=ClientId} -> find_snapshot_partner(ClientId, Rest);
+						   _Else -> {value, C}
+					       end.
+
+
+
 
 
 

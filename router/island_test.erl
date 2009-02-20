@@ -149,28 +149,47 @@ mock_client_init(Id, StatusPid) ->
     receive
 	{connect_to_router, IslandId, Host, Port} ->
 	    {ok, _Vsn, 200, _Reason, Extra, Socket} = http_request_keep_open(get, Host, Port, "/join_island?id=" ++ IslandId),
-	    mock_client_connected_to_router_init(Id, Extra, Socket, StatusPid);
+	    mock_client_connected_to_router_init(Id, IslandId, {Host, Port}, Extra, Socket, StatusPid);
 	{close} -> ok
     end.    
 
-mock_client_connected_to_router_init(Id, BufferedData, Socket, StatusPid) ->
+mock_client_connected_to_router_init(Id, IslandId, Server, BufferedData, Socket, StatusPid) ->
     spawn_link(?MODULE, mock_client_message_handler, [BufferedData, Socket, self()]),
-    mock_client_connected_to_router(Id, StatusPid, Socket, <<>>).
+    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, <<>>).
 
 
-mock_client_connected_to_router(Id, StatusPid, Socket, CurSnapshot) ->
+mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot) ->
     receive
-	{router_message, Msg={msg, _Type, _Time, Payload}} -> 
+
+	{router_message, {msg, ?MSG_TYPE_TERM, _, _}} -> 
+	    io:format("OOPS, got term.~n",[]),
+	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
+
+	{router_message, Msg={msg, ?MSG_TYPE_SNAPSHOT_REQ, _, _}} -> 
 	    StatusPid ! { router_message, Id, Msg },
-	    mock_client_connected_to_router(Id, StatusPid, Socket, list_to_binary([CurSnapshot, Payload]));
+	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
+
+	{router_message, Msg={msg, ?MSG_TYPE_HEARTBEAT, _Time, _Payload}} -> 
+	    StatusPid ! { router_message, Id, Msg },
+	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
+
+	{router_message, Msg={msg, ?MSG_TYPE_NORMAL, _Time, Payload}} -> 
+	    StatusPid ! { router_message, Id, Msg },
+	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, list_to_binary([CurSnapshot, Payload]));
+
 	{message, Msg} -> 
 	    io:format("Sending message to router: ~w~n", [Msg]),
 	    gen_tcp:send(Socket, croq_utils:encode_message(Msg)),
-	    mock_client_connected_to_router(Id, StatusPid, Socket, CurSnapshot);
+	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
+
 	{request_snapshot} -> 
 	    io:format("Sending snapshot request.~n", []),
-%%	    {ok, _Vsn, 200, _Reason, Extra, Socket} = http_request_keep_open(get, Host, Port, "/join_island?id=" ++ IslandId),
-	    mock_client_connected_to_router(Id, StatusPid, Socket, CurSnapshot);
+	    {Host, Port} = Server,
+	    {ok, _Vsn, 200, _Reason, _Extra, Socket} = http_request_keep_open(
+							 get, Host, Port, 
+							 "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
+							),
+	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 	{disconnect} -> ok;
 	{close} -> ok
     end.

@@ -33,7 +33,10 @@ handle_call({create_new_island, Type, Description}, _From, #manager_state{island
 
 
 handle_call({join_island, IslandId, Socket}, _From, State=#manager_state{islands=Islands}) ->
+
+    %% TODO: This should be provided by client
     ClientId = island_data:guid(),
+
     case island_by_id(IslandId, Islands) of
 	{value, Isl} -> 
 	    if 
@@ -51,7 +54,23 @@ handle_call({join_island, IslandId, Socket}, _From, State=#manager_state{islands
 	_else -> {reply, { response, no_such_island }, State}
     end.
 
-handle_cast(_Message, State) -> {noreply, State}.
+
+handle_cast({get_snapshot, ClientId, IslandId, LiasonPid}, State=#manager_state{islands=Islands}) ->
+    case island_by_id(IslandId, Islands) of
+	{value, Isl} -> 
+	    if 
+		is_pid(Isl#island.router_pid) ->
+		    Isl#island.router_pid ! {get_snapshot, ClientId, LiasonPid},
+		    {noreply, State};
+		true ->
+		    LiasonPid ! snapshot_not_available,
+		    {noreply, State}
+	    end;
+	_else -> 
+	    LiasonPid ! snapshot_not_available,
+	    {noreply, State}
+    end.
+
 
 handle_info(_Info, State) -> {noreply, State}.
 
