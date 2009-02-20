@@ -167,6 +167,14 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 
 	{router_message, Msg={msg, ?MSG_TYPE_SNAPSHOT_REQ, _, _}} -> 
 	    StatusPid ! { router_message, Id, Msg },
+	    %%
+	    %%  Here's where we need to connect and upload the snapshot.
+	    %%
+	    %%	    {Host, Port} = Server,
+	    %%	    {ok, _Vsn, 200, _Reason, _Extra, Socket} = http_request_keep_open(
+	    %%							 get, Host, Port, 
+	    %%							 "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
+	    %%							),
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
 	{router_message, Msg={msg, ?MSG_TYPE_HEARTBEAT, _Time, _Payload}} -> 
