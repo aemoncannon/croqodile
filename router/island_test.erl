@@ -51,7 +51,7 @@ test_protocol_parsing(_TestState) ->
     %% Parse to messages.
     {[{msg, 1, Time, <<"hello">>},{msg, 120, Time, <<"121 &*">>}],<<>>} = 
 	croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello",120:8,Time:64,6:32,"121 &*">>),
-    
+
     %% Shouldn't parse anything if payload is too short..
     {[],<<1:8,Time:64,10:32,"hello">>} = croq_utils:parse_all_messages(<<1:8,Time:64,10:32,"hello">>),
 
@@ -155,18 +155,22 @@ mock_client_init(Id, StatusPid) ->
 
 mock_client_connected_to_router_init(Id, BufferedData, Socket, StatusPid) ->
     spawn_link(?MODULE, mock_client_message_handler, [BufferedData, Socket, self()]),
-    mock_client_connected_to_router(Id, StatusPid, Socket).
+    mock_client_connected_to_router(Id, StatusPid, Socket, <<>>).
 
 
-mock_client_connected_to_router(Id, StatusPid, Socket) ->
+mock_client_connected_to_router(Id, StatusPid, Socket, CurSnapshot) ->
     receive
-	{router_message, Msg} -> 
+	{router_message, Msg={msg, _Type, _Time, Payload}} -> 
 	    StatusPid ! { router_message, Id, Msg },
-	    mock_client_connected_to_router(Id, StatusPid, Socket);
+	    mock_client_connected_to_router(Id, StatusPid, Socket, list_to_binary([CurSnapshot, Payload]));
 	{message, Msg} -> 
 	    io:format("Sending message to router: ~w~n", [Msg]),
 	    gen_tcp:send(Socket, croq_utils:encode_message(Msg)),
-	    mock_client_connected_to_router(Id, StatusPid, Socket);
+	    mock_client_connected_to_router(Id, StatusPid, Socket, CurSnapshot);
+	{request_snapshot} -> 
+	    io:format("Sending snapshot request.~n", []),
+%%	    {ok, _Vsn, 200, _Reason, Extra, Socket} = http_request_keep_open(get, Host, Port, "/join_island?id=" ++ IslandId),
+	    mock_client_connected_to_router(Id, StatusPid, Socket, CurSnapshot);
 	{disconnect} -> ok;
 	{close} -> ok
     end.
