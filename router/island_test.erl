@@ -210,7 +210,7 @@ test_snapshot_request({ok, AppPid}) ->
     %% Partner should receive request..
     receive 
 	{status_snapshot_requested, CliendId2 } -> ok;
-	{status_snapshot_requested, CliendId1 } -> io:format("Fuck, shouldn't be sent to this client.", [])
+	{status_snapshot_requested, CliendId1 } -> io:format("Fuck, I don't have a snapshot. I asked YOU for one.", [])
     end,
 
     ok.
