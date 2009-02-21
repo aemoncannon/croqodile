@@ -32,11 +32,7 @@ handle_call({create_new_island, Type, Description}, _From, #manager_state{island
     {reply, { response, Isl }, #manager_state{islands=[Isl | Islands]}};
 
 
-handle_call({join_island, IslandId, Socket}, _From, State=#manager_state{islands=Islands}) ->
-
-    %% TODO: This should be provided by client
-    ClientId = island_data:guid(),
-
+handle_call({join_island, ClientId, IslandId, Socket}, _From, State=#manager_state{islands=Islands}) ->
     case island_by_id(IslandId, Islands) of
 	{value, Isl} -> 
 	    if 

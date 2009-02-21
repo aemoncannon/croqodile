@@ -30,6 +30,7 @@ run() ->
     run_test(fun test_join_island_and_send_messages/1, TestState),
     run_test(fun test_multiple_clients_joining_island/1, TestState),
     run_test(fun test_state_accumulation/1, TestState),
+    run_test(fun test_snapshot_request/1, TestState),
 
     io:format("Done.~n"),
     ok.
@@ -80,7 +81,7 @@ test_one_island(TestState) ->
 
 
 test_join_no_island(_TestState) ->
-    {ok, _Vsn, 404, _Reason, _Body} = http_request(get, ?TEST_HOST, ?TEST_PORT, "/join_island?id=23"),
+    {ok, _Vsn, 404, _Reason, _Body} = http_request(get, ?TEST_HOST, ?TEST_PORT, "/join_island?id=23&clientId=1"),
     ok.
 
 
@@ -97,16 +98,16 @@ test_join_island_and_send_messages({ok, AppPid}) ->
     Pid ! {please_connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
 
     %% Wait for a heartbeat to make sure we're connected to router.    
-    receive {router_message, CliendId, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
+    receive {status_router_message, CliendId, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
 
     Pid ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"Hello">>}},
-    receive {router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Time1, <<"Hello">>}} -> ok end,
+    receive {status_router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Time1, <<"Hello">>}} -> ok end,
 
     Pid ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"Dudes, are you out there?">>}},
-    receive {router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Time2, <<"Dudes, are you out there?">>}} -> ok end,
+    receive {status_router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Time2, <<"Dudes, are you out there?">>}} -> ok end,
 
     Pid ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"'dsd %#@****">>}},
-    receive {router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Type, <<"'dsd %#@****">>}} -> ok end,
+    receive {status_router_message, CliendId, {msg, ?MSG_TYPE_NORMAL, _Type, <<"'dsd %#@****">>}} -> ok end,
     ok.
 
 
@@ -127,9 +128,9 @@ test_multiple_clients_joining_island({ok, AppPid}) ->
     Pid3 ! {please_connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
 
     %% Wait for some heartbeats to make sure we're connected to router.
-    receive {router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
-    receive {router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok end,
-    receive {router_message, CliendId3, {msg, ?MSG_TYPE_HEARTBEAT, _T2, _X2}} -> ok end,
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok end,
+    receive {status_router_message, CliendId3, {msg, ?MSG_TYPE_HEARTBEAT, _T2, _X2}} -> ok end,
     ok.
 
 
@@ -147,8 +148,8 @@ test_state_accumulation({ok, AppPid}) ->
     Pid2 ! {please_connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
 
     %% Wait for some heartbeats to make sure we're connected to router.
-    receive {router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
-    receive {router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok end,
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok end,
 
     %% Now send user message.
     Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"A">>}},
@@ -156,12 +157,12 @@ test_state_accumulation({ok, AppPid}) ->
     Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"C">>}},
 
     %% Verify that messages are all routed correctly.
-    receive {router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
-    receive {router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
-    receive {router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
-    receive {router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
-    receive {router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
-    receive {router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
 
 
     %% Now verify the accumulated snapshot in each mock client process.
@@ -169,6 +170,48 @@ test_state_accumulation({ok, AppPid}) ->
     Pid2 ! {please_echo_state},
     receive {status_state, CliendId1, <<"ABC">>} -> ok end,
     receive {status_state, CliendId2, <<"ABC">>} -> ok end,
+
+    ok.
+
+
+test_snapshot_request({ok, AppPid}) ->
+    {response, Isl} = gen_server:call(AppPid, {create_new_island, "House", "A nice one."}, 5000),
+    IslandId = Isl#island.id,
+    CliendId1 = island_data:guid(),
+    CliendId2 = island_data:guid(),
+
+    Pid1 = create_mock_client(CliendId1, self()),
+    Pid1 ! {please_connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
+
+    Pid2 = create_mock_client(CliendId2, self()),
+    Pid2 ! {please_connect_to_router, IslandId, ?TEST_HOST, ?TEST_PORT},
+
+    %% Wait for some heartbeats to make sure we're connected to router.
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok end,
+
+    %% Now send user message.
+    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"A">>}},
+    Pid2 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"B">>}},
+    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"C">>}},
+
+    %% Verify that messages are all routed correctly.
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
+    receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
+
+
+    %% Trigger a snapshot request..
+    Pid1 ! {please_request_snapshot},
+
+    %% Partner should receive request..
+    receive 
+	{status_snapshot_requested, CliendId2 } -> ok;
+	{status_snapshot_requested, CliendId1 } -> io:format("Fuck, shouldn't be sent to this client.", [])
+    end,
 
     ok.
 
@@ -186,7 +229,10 @@ create_mock_client(Id, StatusPid) ->
 mock_client_init(Id, StatusPid) ->
     receive
 	{please_connect_to_router, IslandId, Host, Port} ->
-	    {ok, _Vsn, 200, _Reason, Extra, Socket} = http_request_keep_open(get, Host, Port, "/join_island?id=" ++ IslandId),
+	    {ok, _Vsn, 200, _Reason, Extra, Socket} = http_request_keep_open(
+							get, Host, Port, 
+							"/join_island?id=" ++ IslandId ++ "&clientId=" ++ Id
+						       ),
 	    mock_client_connected_to_router_init(Id, IslandId, {Host, Port}, Extra, Socket, StatusPid);
 	{close} -> ok
     end.    
@@ -198,13 +244,14 @@ mock_client_connected_to_router_init(Id, IslandId, Server, BufferedData, Socket,
 
 mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot) ->
     receive
-
 	{router_message, {msg, ?MSG_TYPE_TERM, _, _}} -> 
-	    io:format("OOPS, got term.~n",[]),
+	    io:format("OOPS, mock_client got MSG_TYPE_TERM.~n",[]),
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
 	{router_message, Msg={msg, ?MSG_TYPE_SNAPSHOT_REQ, _, _}} -> 
-	    StatusPid ! { router_message, Id, Msg },
+	    io:format("Got snapshot request from router.~n", []),
+	    StatusPid ! { status_router_message, Id, Msg },
+	    StatusPid ! { status_snapshot_requested, Id },
 	    %%
 	    %%  Here's where we need to connect and upload the snapshot.
 	    %%
@@ -215,12 +262,12 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 	    %%							),
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
-	{router_message, Msg={msg, ?MSG_TYPE_HEARTBEAT, _Time, _Payload}} -> 
-	    StatusPid ! { router_message, Id, Msg },
+	{router_message, Msg={msg, ?MSG_TYPE_HEARTBEAT, _, _}} -> 
+	    StatusPid ! { status_router_message, Id, Msg },
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
-	{router_message, Msg={msg, ?MSG_TYPE_NORMAL, _Time, Payload}} -> 
-	    StatusPid ! { router_message, Id, Msg },
+	{router_message, Msg={msg, ?MSG_TYPE_NORMAL, _, Payload}} -> 
+	    StatusPid ! { status_router_message, Id, Msg },
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, list_to_binary([CurSnapshot, Payload]));
 
 
@@ -237,13 +284,17 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 	{please_request_snapshot} -> 
 	    io:format("Sending snapshot request.~n", []),
 	    {Host, Port} = Server,
-	    {ok, _Vsn, 200, _Reason, _Extra, Socket} = http_request_keep_open(
+	    {ok, _Vsn, 200, _Reason, _Extra, _HttpSocket} = http_request_keep_open(
 							 get, Host, Port, 
 							 "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
 							),
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
-	{disconnect} -> ok;
-	{close} -> ok
+
+	{disconnect} -> io:format("mock client got {disconnect}.~n",[]);
+
+	{close} -> io:format("mock client got {close}.~n",[]);
+
+	Else -> io:format("mock client received unknown message.~w~n", [Else])
     end.
 
 

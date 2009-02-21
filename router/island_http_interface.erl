@@ -54,9 +54,9 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		    DriverPid ! { self(), { header(text), <<>> } },
 		    DriverPid ! { self(), close };
 		"/join_island" -> 
-		    case lookup_args(["id"], Args) of
-			[{"id", IslandId}] ->
-			    case gen_server:call(IslandMgrPid, { join_island, IslandId, Socket }, 1000) of
+		    case lookup_args(["id", "clientId"], Args) of
+			[{"id", IslandId}, {"clientId", ClientId}] ->
+			    case gen_server:call(IslandMgrPid, { join_island, ClientId, IslandId, Socket }, 1000) of
 				{response, #island{}} ->
 				    %% Send response, but don't close the socket..
 				    DriverPid ! { self(), { header(text), <<>> }};
@@ -71,7 +71,7 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		"/get_snapshot" -> 
 		    case lookup_args(["id", "clientId"], Args) of
 			[{"id", IslandId}, {"clientId", ClientId}] ->
-			    inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
+			    DriverPid ! { self(), { header(text), <<>> }},
 			    LiasonPid = create_snapshot_liason(ClientId, IslandId, DriverPid, Socket),
 			    gen_server:cast(IslandMgrPid, { get_snapshot, ClientId, IslandId, LiasonPid });
 			_Else -> 
@@ -88,6 +88,7 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 
 
 create_snapshot_liason(ClientId, IslandId, DriverPid, Socket) ->
+    inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
     Pid = spawn_link(?MODULE, run_snapshot_liason, [ClientId, IslandId, DriverPid, Socket]),
     Pid.
 

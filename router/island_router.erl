@@ -40,8 +40,9 @@ run_router(Clients, LastTime, MgrPid, Island) ->
         {get_snapshot, ClientId, LiasonPid} ->
 	    io:format("Snapshot request from client.~n", []),
 	    case find_snapshot_partner(ClientId, Clients) of
-		{value, C} ->
-		    C#client.pid ! {router_message, croq_utils:make_snapshot_req_message()};
+		{value, Partner} ->
+		    io:format("Router sending Snapshot request to partner...~n", []),
+		    Partner#client.pid ! {router_message, croq_utils:make_snapshot_req_message()};
 		_Else -> LiasonPid ! snapshot_not_available
 	    end,
 	    run_router(Clients, Time, MgrPid, Island);
