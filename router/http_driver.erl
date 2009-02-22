@@ -38,6 +38,7 @@ relay(Socket, Server, State) ->
     	    gen_tcp:send(Socket, [Headers1, BinaryData]),
 	    relay(Socket, Server, State);
 	{'EXIT', Server, _} ->
+	    io:format("HTTP Driver 'EXIT'~n", []),
 	    gen_tcp:close(Socket)
     end.
 
@@ -47,21 +48,22 @@ parse_request({header, Buff}, Socket, Server, Data) ->
 	    relay(Socket, Server, {header, Buff1});
 	{yes, Header, After} ->
 	    got_header(Socket, Server, Header, After)
-    end;
-parse_request({post, Buff, Len, X}, Socket, Server, Data) ->
-    case collect_chunk(Len, Data, Buff) of
-        {yes,PostData,After} ->
-            Args2 = parse_uri_args(PostData),
-	    {Op,Vsn,URI,Args1,Env} = X,
-	    Request = {Op,Vsn,URI,Args1++Args2,Env,Socket},
-            Server ! {self(), Request},
-	    io:format("PostData ~w~n", [PostData]),
-	    io:format("After ~w~n", [After]),
-	    parse_request({header,[]}, Socket, Server, After);
-        {no,Buff1, Len1} ->
-            State = {post, Buff1, Len1, X},
-	    relay(Socket, Server, State)
     end.
+
+%%parse_request({post, Buff, Len, X}, Socket, Server, Data) ->
+%%    case collect_chunk(Len, Data, Buff) of
+%%        {yes,PostData,After} ->
+%%            Args2 = parse_uri_args(PostData),
+%%	    {Op,Vsn,URI,Args1,Env} = X,
+%%	    Request = {Op,Vsn,URI,Args1++Args2,Env,Socket},
+%%            Server ! {self(), Request},
+%%	    io:format("PostData ~w~n", [PostData]),
+%%	    io:format("After ~w~n", [After]),
+%%	    parse_request({header,[]}, Socket, Server, After);
+%%        {no,Buff1, Len1} ->
+%%            State = {post, Buff1, Len1, X},
+%%	    relay(Socket, Server, State)
+%%    end.
 
 got_header(Socket, Server, Header, After) ->
     %% We've got the header - parse it
@@ -70,21 +72,22 @@ got_header(Socket, Server, Header, After) ->
 	    case ContentLen of
 		0 ->
 		    %% Send the parsed request to the server
-		    Server ! {self(), {Op,Vsn,URI,Args,Env,Socket}},
+		    Server ! {self(), {Op, Vsn, URI, Args, Env, Socket}},
 		    %% go get the next request
-		    parse_request({header,[]}, Socket, Server, After);
+		    %%parse_request({header,[]}, Socket, Server, After);
+		    relay(Socket, Server, {header, []});
 		_ ->
-		    State = {post, [], ContentLen, {Op,Vsn,URI,Args,Env}},
-		    parse_request(State, Socket, Server, After)
+		    Server ! {self(), {Op, Vsn, URI, Args, Env, Socket, After, ContentLen}},
+		    relay(Socket, Server, {header, []})
 	    end;
 	Other ->
 	    io:format("Oops ~p ~n", [Other]),
 	    exit(debug)
     end.
 
-collect_chunk(0,New,Buf)      -> {yes, reverse(Buf), New};
-collect_chunk(N, [H|T], Buff) -> collect_chunk(N-1,T,[H|Buff]);
-collect_chunk(N, [], Buff)    -> {no, Buff, N}.
+%collect_chunk(0,New,Buf)      -> {yes, reverse(Buf), New};
+%collect_chunk(N, [H|T], Buff) -> collect_chunk(N-1,T,[H|Buff]);
+%collect_chunk(N, [], Buff)    -> {no, Buff, N}.
 
 scan_header([$\n|T], [$\r,$\n,$\r|L]) -> {yes, reverse(L), T};
 scan_header([H|T],  L)                -> scan_header(T, [H|L]);

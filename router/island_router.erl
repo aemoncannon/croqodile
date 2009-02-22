@@ -37,13 +37,13 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 	    StampedMsg = croq_utils:stamp_message(Message, Time),
 	    send_to_active(Clients, StampedMsg),
 	    run_router(Clients, Time, MgrPid, Island);
-        {snapshot_request, ClientId} ->
+        {snapshot_request, ClientId, LiasonPid} ->
 	    io:format("Snapshot request from client.~n", []),
 	    case find_snapshot_partner(ClientId, Clients) of
 		{value, Partner} ->
 		    io:format("Router sending Snapshot request to partner...~n", []),
 		    Partner#client.pid ! {router_message, croq_utils:make_snapshot_req_message()};
-		_Else -> ok
+		_Else -> LiasonPid ! snapshot_not_available
 	    end,
 	    run_router(Clients, Time, MgrPid, Island);
         {client_closed, ClientPid} ->

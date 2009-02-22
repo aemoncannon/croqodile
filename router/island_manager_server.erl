@@ -62,7 +62,7 @@ handle_cast({add_snapshot_liason, ClientId, IslandId, LiasonPid}, State=#manager
 	{value, Isl} -> 
 	    if 
 		is_pid(Isl#island.router_pid) ->
-		    Isl#island.router_pid ! {snapshot_request, ClientId},
+		    Isl#island.router_pid ! {snapshot_request, ClientId, LiasonPid},
 		    NewLiason = {liason, LiasonPid, IslandId},
 		    {noreply, State#manager_state{liasons=[NewLiason | Liasons]}};
 		true ->

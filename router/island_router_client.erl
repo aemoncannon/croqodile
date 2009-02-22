@@ -23,10 +23,6 @@ init_client(Client, IslandMgrPid, Island, Socket) ->
 
 run_client(Client, IslandMgrPid, Island=#island{router_pid=RouterPid}, DriverPid, Socket) ->
     receive
-	{router_message, Msg={msg, ?MSG_TYPE_SNAPSHOT_REQ, _, _}} -> 
-	    io:format("Router client got the request.. passing to socket...~n", []),
-	    gen_tcp:send(Socket, croq_utils:encode_message(Msg)),
-	    run_client(Client, IslandMgrPid, Island, DriverPid, Socket);
 	{router_message, Msg} ->
 	    gen_tcp:send(Socket, croq_utils:encode_message(Msg)),
 	    run_client(Client, IslandMgrPid, Island, DriverPid, Socket);

@@ -216,7 +216,7 @@ test_snapshot_request({ok, AppPid}) ->
     end,
 
     receive 
-	{status_got_snapshot, CliendId1, <<"ABC">> } -> ok
+	{status_got_snapshot, CliendId1, "ABC" } -> ok
     end,
 
     ok.
@@ -258,9 +258,9 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 	    io:format("Got snapshot request from router.~n", []),
 	    StatusPid ! { status_router_message, Id, Msg },
 	    StatusPid ! { status_snapshot_requested, Id },
-	    %%  Here's where we need to connect and upload the snapshot.
-	    %%
 	    {Host, Port} = Server,
+
+	    %% Connect and upload the snapshot.
 	    {ok, _Vsn, 200, _Reason, _Body} = http_request(
 						post, Host, Port, 
 						"/send_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id,
