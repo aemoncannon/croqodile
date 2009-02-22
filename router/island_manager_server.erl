@@ -9,7 +9,7 @@
 	 terminate/2, code_change/3
 	]).
 
--record(manager_state, {islands=[], snapshots=[]}).
+-record(manager_state, {islands=[], snapshots=[], liasons=[]}).
 
 start_link(Args) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, Args, []).
@@ -48,16 +48,23 @@ handle_call({join_island, ClientId, IslandId, Socket}, _From, State=#manager_sta
 		    {reply, { response, Isl}, State#manager_state{islands=UpdatedIslList}}
 	    end;
 	_else -> {reply, { response, no_such_island }, State}
+    end;
+
+handle_call({get_snapshot_liason, _ClientId, IslandId}, _From, State=#manager_state{liasons=Liasons}) ->
+    case liason_by_island_id(IslandId, Liasons) of
+	{value, Liason} -> {reply, {response, Liason}, State};
+	_else -> {reply, {response, not_found}, State}
     end.
 
 
-handle_cast({get_snapshot, ClientId, IslandId, LiasonPid}, State=#manager_state{islands=Islands}) ->
+handle_cast({add_snapshot_liason, ClientId, IslandId, LiasonPid}, State=#manager_state{islands=Islands, liasons=Liasons}) ->
     case island_by_id(IslandId, Islands) of
 	{value, Isl} -> 
 	    if 
 		is_pid(Isl#island.router_pid) ->
-		    Isl#island.router_pid ! {get_snapshot, ClientId, LiasonPid},
-		    {noreply, State};
+		    Isl#island.router_pid ! {snapshot_request, ClientId},
+		    NewLiason = {liason, LiasonPid, IslandId},
+		    {noreply, State#manager_state{liasons=[NewLiason | Liasons]}};
 		true ->
 		    LiasonPid ! snapshot_not_available,
 		    {noreply, State}
@@ -66,6 +73,7 @@ handle_cast({get_snapshot, ClientId, IslandId, LiasonPid}, State=#manager_state{
 	    LiasonPid ! snapshot_not_available,
 	    {noreply, State}
     end.
+
 
 
 handle_info(_Info, State) -> {noreply, State}.
@@ -89,5 +97,7 @@ create_router_client(Isl, ClientId, Socket) ->
 island_by_id(Id, Islands) -> lists:keysearch(Id, #island.id, Islands).
 
 update_island(Id, Islands, Island) -> lists:keyreplace(Id, #island.id, Islands, Island).
+
+liason_by_island_id(Id, Liasons) -> lists:keysearch(Id, 3, Liasons).
 
 

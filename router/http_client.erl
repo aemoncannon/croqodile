@@ -1,6 +1,6 @@
 -module(http_client).
 
--export([http_request/4, http_request_keep_open/4]).
+-export([http_request/4, http_request/5, http_request_keep_open/4]).
 
 -import(lists, [nth/2]).
 -import(lists, [append/1]).
@@ -17,6 +17,24 @@ http_request(get, Host, Port, Path) ->
     Request = "GET " ++ Path ++ " " ++ "HTTP/1.0" ++ ?HEAD_TERM,
     {ok, Socket} = gen_tcp:connect(Host, Port, [{active, false}, {keepalive, true}]),
     ok = gen_tcp:send(Socket, Request),
+    Raw = finish_request(Socket, ""),
+    {ok, Fields} = regexp:split(Raw, ?HEAD_SEP),
+    Body = append(dropwhile(fun not_empty/1, Fields)),
+    Head = hd(Fields),
+    {ok, Pieces} = regexp:split(Head, " "),
+    {ok, 
+     nth(1, Pieces), 
+     list_to_integer(nth(2, Pieces)), 
+     nth(3, Pieces),
+     Body
+    }.
+
+http_request(post, Host, Port, Path, Data) ->
+    Request = "POST " ++ Path ++ " " ++ "HTTP/1.0" ++ ?HEAD_SEP ++ 
+	"Content-Length: " ++ integer_to_list(size(Data)) ++ ?HEAD_TERM,
+    {ok, Socket} = gen_tcp:connect(Host, Port, [{active, false}, {keepalive, true}]),
+    ok = gen_tcp:send(Socket, Request),
+    ok = gen_tcp:send(Socket, Data),
     Raw = finish_request(Socket, ""),
     {ok, Fields} = regexp:split(Raw, ?HEAD_SEP),
     Body = append(dropwhile(fun not_empty/1, Fields)),

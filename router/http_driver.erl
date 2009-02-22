@@ -55,6 +55,8 @@ parse_request({post, Buff, Len, X}, Socket, Server, Data) ->
 	    {Op,Vsn,URI,Args1,Env} = X,
 	    Request = {Op,Vsn,URI,Args1++Args2,Env,Socket},
             Server ! {self(), Request},
+	    io:format("PostData ~w~n", [PostData]),
+	    io:format("After ~w~n", [After]),
 	    parse_request({header,[]}, Socket, Server, After);
         {no,Buff1, Len1} ->
             State = {post, Buff1, Len1, X},

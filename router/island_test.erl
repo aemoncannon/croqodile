@@ -2,8 +2,7 @@
 
 -export([run/0, mock_client_init/2, mock_client_message_handler/3]).
 
--import(http_client, [http_request/4]).
--import(http_client, [http_request_keep_open/4]).
+-import(http_client, [http_request/4, http_request/5, http_request_keep_open/4]).
 
 
 -include("island_manager.hrl").
@@ -216,6 +215,10 @@ test_snapshot_request({ok, AppPid}) ->
 	{status_snapshot_requested, CliendId1 } -> io:format("Fuck, I don't have a snapshot. I asked YOU for one.", [])
     end,
 
+    receive 
+	{status_got_snapshot, CliendId1, <<"ABC">> } -> ok
+    end,
+
     ok.
 
 
@@ -257,12 +260,12 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 	    StatusPid ! { status_snapshot_requested, Id },
 	    %%  Here's where we need to connect and upload the snapshot.
 	    %%
-	  %   {Host, Port} = Server,
-% 	    {ok, _Vsn, 200, _Reason, _Extra, Socket} = http_request_keep_open(
-% 							 post, Host, Port, 
-% 							 "/upload_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
-% 							),
-	    
+	    {Host, Port} = Server,
+	    {ok, _Vsn, 200, _Reason, _Body} = http_request(
+						post, Host, Port, 
+						"/send_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id,
+						CurSnapshot
+					       ),
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
 	{router_message, Msg={msg, ?MSG_TYPE_HEARTBEAT, _, _}} -> 
@@ -287,10 +290,11 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 	{please_request_snapshot} -> 
 	    io:format("Sending snapshot request.~n", []),
 	    {Host, Port} = Server,
-	    {ok, _Vsn, 200, _Reason, _Extra, _HttpSocket} = http_request_keep_open(
-							      get, Host, Port, 
-							      "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
-							     ),
+	    {ok, _Vsn, 200, _Reason, SnapshotData} = http_request(
+						       get, Host, Port, 
+						       "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
+						      ),
+	    StatusPid ! {status_got_snapshot, Id, SnapshotData},
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
 	{disconnect} -> io:format("mock client got {disconnect}.~n",[]);

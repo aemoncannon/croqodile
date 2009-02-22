@@ -71,9 +71,24 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		"/get_snapshot" -> 
 		    case lookup_args(["id", "clientId"], Args) of
 			[{"id", IslandId}, {"clientId", ClientId}] ->
-			    DriverPid ! { self(), { header(text), <<>> }},
+			    %% Liason will be notified if snapshot is not available or will hang around and 
+			    %% facilitate data exchange once a partner starts uploading a snapshot..
 			    LiasonPid = create_snapshot_liason(ClientId, IslandId, DriverPid, Socket),
-			    gen_server:cast(IslandMgrPid, { get_snapshot, ClientId, IslandId, LiasonPid });
+			    gen_server:cast(IslandMgrPid, { add_snapshot_liason, ClientId, IslandId, LiasonPid });
+			_Else -> 
+			    DriverPid ! { self(), { header(error), <<>>} },
+			    DriverPid ! { self(), close }
+		    end;
+		"/send_snapshot" -> 
+		    case lookup_args(["id", "clientId"], Args) of
+			[{"id", IslandId}, {"clientId", ClientId}] ->
+			    DriverPid ! { self(), { header(text), <<>> }},
+			    case gen_server:call(IslandMgrPid, { get_snapshot_liason, ClientId, IslandId }) of
+				{response, {liason, LiasonPid, IslandId}} -> 
+				    LiasonPid ! {partner, Socket};
+				_Else -> 
+				    DriverPid ! { self(), close }
+			    end;
 			_Else -> 
 			    DriverPid ! { self(), { header(error), <<>>} },
 			    DriverPid ! { self(), close }
@@ -95,9 +110,11 @@ create_snapshot_liason(ClientId, IslandId, DriverPid, Socket) ->
 run_snapshot_liason(ClientId, IslandId, DriverPid, Socket) ->
     receive
 	snapshot_not_available -> 
-	    gen_tcp:close(Socket),
+	    DriverPid ! { self(), { header(not_found), <<>>}},
+	    DriverPid ! { self(), close },
 	    ok;
 	{partner, PartnerSocket } -> 
+	    DriverPid ! { self(), { header(text), <<>> }},
 	    croq_utils:socket_pipe(PartnerSocket, Socket),
 	    ok
     end,

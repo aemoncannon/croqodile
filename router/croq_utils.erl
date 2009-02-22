@@ -58,10 +58,10 @@ encode_message({msg, Type, Time, Payload}) ->
     <<Type:8,Time:64,Len:32,Payload/binary>>.
      
 
-
 socket_pipe(FromSocket, ToSocket) ->
     case gen_tcp:recv(FromSocket, 0) of
         {ok, Data} ->
+	    io:format("piping data ~s~n", [Data]),
 	    gen_tcp:send(ToSocket, Data),
 	    socket_pipe(FromSocket, ToSocket);
 	{error, _Reason} -> ok
