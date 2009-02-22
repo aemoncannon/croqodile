@@ -47,7 +47,7 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		    {response, IslandList} = gen_server:call(IslandMgrPid, {directory}, 5000),
 		    JsonList = map(fun island_data:island_to_json_obj/1, IslandList),
 		    Encoded = list_to_binary(lists:flatten([mochijson2:encode(JsonList)])),
-		    DriverPid ! { self(), { header(text), Encoded } },
+		    DriverPid ! { self(), { header(text), Encoded }},
 		    DriverPid ! { self(), close };
 		"/hup" -> 
 		    {response, ok} = gen_server:call(IslandMgrPid, {hup}, 5000),
