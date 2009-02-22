@@ -151,17 +151,18 @@ test_state_accumulation({ok, AppPid}) ->
     receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok end,
 
-    %% Now send user message.
-    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"A">>}},
-    Pid2 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"B">>}},
-    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"C">>}},
 
-    %% Verify that messages are all routed correctly.
+    %% Now send user message, verifying their correct routing..
+    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"A">>}},
     receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
-    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
-    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
+
+    Pid2 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"B">>}},
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
+
+    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"C">>}},
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
 
 
@@ -169,6 +170,7 @@ test_state_accumulation({ok, AppPid}) ->
     Pid1 ! {please_echo_state},
     Pid2 ! {please_echo_state},
     receive {status_state, CliendId1, <<"ABC">>} -> ok end,
+
     receive {status_state, CliendId2, <<"ABC">>} -> ok end,
 
     ok.
@@ -190,17 +192,18 @@ test_snapshot_request({ok, AppPid}) ->
     receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_HEARTBEAT, _T, _X}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_HEARTBEAT, _T1, _X1}} -> ok end,
 
-    %% Now send user message.
+    %% Now send user message, verifying their correct routing..
     Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"A">>}},
-    Pid2 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"B">>}},
-    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"C">>}},
-
-    %% Verify that messages are all routed correctly.
     receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
-    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
-    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"A">>}} -> ok end,
+
+    Pid2 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"B">>}},
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"B">>}} -> ok end,
+
+
+    Pid1 ! {please_send_message, {msg, ?MSG_TYPE_NORMAL, 0, <<"C">>}},
+    receive {status_router_message, CliendId1, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
     receive {status_router_message, CliendId2, {msg, ?MSG_TYPE_NORMAL, _, <<"C">>}} -> ok end,
 
 
@@ -252,14 +255,14 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 	    io:format("Got snapshot request from router.~n", []),
 	    StatusPid ! { status_router_message, Id, Msg },
 	    StatusPid ! { status_snapshot_requested, Id },
-	    %%
 	    %%  Here's where we need to connect and upload the snapshot.
 	    %%
-	    %%	    {Host, Port} = Server,
-	    %%	    {ok, _Vsn, 200, _Reason, _Extra, Socket} = http_request_keep_open(
-	    %%							 get, Host, Port, 
-	    %%							 "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
-	    %%							),
+	  %   {Host, Port} = Server,
+% 	    {ok, _Vsn, 200, _Reason, _Extra, Socket} = http_request_keep_open(
+% 							 post, Host, Port, 
+% 							 "/upload_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
+% 							),
+	    
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
 	{router_message, Msg={msg, ?MSG_TYPE_HEARTBEAT, _, _}} -> 
@@ -285,9 +288,9 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 	    io:format("Sending snapshot request.~n", []),
 	    {Host, Port} = Server,
 	    {ok, _Vsn, 200, _Reason, _Extra, _HttpSocket} = http_request_keep_open(
-							 get, Host, Port, 
-							 "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
-							),
+							      get, Host, Port, 
+							      "/get_snapshot?id=" ++ IslandId ++ "&clientId=" ++ Id
+							     ),
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
 	{disconnect} -> io:format("mock client got {disconnect}.~n",[]);
