@@ -5,7 +5,8 @@
   {registered, [island_manager]},
   {env, [
     {port, 6666},
-    {working_dir, "/tmp"}
+    {policy_port, 6667},
+    {working_dir, ".working"}
   ]},
   {applications, [kernel, stdlib]},
   {mod, {island_manager, []}}

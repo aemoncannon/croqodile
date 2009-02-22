@@ -3,12 +3,15 @@
 -export([run/0, mock_client_init/2, mock_client_message_handler/3]).
 
 -import(http_client, [http_request/4, http_request/5, http_request_keep_open/4]).
+-import(island_utils, [parse_all_messages/1, encode_message/1]).
 
 
 -include("island_manager.hrl").
 
 -define(TEST_HOST, "localhost").
 -define(TEST_PORT, 6666).
+-define(TEST_POLICY_PORT, 6667).
+-define(TEST_WORKING_DIR, ".working").
 
 
 run() ->
@@ -19,7 +22,7 @@ run() ->
     island_data:destroy_schema(),
     island_data:start_and_create_schema(),
 
-    TestState = island_manager_server:start_link([?TEST_PORT, ""]),
+    TestState = island_manager_server:start_link([?TEST_PORT, ?TEST_POLICY_PORT, ?TEST_WORKING_DIR]),
 
     run_test(fun test_protocol_parsing/1, TestState),
     run_test(fun test_simple_empty/1, TestState),
@@ -44,21 +47,21 @@ run_test(Fun, TestState) ->
 test_protocol_parsing(_TestState) ->
     Time = 12345,
 
-    {[],<<>>} = croq_utils:parse_all_messages(<<>>),
+    {[],<<>>} = parse_all_messages(<<>>),
 
     %% Parse one message.
-    {[{msg, 1, Time, <<"hello">>}],<<>>} = croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello">>),
+    {[{msg, 1, Time, <<"hello">>}],<<>>} = parse_all_messages(<<1:8,Time:64,5:32,"hello">>),
 
     %% Parse to messages.
     {[{msg, 1, Time, <<"hello">>},{msg, 120, Time, <<"121 &*">>}],<<>>} = 
-	croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello",120:8,Time:64,6:32,"121 &*">>),
+	parse_all_messages(<<1:8,Time:64,5:32,"hello",120:8,Time:64,6:32,"121 &*">>),
 
     %% Shouldn't parse anything if payload is too short..
-    {[],<<1:8,Time:64,10:32,"hello">>} = croq_utils:parse_all_messages(<<1:8,Time:64,10:32,"hello">>),
+    {[],<<1:8,Time:64,10:32,"hello">>} = parse_all_messages(<<1:8,Time:64,10:32,"hello">>),
 
     %% Should stop at terminator header (Type=0,Length=0)..
     {[{msg, 1, Time, <<"hello">>}],<<"don't read me'">>} = 
-	croq_utils:parse_all_messages(<<1:8,Time:64,5:32,"hello",0:8,0:64,0:32,"don't read me'">>),
+	parse_all_messages(<<1:8,Time:64,5:32,"hello",0:8,0:64,0:32,"don't read me'">>),
     ok.
 
 
@@ -279,7 +282,7 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 
 	{please_send_message, Msg} -> 
 	    io:format("Sending message to router: ~w~n", [Msg]),
-	    gen_tcp:send(Socket, croq_utils:encode_message(Msg)),
+	    gen_tcp:send(Socket, encode_message(Msg)),
 	    mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnapshot);
 
 	{please_echo_state} -> 
@@ -308,7 +311,7 @@ mock_client_connected_to_router(Id, IslandId, Server, StatusPid, Socket, CurSnap
 mock_client_message_handler(Buf, Socket, CallbackPid) ->
     case gen_tcp:recv(Socket, 0) of
         {ok, Data} ->
-	    {Messages, RemainingBuffer} = croq_utils:parse_all_messages(list_to_binary([Buf,Data])),
+	    {Messages, RemainingBuffer} = parse_all_messages(list_to_binary([Buf,Data])),
 	    lists:foreach(fun(M) -> CallbackPid ! {router_message, M } end, Messages),
 	    mock_client_message_handler(RemainingBuffer, Socket, CallbackPid);
         {error, closed} ->

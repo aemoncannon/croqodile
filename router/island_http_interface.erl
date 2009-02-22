@@ -4,12 +4,15 @@
 
 -import(http_driver, [header/1]).
 -import(lists, [map/2]).
+-import(island_utils, [socket_pipe/3]).
 
 -include("island_manager.hrl").
 
 -record(state, {master_pid=undefined, island_mgr_pid=undefined}).
 
-start(Port, IslandMgrPid) -> spawn_link(fun() -> server(Port, IslandMgrPid) end).
+start(Port, IslandMgrPid) -> 
+    io:format("Starting HTTP Interface on: ~w.~n", [Port]),
+    spawn_link(fun() -> server(Port, IslandMgrPid) end).
 
 stop(Port) -> tcp_server:stop(Port).
 
@@ -126,7 +129,7 @@ run_snapshot_liason(ClientId, IslandId, ServerPid, DriverPid, Socket) ->
 	    inet:setopts(PartnerSocket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
     	    gen_tcp:send(Socket, [header(text), "Content-Length: " ++ integer_to_list(TotalContentLen) ++ "\r\n\r\n"]),
 	    gen_tcp:send(Socket, DataSoFar),
-	    ok = croq_utils:socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
+	    ok = socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
 	    gen_tcp:close(Socket),
 	    ok
     end,

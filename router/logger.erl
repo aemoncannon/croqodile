@@ -1,6 +1,6 @@
 %%% Copyright 2007 Aemon Cannon
 
--module(croq_logger).
+-module(logger).
 
 -created_by('Aemon Cannon').
 

@@ -4,6 +4,8 @@
 
 -export([start/2, run_router/4]).
 
+-import(island_utils, [stamp_message/2, make_heartbeat_message/1, make_snapshot_req_message/0]).
+
 -include("island_manager.hrl").
 
 -define(HEART_RATE, 20).
@@ -34,7 +36,7 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 	    end;
         {message, _FromPid, Message} ->
 	    io:format("Message from client: ~w~n", [Message]),
-	    StampedMsg = croq_utils:stamp_message(Message, Time),
+	    StampedMsg = stamp_message(Message, Time),
 	    send_to_active(Clients, StampedMsg),
 	    run_router(Clients, Time, MgrPid, Island);
         {snapshot_request, ClientId, LiasonPid} ->
@@ -42,7 +44,7 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 	    case find_snapshot_partner(ClientId, Clients) of
 		{value, Partner} ->
 		    io:format("Router sending Snapshot request to partner...~n", []),
-		    Partner#client.pid ! {router_message, croq_utils:make_snapshot_req_message()};
+		    Partner#client.pid ! {router_message, make_snapshot_req_message()};
 		_Else -> LiasonPid ! snapshot_not_available
 	    end,
 	    run_router(Clients, Time, MgrPid, Island);
@@ -55,7 +57,7 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 		    run_router(Clients, Time, MgrPid, Island)
 	    end;
 	heartbeat ->
-	    Message = croq_utils:make_heartbeat_message(Time),
+	    Message = make_heartbeat_message(Time),
 	    send_to_active(Clients, Message),
 	    run_router(Clients, Time, MgrPid, Island)
     end.

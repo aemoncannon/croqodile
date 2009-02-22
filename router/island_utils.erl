@@ -1,6 +1,6 @@
 %%% Copyright 2007 Aemon Cannon
 
--module(croq_utils).
+-module(island_utils).
 
 -created_by('Aemon Cannon').
 
@@ -14,7 +14,8 @@
 	  make_snapshot_req_message/0,
 	  make_term_message/0,
 	  encode_message/1,
-	  socket_pipe/3
+	  socket_pipe/3,
+	  join/2
 	 ]).
 
 
@@ -74,3 +75,9 @@ socket_pipe(FromSocket, ToSocket, SoFar, Len) ->
 	    end;
 	{error, _Reason} -> ok
     end.
+
+
+%% A simple string join implementation.
+join([], _Sep) -> [];
+join([T], _Sep) -> T;
+join([H|T], Sep) -> H ++ Sep ++ join(T, Sep).
