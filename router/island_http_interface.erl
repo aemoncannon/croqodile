@@ -124,7 +124,7 @@ run_snapshot_liason(ClientId, IslandId, ServerPid, DriverPid, Socket) ->
 	{partner, DataSoFar, TotalContentLen, PartnerSocket } -> 
 	    inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
 	    inet:setopts(PartnerSocket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
-    	    gen_tcp:send(Socket, [header(text), "\r\n\r\n"]),
+    	    gen_tcp:send(Socket, [header(text), "Content-Length: " ++ integer_to_list(TotalContentLen) ++ "\r\n\r\n"]),
 	    gen_tcp:send(Socket, DataSoFar),
 	    ok = croq_utils:socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
 	    gen_tcp:close(Socket),
