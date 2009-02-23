@@ -11,9 +11,11 @@ package com.croqodile{
     
     public class ExternalMessage implements Message{
 		
-		public static const MESSAGE_SEP:String = "@";
-		protected static const HEARTBEAT_MSG_NAME:String = "heartbeat";
-		
+		public static const MSG_TYPE_TERM:int = 0;
+		public static const MSG_TYPE_SNAPSHOT_REQ:int = 1;
+		public static const MSG_TYPE_NORMAL = 2;
+		public static const MSG_TYPE_HEARTBEAT = 3;
+
 		protected var _island:IslandReplica;
 		protected var _targetGuid:int;
 		protected var _args:Array;
@@ -35,6 +37,32 @@ package com.croqodile{
 		}
 		
 		public static function fromRouterString(str:String, island:IslandReplica):ExternalMessage {
+			var sepIndex:int = str.indexOf(MESSAGE_SEP);
+			var timestamp:Number = parseFloat(str.substr(0, sepIndex + 1));
+			var msgData:Array = (JSON.decode(str.substr(sepIndex + 1)) as Array);
+			var msgName:String = msgData[0];
+			
+			if(msgName == HEARTBEAT_MSG_NAME){
+				return HeartbeatMessage.create(timestamp, island);
+			}
+			
+			var targetGuid:int = msgData[1];
+			var args:Array = msgData[2];
+			
+			return ExternalMessage.create(timestamp, targetGuid, msgName, args, island);
+		}
+		
+		
+		//Utility method to create a string suitable to send to the router for propagation
+		public static function createRouterString(targetGuid:int, 
+			msgName:String,
+			args:Array, 
+			island:IslandReplica):String{
+			return JSON.encode([msgName, targetGuid,  args]);
+		}
+
+		public static function fromProtocolBytes(bytes:ByteArray, island:IslandReplica):ExternalMessage {
+			
 			var sepIndex:int = str.indexOf(MESSAGE_SEP);
 			var timestamp:Number = parseFloat(str.substr(0, sepIndex + 1));
 			var msgData:Array = (JSON.decode(str.substr(sepIndex + 1)) as Array);

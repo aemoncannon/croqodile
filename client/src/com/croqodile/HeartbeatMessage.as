@@ -10,20 +10,20 @@ package com.croqodile{
     import flash.events.*;
     
     public class HeartbeatMessage extends ExternalMessage{
-	
-	public static function create(timestamp:Number,
-				      island:IslandReplica):HeartbeatMessage{
-	    var newMsg:HeartbeatMessage = new HeartbeatMessage();
-	    newMsg._timestamp = timestamp;
-	    newMsg._island = island;
-	    return newMsg;
-	}
-	
-	override public function execute():void {}
-	
-	override public function toString():String {
-	    return "HeartbeatMessage(" + this._timestamp + ")";
-	}
+		
+		public static function create(timestamp:Number,
+			island:IslandReplica):HeartbeatMessage{
+			var newMsg:HeartbeatMessage = new HeartbeatMessage();
+			newMsg._timestamp = timestamp;
+			newMsg._island = island;
+			return newMsg;
+		}
+		
+		override public function execute():void {}
+		
+		override public function toString():String {
+			return "HeartbeatMessage(" + _timestamp + ")";
+		}
     }
     
 }
