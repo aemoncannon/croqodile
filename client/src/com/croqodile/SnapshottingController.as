@@ -1,7 +1,5 @@
 package com.croqodile {
-    import flash.display.MovieClip;
     import flash.system.Security;
-    import com.senocular.utils.Output;
     import flash.utils.Timer;
     import flash.events.*;
     import com.croqodile.*;
@@ -38,7 +36,7 @@ package com.croqodile {
 			config.policyHost = (config.policyHost ? config.policyHost : POLICY_SERVER_HOST);
 			config.policyPort = (config.policyPort ? config.policyPort : POLICY_SERVER_PORT);
 			
-			_userId = this.genUserId();
+			_userId = genUserId();
 			
 			_messageCon = (config.messageCon ? config.messageCon : new RouterMessageConnection({}));
 			_snapshotCon = (config.snapshotCon ? config.snapshotCon : new RouterSnapshotConnection({}));
@@ -47,18 +45,18 @@ package com.croqodile {
 			_island.setController(this);
 			
 			_messageCon.addEventListener(RouterConnection.CONNECTION_CLOSED,
-				this.onRouterConnectionClosed);
+				onRouterConnectionClosed);
 			_messageCon.addEventListener(ExternalMessageEvent.type,
-				this.onMessageFromRouterBuffered);
+				onMessageFromRouterBuffered);
 			
 			_snapshotCon.addEventListener(SnapshotReceivedEvent.type,
-				this.onSnapshotReceived);
+				onSnapshotReceived);
 			_snapshotCon.addEventListener(RouterSnapshotConnection.NO_SNAPSHOT_AVAILABLE,
-				this.onNoSnapshotAvailable);
+				onNoSnapshotAvailable);
 			_snapshotCon.addEventListener(RouterSnapshotConnection.NO_SNAPSHOT_NECESSARY,
-				this.onNoSnapshotNecessary);
+				onNoSnapshotNecessary);
 			_snapshotCon.addEventListener(RouterSnapshotConnection.SNAPSHOT_REQUESTED,
-				this.onSnapshotRequested);
+				onSnapshotRequested);
 			
 			/* Connect to the router! */
 			Security.loadPolicyFile("xmlsocket://" + config.policyHost + ":" + config.policyPort);
@@ -89,17 +87,17 @@ package com.croqodile {
 			_msgBuffer = [];
 			
 			_messageCon.removeEventListener(ExternalMessageEvent.type,
-				this.onMessageFromRouterBuffered);
+				onMessageFromRouterBuffered);
 			_messageCon.addEventListener(ExternalMessageEvent.type,
-				this.onMessageFromRouter);
+				onMessageFromRouter);
 			
 			//Start waiting for the main message connection..
 			_messageCon.addEventListener(RouterConnection.CONNECTION_READY,
-				this.onRouterConnectionReady);
+				onRouterConnectionReady);
 			
 			//..might have already connected while we were grabbing the snapshot, so..
 			if(_messageCon.ready()){
-				this.onRouterConnectionReady(new Event(RouterConnection.CONNECTION_READY));
+				onRouterConnectionReady(new Event(RouterConnection.CONNECTION_READY));
 			}
 		}
 		
@@ -111,14 +109,13 @@ package com.croqodile {
 			for each(var m:ExternalMessage in _msgBuffer){
 				_island.advanceToExternalMessage(m);
 			}
-			Output.trace("Executed " + _msgBuffer.length + " buffered messages");
 			
 			_msgBuffer = [];
 			
 			_messageCon.removeEventListener(ExternalMessageEvent.type, 
-				this.onMessageFromRouterBuffered);
+				onMessageFromRouterBuffered);
 			_messageCon.addEventListener(ExternalMessageEvent.type, 
-				this.onMessageFromRouter);
+				onMessageFromRouter);
 			
 			//We are the first controller to connect, so send the island a sunrise :)
 			var self:SnapshottingController = this;

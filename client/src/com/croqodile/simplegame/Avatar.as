@@ -2,7 +2,6 @@ package com.croqodile.simplegame {
     import flash.display.MovieClip;
     import flash.events.Event;
     import flash.events.MouseEvent;
-    import com.senocular.utils.Output;
     import com.croqodile.*;
     import com.croqodile.simplegame.*;
     

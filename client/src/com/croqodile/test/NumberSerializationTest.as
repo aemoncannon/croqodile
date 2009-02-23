@@ -1,7 +1,6 @@
 package com.croqodile.test{
     import asunit.framework.*;
     import flash.utils.ByteArray;
-    import com.senocular.utils.Output;
     
     public class NumberSerializationTest extends TestCase {
 	

@@ -1,16 +1,13 @@
 package com.croqodile {
     import flash.display.MovieClip;
     import flash.system.Security;
-    import com.senocular.utils.Output;
     import flash.utils.Timer;
     import flash.events.*;
     import com.croqodile.*;
     import com.croqodile.events.*;
     
 
-    /* Note: Direction instantiation of this class is deprecated.
-    Please see SnapshottingController instead. */
-    public class Controller extends EventDispatcher {
+    public /*abstract*/ class Controller extends EventDispatcher {
 		
 		protected static const POLICY_SERVER_HOST:String = "localhost";
 		protected static const POLICY_SERVER_PORT:int = 5001;
@@ -33,7 +30,7 @@ package com.croqodile {
 		}
 		
 		public function signalIslandEvent(event:Event):void{
-			this.dispatchEvent(event);
+			dispatchEvent(event);
 		}
 		
 		public function propagateFarSend(msgString:String):void{
@@ -49,11 +46,11 @@ package com.croqodile {
         ///////////////////////////
 		
 		protected function onRouterConnectionReady(event:Event):void {
-			this.dispatchEvent(new RouterConnectionReadyEvent());
+			dispatchEvent(new RouterConnectionReadyEvent());
 		}
 		
 		protected function onRouterConnectionClosed(event:Event):void {
-			this.dispatchEvent(new DisconnectedFromRouterEvent());
+			dispatchEvent(new DisconnectedFromRouterEvent());
 		}
 		
 		protected function onMessageFromRouter(e:ExternalMessageEvent):void {

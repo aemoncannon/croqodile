@@ -2,7 +2,6 @@ package com.croqodile.simplegame {
     import flash.display.MovieClip;
     import flash.display.Stage;
     import flash.system.Security;
-    import com.senocular.utils.Output;
     import flash.utils.Timer;
     import com.croqodile.*;
     import com.croqodile.simplegame.*;

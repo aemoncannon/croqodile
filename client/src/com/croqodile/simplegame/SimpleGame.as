@@ -1,7 +1,6 @@
 package com.croqodile.simplegame {
     import flash.display.*;
     import flash.ui.Keyboard;
-    import com.senocular.utils.Output;
     import com.croqodile.*;
     import com.croqodile.simplegame.*;
     import com.croqodile.events.*;
@@ -25,7 +24,6 @@ package com.croqodile.simplegame {
 			this._controller = config.controller;
 			this._controller.addEventListener(RouterConnectionReadyEvent.type, routerConnectionReady);
 			this.addChild(new Output());
-			Output.trace("SimpleGame starting...");
 		}
 		
 		////////////////////
@@ -33,7 +31,6 @@ package com.croqodile.simplegame {
         ////////////////////
 		
 		public function routerConnectionReady(event:Event):void{
-			Output.trace("Router connection ready.");
 			this._worldRef = this._controller.island().farRef();
 			this._controller.addEventListener(AvatarCreatedEvent.type, avatarCreated);
 			this._worldRef.send("createAvatar",[this._controller.userId()]);
@@ -41,7 +38,6 @@ package com.croqodile.simplegame {
 		}
 		
 		public function disconnectedFromRouter(event:Event):void{
-			Output.trace("Disconnected from router... :(");
 		}
 		
 		private function onKeyDown(evt:KeyboardEvent):void{

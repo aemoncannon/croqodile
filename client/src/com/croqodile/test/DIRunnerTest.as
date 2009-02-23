@@ -2,7 +2,6 @@ package com.croqodile.test{
     import asunit.framework.*;
     import com.croqodile.*;
     import com.croqodile.di.*;
-    import com.senocular.utils.Output;
     
     public class DIRunnerTest extends TestCase {
 	

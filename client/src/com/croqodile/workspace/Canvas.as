@@ -4,7 +4,6 @@ package com.croqodile.workspace {
     import flash.events.MouseEvent;
     import flash.text.TextField;
     import flash.text.TextFormat;
-    import com.senocular.utils.Output;
     import com.croqodile.*;
     
     public class Canvas extends Sprite {

@@ -4,7 +4,6 @@ package com.croqodile.workspace {
     import flash.display.Stage;
     import flash.display.Sprite;
     import flash.system.Security;
-    import com.senocular.utils.Output;
     import flash.utils.Timer;
     import com.croqodile.*;
     import com.croqodile.workspace.*;

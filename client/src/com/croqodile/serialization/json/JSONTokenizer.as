@@ -2,7 +2,6 @@
 package com.croqodile.serialization.json {
     
     import flash.utils.ByteArray;
-    import com.senocular.utils.Output;
     
     public class JSONTokenizer {
 	

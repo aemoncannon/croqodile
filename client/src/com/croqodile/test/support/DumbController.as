@@ -1,7 +1,6 @@
 package com.croqodile.test.support {
     import flash.display.MovieClip;
     import flash.system.Security;
-    import com.senocular.utils.Output;
     import flash.utils.Timer;
     import com.croqodile.*;
     import flash.events.*;

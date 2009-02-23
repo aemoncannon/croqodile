@@ -3,7 +3,6 @@ package com.croqodile.test{
     import com.croqodile.di.*;
     import com.croqodile.test.*;
     import com.croqodile.test.support.*;
-    import com.senocular.utils.Output;
     import com.croqodile.*;
     
     public class SerializationTest extends TestCase {
