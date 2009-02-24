@@ -26,7 +26,7 @@ COMPILE_OPTIONS = [
                    "-compiler.source-path #{SHARED_CLASS_PATH.join(" ")}"
                   ]
 
-SHARED_SOURCES = FileList["./src/as3/**/*"]
+SHARED_SOURCES = FileList["./src/**/*"]
 
 ROUTER_CON_HARNESS = "./bin/router_con_harness.swf"
 file ROUTER_CON_HARNESS => SHARED_SOURCES do
