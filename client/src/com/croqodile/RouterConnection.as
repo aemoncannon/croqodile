@@ -7,20 +7,20 @@ package com.croqodile {
     
     public class RouterConnection extends EventDispatcher {
 		
-		public static const TERMINATOR:Array = [12, 12];
-		public static const LOGIN_ACK:String = "LOGIN_ACK";
-
 		public static const CONNECTION_READY:String = "connectionReady";
 		public static const CONNECTION_CLOSED:String = "connectionClosed";
 		
 		protected var _host:String;
 		protected var _port:int;
+		protected var _buf:ByteArray;
 		protected var _socket:Socket;
 		protected var _userId:String;
 		protected var _input: String = "";
 		protected var _loggedIn:Boolean = false;
+		protected var _processor:Function;
 		
 		public function RouterConnection(config:Object) {
+			_buf = new ByteArray();
 			_host = config.host;
 			_port = config.port;
 			_socket = config.socket;
@@ -28,6 +28,7 @@ package com.croqodile {
 			_socket.addEventListener(Event.CLOSE, onSocketClose);
 			_socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketConnectError);
 			_socket.addEventListener(ProgressEvent.SOCKET_DATA, onSocketData);
+			_processor = processHTTPHeader;
 		}	
 		
 		public function ready():Boolean{
@@ -39,6 +40,7 @@ package com.croqodile {
 			if(_socket.connected) {
 				throw new Error("Already connected");
 			}
+			_processor = processHTTPHeader;
 			_socket.connect(_host, _port);
 		}
 		
@@ -47,15 +49,11 @@ package com.croqodile {
 			_socket.close();
 		}
 		
-		public function sendSentence(message:String):void {
+		public function sendMessage(msg:ExternalMessage):void {
 			if(!_socket.connected) {
 				throw new Error("No connection to router; cannot send message.");
 			}
-			var newMsg:ByteArray = new ByteArray();
-			newMsg.writeUTFBytes(message);
-			_socket.writeBytes(newMsg);
-			_socket.writeByte(TERMINATOR[0]);
-			_socket.writeByte(TERMINATOR[1]);
+			_socket.writeBytes(msg.toBytes());
 			_socket.flush();
 		}	
 		
@@ -66,7 +64,7 @@ package com.croqodile {
 		
 		
 		private function onSocketConnect(event:Event):void {
-			sendSentence(_userId); //Send the login
+			_socket.writeUTFBytes("GET /join_island?id=1&clientId=" + _userId + " HTTP/1.0\r\n\r\n");
 		}
 		
 		private function onSocketClose(event:Event):void {
@@ -78,43 +76,44 @@ package com.croqodile {
 			throw new Error("An error occurred wile connecting.");
 		}
 		
-		protected function onSentenceReceived(data:String):void {
-			if(_loggedIn){
-				dispatchEvent(new ExternalMessageEvent(data));
-			}
-			else if(data == LOGIN_ACK){
-				_loggedIn = true;
-				dispatchEvent(new Event(CONNECTION_READY));
-			}
-		}
-		
 		protected function onSocketData(event:ProgressEvent):void {
-			while ( _socket.bytesAvailable > 0 ) { 
-				var byte: uint = _socket.readUnsignedByte();
-				var next: uint;
-				
-				if ( byte == TERMINATOR[0] ) {
-					if ( _socket.bytesAvailable >= 1 ) {
-						next = _socket.readUnsignedByte();
-						
-						if ( next == TERMINATOR[1] ) {
-							onSentenceReceived( _input );
-							_input = '';
-						}
-						else {
-							_input += String.fromCharCode( byte );
-							_input += String.fromCharCode( next );
-						}
-					}
-					else {
-						_input += String.fromCharCode( byte );
-					}
+			// 			var oldBuf:ByteArray = new ByteArray();
+			// 			_buf = new ByteArray();
+			// 			oldBuf.readBytes(_buf, 0);
+
+			_buf.length = _buf.length + _socket.bytesAvailable;
+			var pos:int = _buf.position;
+			_socket.readBytes(_buf, pos + 1, _socket.bytesAvailable);
+			_buf.position = pos;
+			_processor();
+		}
+
+		protected function processHTTPHeader():void{
+			var lf:int = 10;
+			var cr:int = 13;
+			var mem:Array = new Array(4);
+			var i:uint = 0;
+			while(_buf.position < _buf.length){
+				var byte:int = _buf.readByte();
+				mem[i] == byte;
+				if(mem[0] === cr && mem[1] === lf && mem[2] === cr && mem[3] === lf){
+					_loggedIn = true;
+					dispatchEvent(new Event(CONNECTION_READY));
+					_processor = processMessages;
+					break;
 				}
-				else {
-					_input += String.fromCharCode( byte );
-				}
+				i = (i + 1) % mem.length;
+			}
+		}
+
+		protected function processMessages():void{
+			var msgs:Array = ExternalMessage.parseAll(_buf);
+			for each(var msg:ExternalMessage in msgs){
+				trace(msg.toString());
+				dispatchEvent(new ExternalMessageEvent(msg));
 			}
 		}
 		
-    }
+	}
 }
+

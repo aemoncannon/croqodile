@@ -12,7 +12,7 @@ package com.croqodile{
 
 		function sequenceNumber():int;
 		
-		function execute():void;
+//		function execute():void;
 		
 		function toString():String;
 
