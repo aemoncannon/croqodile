@@ -6,33 +6,34 @@ package com.croqodile{
     
     public class ExternalMessage implements Message{
 		
-		public static const MSG_TYPE_TERM:int = 0;
-		public static const MSG_TYPE_SNAPSHOT_REQ:int = 1;
-		public static const MSG_TYPE_NORMAL:int = 2;
-		public static const MSG_TYPE_HEARTBEAT:int = 3;
-		public static const MSG_HEAD_LEN:int = 2 + 8 + 4;
+		public static const MSG_TYPE_TERM:uint = 0;
+		public static const MSG_TYPE_SNAPSHOT_REQ:uint = 1;
+		public static const MSG_TYPE_NORMAL:uint = 2;
+		public static const MSG_TYPE_HEARTBEAT:uint = 3;
+
+		public static const MSG_HEAD_LEN:int = 1 + 8 + 4;
 
 		protected var _timestamp:Number = 0;
 
 		
 		public static function parseAll(buf:ByteArray):Array {
 			var msgs:Array = [];
-			var msgBookmark:int;
+			var msgBookmark:int = buf.position;
 			while((buf.length - buf.position) >= MSG_HEAD_LEN){
 				msgBookmark = buf.position;
-				var type:uint = buf.readShort();
-				var time:Number = (buf.readInt() << 32) + buf.readInt();
-				var len:uint = buf.readInt();
+				var type:uint = buf.readUnsignedByte();
+				var time:Number = (Number(buf.readUnsignedInt()) * Math.pow(2, 32)) + Number(buf.readUnsignedInt());
+				var len:uint = buf.readUnsignedInt();
 				if((buf.length - buf.position) >= len){
 					var content:ByteArray = new ByteArray();
 					buf.readBytes(content, 0, len);
 					msgs.push(create(type, time, content));
 				}
 				else{
-					buf.position = msgBookmark;
 					break;
 				}
 			}
+			buf.position = msgBookmark;
 			return msgs;
 		}
 

@@ -15,6 +15,7 @@ package com.croqodile {
 		protected var _buf:ByteArray;
 		protected var _socket:Socket;
 		protected var _userId:String;
+		protected var _islandId:String;
 		protected var _input: String = "";
 		protected var _loggedIn:Boolean = false;
 		protected var _processor:Function;
@@ -35,8 +36,9 @@ package com.croqodile {
 			return (_socket.connected && _loggedIn);
 		}
 
-		public function connect(userId:String):void {
+		public function connect(userId:String, islandId:String):void {
 			_userId = userId;
+			_islandId = islandId;
 			if(_socket.connected) {
 				throw new Error("Already connected");
 			}
@@ -64,7 +66,7 @@ package com.croqodile {
 		
 		
 		private function onSocketConnect(event:Event):void {
-			_socket.writeUTFBytes("GET /join_island?id=1&clientId=" + _userId + " HTTP/1.0\r\n\r\n");
+			_socket.writeUTFBytes("GET /join_island?id=" + _islandId + "&clientId=" + _userId + " HTTP/1.0\r\n\r\n");
 		}
 		
 		private function onSocketClose(event:Event):void {
@@ -81,21 +83,30 @@ package com.croqodile {
 			// 			_buf = new ByteArray();
 			// 			oldBuf.readBytes(_buf, 0);
 
-			_buf.length = _buf.length + _socket.bytesAvailable;
+			// TODO: This needs to be more efficient.
+
 			var pos:int = _buf.position;
-			_socket.readBytes(_buf, pos + 1, _socket.bytesAvailable);
+			_buf.length = _buf.length + _socket.bytesAvailable;
+			_socket.readBytes(_buf, pos, _socket.bytesAvailable);
 			_buf.position = pos;
 			_processor();
 		}
 
+		/**
+		* Burn through characters of the HTTP request, until we're
+		* past the terminator, '\r\n\r\n'.
+		* 
+		* @return 
+		*/		
 		protected function processHTTPHeader():void{
 			var lf:int = 10;
 			var cr:int = 13;
 			var mem:Array = new Array(4);
 			var i:uint = 0;
+			_buf.position = 0;
 			while(_buf.position < _buf.length){
 				var byte:int = _buf.readByte();
-				mem[i] == byte;
+				mem[i] = byte;
 				if(mem[0] === cr && mem[1] === lf && mem[2] === cr && mem[3] === lf){
 					_loggedIn = true;
 					dispatchEvent(new Event(CONNECTION_READY));
@@ -106,6 +117,12 @@ package com.croqodile {
 			}
 		}
 
+
+		/**
+		* Process messages as they arrive.
+		* 
+		* @return 
+		*/		
 		protected function processMessages():void{
 			var msgs:Array = ExternalMessage.parseAll(_buf);
 			for each(var msg:ExternalMessage in msgs){

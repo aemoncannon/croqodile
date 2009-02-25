@@ -11,13 +11,13 @@ package com.croqodile.test{
 		public function RouterConnectionHarness():void{
 
 			Security.loadPolicyFile("xmlsocket://" + "localhost" + ":" + "6667");
+
 			var con:RouterConnection = new RouterConnection({
 					host: "localhost", 
 					port: 6666, 
 					socket: new Socket()
 				});
-
-			con.connect("kljdsfdf");
+			con.connect("aemon", "B05C4BD62464500020FB67BB19A77133");
 		}
 
 	}

@@ -56,6 +56,17 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		    {response, ok} = gen_server:call(IslandMgrPid, {hup}, 5000),
 		    DriverPid ! { self(), { header(text), <<>> } },
 		    DriverPid ! { self(), close };
+		"/new_island" -> 
+		    case lookup_args(["type", "desc"], Args) of
+			[{"type", IslandType}, {"desc", IslandDesc}] ->
+			    {response, Isl} = gen_server:call(IslandMgrPid, {create_new_island, IslandType, IslandDesc}, 5000),
+			    Data = list_to_binary(Isl#island.id),
+			    DriverPid ! { self(), { header(text), Data } },
+			    DriverPid ! { self(), close };
+			_Else -> 
+			    DriverPid ! { self(), { header(error), <<>>} },
+			    DriverPid ! { self(), close }
+		    end;
 		"/join_island" -> 
 		    case lookup_args(["id", "clientId"], Args) of
 			[{"id", IslandId}, {"clientId", ClientId}] ->
@@ -109,8 +120,6 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		    DriverPid ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
 	    end,
 	    client_handler(DriverPid, State)
-    after 5000 ->
-	    true
     end.
 
 

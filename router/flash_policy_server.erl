@@ -10,6 +10,7 @@
 
 
 start(Port, AllowPorts) ->
+    io:format("Starting policy server on ~w.~n", [Port]),
     %% Handle requests from Flash's security-manager
     {ok, PolicyLSocket} = gen_tcp:listen(Port, ?TCP_OPTIONS),
     Pid = spawn(?MODULE, policy_request_handler, [PolicyLSocket, AllowPorts]),

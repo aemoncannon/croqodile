@@ -7,10 +7,10 @@ package com.croqodile{
 			super(timestamp);
 		}
 
-		
 		override public function toString():String {
 			return "HeartbeatMessage(" + _timestamp + ")";
 		}
+
     }
     
 }

@@ -23,7 +23,8 @@ COMPILE_OPTIONS = [
                    "-default-frame-rate=60",
                    "-compiler.warn-no-type-decl=false",
                    "-compiler.optimize=true",
-                   "-compiler.source-path #{SHARED_CLASS_PATH.join(" ")}"
+                   "-compiler.source-path #{SHARED_CLASS_PATH.join(" ")}",
+                   "-use-network=true"
                   ]
 
 SHARED_SOURCES = FileList["./src/**/*"]
