@@ -45,6 +45,7 @@ package com.croqodile{
 				case MSG_TYPE_NORMAL:        return new ExternalIslandMessage(time, content);
 				case MSG_TYPE_HEARTBEAT:     return new HeartbeatMessage(time);
 			}
+			throw new Error("Oops, unknown message type: " + type);
 			return null;
 		}
 
