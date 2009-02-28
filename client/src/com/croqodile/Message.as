@@ -8,9 +8,9 @@ package com.croqodile{
     
     public interface Message {
 
-		function executionTime():Number;
+		function get executionTime():Number;
 
-		function sequenceNumber():int;
+		function get sequenceNumber():int;
 		
 //		function execute():void;
 		

@@ -55,11 +55,11 @@ package com.croqodile{
 
 		public function toBytes():ByteArray{ return null; }
 		
-		public function executionTime():Number{
+		public function get executionTime():Number{
 			return _timestamp;
 		}
 		
-		public function sequenceNumber():int{
+		public function get sequenceNumber():int{
 			return 0;
 		}
 		
