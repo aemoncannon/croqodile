@@ -30,10 +30,10 @@ package com.croqodile {
 		}
 		
 		public function futureSend(offset:Number, msg:String, args:Array):void {
-			_island.scheduleInternalMessage(InternalMessage.create(_island.time() + offset, 
-					this, 
-					msg, 
-					args, 
+			_island.scheduleInternalMessage(InternalMessage.create(_island.time() + offset,
+					this,
+					msg,
+					args,
 					_island));
 		}
 		

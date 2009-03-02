@@ -3,8 +3,8 @@ package com.croqodile{
     
     public class SnapshotRequestMessage extends ExternalMessage{
 		
-		public function SnapshotRequestMessage(timestamp:Number):void{
-			super(timestamp);
+		public function SnapshotRequestMessage(num:Number, timestamp:Number):void{
+			super(num, timestamp);
 		}
 		
 		

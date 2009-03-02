@@ -5,6 +5,7 @@ package com.croqodile {
     import flash.events.*;
     import com.croqodile.*;
     import com.croqodile.events.*;
+    import com.croqodile.serialization.base64.Base64;
     
 
     public class Controller extends EventDispatcher {
@@ -13,21 +14,29 @@ package com.croqodile {
 		protected var _island:IslandReplica;
 		protected var _userId:String;
 		protected var _msgBuffer:Array = [];
+		protected var _buffering:Boolean = true;
+		protected var _host:String;
+		protected var _port:int;
 
 		public function Controller(config:Object):void{
 			super();
 
 			_userId = config.userId;
 			_island = config.island;
-			_island.setController(this);
-			
-			_messageCon = (config.messageCon ? config.messageCon : new RouterConnection({}));
+			_host = config.host;
+			_port = config.port;
+			_buffering = true;
 
-			_messageCon.addEventListener(RouterConnection.CONNECTION_READY, onRouterConnectionReady);
+			_island.setController(this);
+			_messageCon = (config.messageCon ? config.messageCon : new RouterConnection({}));
 			_messageCon.addEventListener(RouterConnection.CONNECTION_CLOSED, onRouterConnectionClosed);
-			_message.addEventListener(RouterSnapshotConnection.SNAPSHOT_REQUESTED, onSnapshotRequested);
-			_messageCon.addEventListener(ExternalMessageEvent.type, onMessageFromRouterBuffered);
-			_messageCon.connect(_userId, config.islandId);
+			_messageCon.addEventListener(ExternalMessageEvent.type, onExternalMessage);
+			_messageCon.connect({
+					userId: _userId,
+					islandId: _island.id,
+					host: _host,
+					port: _port
+				});
 		}
 		
 		public static function genUserId():String {
@@ -58,72 +67,100 @@ package com.croqodile {
         //    Event Handlers	 //
         ///////////////////////////
 		
-		protected function onRouterConnectionReady(event:Event):void {
-			dispatchEvent(new RouterConnectionReadyEvent());
-		}
-		
 		protected function onRouterConnectionClosed(event:Event):void {
 			dispatchEvent(new DisconnectedFromRouterEvent());
 		}
+
+		protected function onFirstExternalMessage(e:ExternalMessageEvent):void {
+			_routerCon.removeEventListener(ExternalMessageEvent.type, onFirstExternalMessage);
+			_routerCon.addEventListener(ExternalMessageEvent.type, onExternalMessage);
+			var msg:ExternalMessage = e.msg;
+			if(msg.sequenceNumber == 1){
+				// Don't need snapshot
+				_buffering = false;
+				onExternalMessage(e);
+				_island.farRef().send("sunrise", []);
+				dispatchEvent(new RouterConnectionReadyEvent());
+			}
+			else{
+				getSnapshot();
+				_buffering = true;
+				onExternalMessage(e);
+			}
+		}
 		
-		protected function onMessageFromRouter(e:ExternalMessageEvent):void {
-			_island.advanceToExternalMessage(ExternalMessage.fromRouterString(e.msg, _island));
+		protected function onExternalMessage(e:ExternalMessageEvent):void {
+			var msg:ExternalMessage = e.msg;
+			if(_buffering){
+				_msgBuffer.push(msg);
+			}
+			else if(msg is HeartbeatMessage || msg is ExternalIslandMessage){
+				_island.advanceToExternalMessage(msg);
+			}
+			else if(msg is SnapshotRequestMessage){
+				sendSnapshot();
+			}
 		}
 
-		protected function onSnapshotRequested(event:Event):void {
-			//_snapshotCon.sendSentence(_island.snapshot());
+		protected function sendSnapshot():void {
+			var loader:URLLoader = new URLLoader();
+			var errHandler:Function = function(e:Event):void{
+				trace("Error during snapshot upload.");
+			};
+			var completeHandler:Function = function(e:Event):void{
+				trace("Completed snapshot upload.");
+			};
+			loader.addEventListener(Event.COMPLETE, completeHandler);
+            loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, errHandler);
+            loader.addEventListener(IOErrorEvent.IO_ERROR, errHandler);
+			var request:URLRequest = new URLRequest(
+				"http://" +  _host + ":" + _port + "/send_snapshot?" + 
+				"id=" + _island.id + 
+				"&clientId=" + _userId
+			);
+			var data:ByteArray = Base64.encodeByteArray(_island.snapshot());
+			request.data = data;
+			request.method = "POST";
+			loader.load(request);
 		}
 		
-		protected function onSnapshotReceived(event:Event, data:ByteArray):void {
+		protected function getSnapshot():void {
+			var loader:URLLoader = new URLLoader();
+			var errHandler:Function = function(e:Event):void{
+				throw new Error("Could not get a snapshot :(");
+			};
+			var completeHandler:Function = function(e:Event):void{
+				trace("Got snapshot, applying.")
+				var data:ByteArray = Base64.decodeToByteArray(String(loader.data));
+				installSnapshot(data);
+			};
+			loader.addEventListener(Event.COMPLETE, completeHandler);
+            loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, errHandler);
+            loader.addEventListener(IOErrorEvent.IO_ERROR, errHandler);
+			var request:URLRequest = new URLRequest(
+				"http://" +  _host + ":" + _port + "/get_snapshot?" + 
+				"id=" + _island.id + 
+				"&clientId=" + _userId
+			);
+			request.method = "GET";
+			loader.load(request);
+		}
+
+		
+		protected function installSnapshot(data:ByteArray):void {
+			var time:Number = _island.time;
+			if(time > 0) throw new Error("Can't apply snapshot to non-fresh island replica.");
 			_island.initFromSnapshot(data);
-			
-			var time:Number = _island.time();
 			for each(var m:ExternalMessage in _msgBuffer){
-				//Timestamps are guaranteed by router to be 
+				//Timestamps are guaranteed by router to be
 				//always increasing, never repeating
-				if(m.executionTime > time){
+				if(m.time > time){
 					_island.advanceToExternalMessage(m);
 				}
 			}
 			_msgBuffer = [];
-			_messageCon.removeEventListener(ExternalMessageEvent.type, onMessageFromRouterBuffered);
-			_messageCon.addEventListener(ExternalMessageEvent.type, onMessageFromRouter);
-		}
-		
-		protected function onNoSnapshotAvailable(event:Event):void {
-			throw new Error("Could not get a snapshot :(");
-		}
-		
-		protected function onNoSnapshotNecessary(event:Event):void {
-			for each(var m:ExternalMessage in _msgBuffer){
-				_island.advanceToExternalMessage(m);
-			}
-			
-			_msgBuffer = [];
-			
-			_messageCon.removeEventListener(ExternalMessageEvent.type, 
-				onMessageFromRouterBuffered);
-			_messageCon.addEventListener(ExternalMessageEvent.type, 
-				onMessageFromRouter);
-			
-			//We are the first controller to connect, so send the island a sunrise :)
-			var self:SnapshottingController = this;
-			var readyHandler:Function = function():void{
-				self._island.farRef().send("sunrise", []);
-				self.onRouterConnectionReady(new Event(RouterConnection.CONNECTION_READY));
-			}
-			
-			//Start waiting on the main message connection..
-			_messageCon.addEventListener(RouterConnection.CONNECTION_READY, readyHandler);
-			
-			//..might have already connected while we were asking for the snapshot, so..
-			if(_messageCon.ready()){ readyHandler(); }
-			
-		}
-		
-		//Buffer the messages while the snapshot until we have a valid snapshot.
-		protected function onMessageFromRouterBuffered(e:ExternalMessageEvent):void {
-			_msgBuffer.push(e.msg);
+			_buffering = false;
+			dispatchEvent(new RouterConnectionReadyEvent());
 		}
 		
     }

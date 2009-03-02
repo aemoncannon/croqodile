@@ -8,7 +8,6 @@ package com.croqodile{
     
     public /*abstract*/ class IslandReplica extends IslandObject {
 		protected var _controller:Controller;
-		protected var _internalMessageCounter:int = 0;
 		protected var _randGenerator:SeededRandom;
 		protected var _islandTime:Number = 0;
 		protected var _msgQ:MessageQ;
@@ -32,14 +31,14 @@ package com.croqodile{
 		}
 		
 		public function executeMessage(msg:Message):void{
-			if(msg.executionTime() < time()){
+			if(msg.time < this.time){
 				throw new Error("Executing old message!: " + msg.toString());
 			}
-			_islandTime = msg.executionTime();
+			_islandTime = msg.time;
 			msg.execute();
 		}
 		
-		public function time():Number {
+		public function get time():Number {
 			return _islandTime;
 		}
 
@@ -48,8 +47,6 @@ package com.croqodile{
 		}
 		
 		public function scheduleInternalMessage(msg:InternalMessage):void{
-			_internalMessageCounter += 1;
-			msg.setSequenceNumber(_internalMessageCounter);
 			_msgQ.scheduleInternalMessage(msg);
 		}
 		
@@ -70,18 +67,16 @@ package com.croqodile{
 		}
 		
 		private function freezeFundamental(data:Object):void{
-			data.time = time();
-			data.internalMessageCounter = _internalMessageCounter;
+			data.time = this.time;
 			data.msgQ = _msgQ.freeze();
 			data.randGenerator = _randGenerator.freeze();
 		}
 
 		private function unfreezeFundamental(data:Object):void{
-			if(_internalMessageCounter > 0 || _islandTime > 0){
+			if(_islandTime > 0){
 				throw new Error("Hey! I'm not a fresh replica!");
 			}
 			_islandTime = data.time;
-			_internalMessageCounter = data.internalMessageCounter;
 			_msgQ.unfreeze(data.msgQ);
 			_randGenerator.unfreeze(data.randGenerator);
 		}

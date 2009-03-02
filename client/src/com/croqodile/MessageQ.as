@@ -19,17 +19,6 @@ package com.croqodile{
 			return _msgArray.length;
 		}
 		
-		public static function sortsBefore(msgA:Message, msgB:Message):Boolean{
-			if(msgA.executionTime() != msgB.executionTime()){
-				return msgA.executionTime() < msgB.executionTime();
-			}
-			else if(msgA.sequenceNumber() != msgB.sequenceNumber()){
-				return msgA.sequenceNumber() < msgB.sequenceNumber();
-			}
-			else{
-				throw new Error("Simultaneous messages, " + msgA + " and " + msgB + ".");
-			}
-		}
 		
 		public function unfreeze(data:Array):void{
 			_msgArray = [];
@@ -63,7 +52,7 @@ package com.croqodile{
 			
 			for(var i:int = _msgArray.length - 1; i > -1; i--){
 				var curMsg:Message = _msgArray[i];
-				if(MessageQ.sortsBefore(curMsg, msg)){
+				if(curMsg.sortsBefore(msg)){
 					_msgArray.splice(i + 1, 0, msg);
 					return;
 				}

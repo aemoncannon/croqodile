@@ -24,6 +24,8 @@ package com.croqodile {
 			_buf = new ByteArray();
 			_host = config.host;
 			_port = config.port;
+			_userId = config.userId;
+			_islandId = config.islandId;
 			_socket = config.socket;
 			_socket.addEventListener(Event.CONNECT, onSocketConnect);
 			_socket.addEventListener(Event.CLOSE, onSocketClose);
@@ -36,9 +38,7 @@ package com.croqodile {
 			return (_socket.connected && _loggedIn);
 		}
 
-		public function connect(userId:String, islandId:String):void {
-			_userId = userId;
-			_islandId = islandId;
+		public function connect():void {
 			if(_socket.connected) {
 				throw new Error("Already connected");
 			}

@@ -2,9 +2,9 @@
 
 -created_by('Aemon Cannon').
 
--export([start/2, run_router/4]).
+-export([start/2, run_router/5]).
 
--import(island_utils, [stamp_message/2, make_heartbeat_message/1, make_snapshot_req_message/0]).
+-import(island_utils, [stamp_message/3, make_heartbeat_message/2, make_snapshot_req_message/0]).
 
 -include("island_manager.hrl").
 
@@ -13,32 +13,32 @@
 
 %% Start the router and its supporting cast.
 start(IslandMgrPid, Island) ->
-    RouterPid = spawn_link(?MODULE, run_router, [[], next_time(0), IslandMgrPid, Island]),
+    RouterPid = spawn_link(?MODULE, run_router, [[], 0, next_time(0), IslandMgrPid, Island]),
     start_heartbeat(RouterPid),
     RouterPid.
 
 
 %% This is the main loop of the router process.  It maintains
 %% the list of clients and performs the primary actions.
-run_router(Clients, LastTime, MgrPid, Island) ->
-    Time = next_time(LastTime),
+run_router(Clients, LastNum, LastTime, MgrPid, Island) ->
+    {Num, Time} = {LastNum + 1, next_time(LastTime)},
     receive
 	{join, C } ->
 	    io:format("Router: New client joined: ~s~n", [C#client.id]),
-	    run_router([C | Clients], Time, MgrPid, Island);
+	    run_router([C | Clients], Num, Time, MgrPid, Island);
         {remove_client, ClientId} ->
 	    case client_by_id(ClientId, Clients) of
 		{value, C} -> 
 		    io:format("Router: Client removed: ~s~n", [C#client.id]),
-		    run_router(lists:delete(C, Clients), Time, MgrPid, Island);
+		    run_router(lists:delete(C, Clients), Num, Time, MgrPid, Island);
 		false -> 
-		    run_router(Clients, Time, MgrPid, Island)
+		    run_router(Clients, Num, Time, MgrPid, Island)
 	    end;
         {message, _FromPid, Message} ->
 	    io:format("Message from client: ~w~n", [Message]),
-	    StampedMsg = stamp_message(Message, Time),
+	    StampedMsg = stamp_message(Message, Num, Time),
 	    send_to_active(Clients, StampedMsg),
-	    run_router(Clients, Time, MgrPid, Island);
+	    run_router(Clients, Num, Time, MgrPid, Island);
         {snapshot_request, ClientId, LiasonPid} ->
 	    io:format("Snapshot request from client.~n", []),
 	    case find_snapshot_partner(ClientId, Clients) of
@@ -47,19 +47,19 @@ run_router(Clients, LastTime, MgrPid, Island) ->
 		    Partner#client.pid ! {router_message, make_snapshot_req_message()};
 		_Else -> LiasonPid ! snapshot_not_available
 	    end,
-	    run_router(Clients, Time, MgrPid, Island);
+	    run_router(Clients, Num, Time, MgrPid, Island);
         {client_closed, ClientPid} ->
 	    case client_by_pid(ClientPid, Clients) of
 		{value, C} -> 
 		    self() ! {remove_client,  C#client.id},
-		    run_router(Clients, Time, MgrPid, Island);
+		    run_router(Clients, Num, Time, MgrPid, Island);
 		false ->
-		    run_router(Clients, Time, MgrPid, Island)
+		    run_router(Clients, Num, Time, MgrPid, Island)
 	    end;
 	heartbeat ->
-	    Message = make_heartbeat_message(Time),
+	    Message = make_heartbeat_message(Num, Time),
 	    send_to_active(Clients, Message),
-	    run_router(Clients, Time, MgrPid, Island)
+	    run_router(Clients, Num, Time, MgrPid, Island)
     end.
 
 

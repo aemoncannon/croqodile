@@ -8,9 +8,9 @@
 
 
 -export([ parse_all_messages/1, 
-	  stamp_message/2, 
-	  make_client_message/2, 
-	  make_heartbeat_message/1,
+	  stamp_message/3, 
+	  make_client_message/3, 
+	  make_heartbeat_message/2,
 	  make_snapshot_req_message/0,
 	  make_term_message/0,
 	  encode_message/1,
@@ -25,38 +25,38 @@ parse_all_messages(Buf) -> parse_all_messages(Buf, []).
 parse_all_messages(Buf, Messages) ->
     case Buf of
 
-	<<?MSG_TYPE_TERM:8,0:64,0:32,Rest/binary>> ->
+	<<?MSG_TYPE_TERM:8,0:64,0:64,0:32,Rest/binary>> ->
 	    {lists:reverse(Messages), Rest};
 
-	<<Type:8,Time:64,Len:32,Rest/binary>> when (size(Rest) >= Len) ->
+	<<Type:8,Num:64,Time:64,Len:32,Rest/binary>> when (size(Rest) >= Len) ->
 	    {Payload, Remainder} = split_binary(Rest, Len),
-	    parse_all_messages(Remainder, [{msg, Type, Time, Payload} | Messages]);
+	    parse_all_messages(Remainder, [{msg, Type, Num, Time, Payload} | Messages]);
 
-	<<_Type:8,_Time:64,Len:32,Rest/binary>> when (size(Rest) < Len) ->
+	<<_Type:8,_Num:64,_Time:64,Len:32,Rest/binary>> when (size(Rest) < Len) ->
 	    {lists:reverse(Messages), Buf};
 
 	_Else -> 
 	    {lists:reverse(Messages), Buf}
     end.
 
-stamp_message({msg, Type, _Time, Payload}, Time) -> {msg, Type, Time, Payload}.
+stamp_message({msg, Type, _Num, _Time, Payload}, Num, Time) -> {msg, Type, Num, Time, Payload}.
 
-make_client_message(Time, Payload) ->
-    {msg, ?MSG_TYPE_NORMAL, Time, Payload}.
+make_client_message(Num, Time, Payload) ->
+    {msg, ?MSG_TYPE_NORMAL, Num, Time, Payload}.
 
-make_heartbeat_message(Time) ->
-    {msg, ?MSG_TYPE_HEARTBEAT, Time, <<>>}.
+make_heartbeat_message(Num, Time) ->
+    {msg, ?MSG_TYPE_HEARTBEAT, Num, Time, <<>>}.
 
 make_snapshot_req_message() ->
-    {msg, ?MSG_TYPE_SNAPSHOT_REQ, 0, <<>>}.
+    {msg, ?MSG_TYPE_SNAPSHOT_REQ, 0, 0, <<>>}.
 
 make_term_message() ->
-    {msg, ?MSG_TYPE_TERM, 0, <<>>}.
+    {msg, ?MSG_TYPE_TERM, 0, 0, <<>>}.
 
 
-encode_message({msg, Type, Time, Payload}) ->
+encode_message({msg, Type, Num, Time, Payload}) ->
     Len = size(Payload),
-    <<Type:8,Time:64,Len:32,Payload/binary>>.
+    <<Type:8,Num:64,Time:64,Len:32,Payload/binary>>.
 
 socket_pipe(FromSocket, ToSocket, Len) ->
     socket_pipe(FromSocket, ToSocket, 0, Len).

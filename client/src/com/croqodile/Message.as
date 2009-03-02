@@ -8,11 +8,11 @@ package com.croqodile{
     
     public interface Message {
 
-		function get executionTime():Number;
-
-		function get sequenceNumber():int;
+		function get time():Number;
 		
-//		function execute():void;
+		function execute(IslandReplica):void;
+
+		function sortsBefore(msg:Message):Boolean;
 		
 		function toString():String;
 

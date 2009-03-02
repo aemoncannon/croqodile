@@ -3,8 +3,8 @@ package com.croqodile{
     
     public class HeartbeatMessage extends ExternalMessage{
 		
-		public function HeartbeatMessage(timestamp:Number):void{
-			super(timestamp);
+		public function HeartbeatMessage(num:Number, timestamp:Number):void{
+			super(num, timestamp);
 		}
 
 		override public function toString():String {
