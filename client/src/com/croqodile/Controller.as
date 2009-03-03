@@ -30,7 +30,7 @@ package com.croqodile {
 			_island.setController(this);
 			_messageCon = (config.messageCon ? config.messageCon : new RouterConnection({}));
 			_messageCon.addEventListener(RouterConnection.CONNECTION_CLOSED, onRouterConnectionClosed);
-			_messageCon.addEventListener(ExternalMessageEvent.type, onExternalMessage);
+			_messageCon.addEventListener(ExternalMessageEvent.type, onFirstExternalMessage);
 			_messageCon.connect({
 					userId: _userId,
 					islandId: _island.id,
