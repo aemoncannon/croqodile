@@ -19,8 +19,13 @@ package com.croqodile{
 		}
 
 		public function islandObjectByGuid(guid:int):IslandObject{
-			return _islandObjDict[guid];
+			return IslandObject(_islandObjDict[guid]);
 		}
+
+		public static function islandObjectByRef(ref:FarRef):IslandObject{
+			return islandObjectByGuid(ref.guid());
+		}
+
 		
 		protected function signalEvent(event:Event):void{
 			_controller.signalIslandEvent(event);

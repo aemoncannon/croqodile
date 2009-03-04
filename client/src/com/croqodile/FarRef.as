@@ -26,13 +26,7 @@ package com.croqodile{
 		}
 
 		public function send(msg:String, args:Array):void{
-			_island.controller().propagateFarSend(new ExternalIslandMessage());
-				ExternalMessage.createRouterString(
-					_guid, 
-					msg, 
-					args,
-					_island
-				));
+			_island.controller().propagateFarSend(ExternalIslandMessage.forCall(_guid, msg, args));
 		}
 
     }

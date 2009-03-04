@@ -43,7 +43,7 @@ package com.croqodile{
 			switch(type){
 				case MSG_TYPE_TERM:          throw new Error("Should not receive term message.");
 				case MSG_TYPE_SNAPSHOT_REQ:  return new SnapshotRequestMessage(num, time);
-				case MSG_TYPE_NORMAL:        return new ExternalIslandMessage(num, time, content);
+				case MSG_TYPE_NORMAL:        return ExternalIslandMessage.fromBytes(num, time, content);
 				case MSG_TYPE_HEARTBEAT:     return new HeartbeatMessage(num, time);
 			}
 			throw new Error("Oops, unknown message type: " + type);
@@ -55,7 +55,25 @@ package com.croqodile{
 			_timestamp = timestamp;
 		}
 
-		public function toBytes():ByteArray{ return null; }
+
+		public function toBytes():ByteArray{ 
+			var b:ByteArray = new ByteArray();
+			b.writeByte(this.type);
+
+			b.writeUnsignedInt(0);
+			b.writeUnsignedInt(0);
+
+			b.writeUnsignedInt(0);
+			b.writeUnsignedInt(0);
+
+			var payload:ByteArray = payloadBytes();
+			b.writeUnsignedInt(payload.length);
+			b.writeBytes(payload);
+			return b; 
+		}
+
+		protected function payloadBytes():ByteArray{ return null; }
+
 		
 		override public function get time():Number{
 			return _timestamp;
@@ -64,6 +82,8 @@ package com.croqodile{
 		public function get sequenceNumber():int{
 			return _sequenceNumber;
 		}
+
+		protected function get type():uint{ return 0; }
 		
 		override public function toString():String{
 			return "ExternalMessage(" + _timestamp + ")";

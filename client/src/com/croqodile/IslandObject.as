@@ -26,16 +26,9 @@ package com.croqodile {
 					_island.time + offset,
 					this,
 					msg,
-					args)
+					args
+				)
 			);
-		}
-		
-		public static function byRef(ref:FarRef):IslandObject{
-			return _island.islandObjectByGuid(ref.guid());
-		}
-
-		public static function byGuid(guid:int):IslandObject{
-			return _island.islandObjectByGuid(guid);
 		}
 		
     }

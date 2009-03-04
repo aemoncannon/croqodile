@@ -7,6 +7,8 @@ package com.croqodile{
 			super(num, timestamp);
 		}
 
+		override protected function get type():uint{ return MSG_TYPE_HEARTBEAT; }
+
 		override public function toString():String {
 			return "HeartbeatMessage(" + _timestamp + ")";
 		}

@@ -12,15 +12,30 @@ package com.croqodile{
 		protected var _args:Array;
 		protected var _msg:String;
 
-		public function ExternalIslandMessage(num:Number, timestamp:Number, content:ByteArray):void{
+		override protected function get type():uint{ return MSG_TYPE_NORMAL; }
+
+		public function ExternalIslandMessage(num:Number, timestamp:Number, targetGuid:int, msg:String, args:Array):void{
 			super(num, timestamp);
+			_targetGuid = targetGuid;
+			_msg = msg;
+			_args = args;
 		}
 
-		public static function forInvocation(targetGuid:int, msg:String, args:Array):void{
-			var b:ByteArray = new ByteArray();
-			b.write
+		public static function fromBytes(num:Number, timestamp:Number, payload:ByteArray):ExternalIslandMessage{
+			var src:String = payload.readUTFBytes(payload.length);
+			var parts:Array = Array(JSON.decode(src));
+			return new ExternalIslandMessage(num, timestamp, parts[0], parts[1], parts[2]);
+		}
 
-			return new ExternalIslandMessage(0, 0, b);
+		public static function forCall(targetGuid:int, msg:String, args:Array):void{
+			return new ExternalIslandMessage(0, 0, targetGuid, msg, args);
+		}
+
+		override protected function payloadBytes():ByteArray{ 
+			var payload:ByteArray = new ByteArray();
+			var src:String = JSON.encode([targetGuid, msg, args]);
+			payload.writeUTFBytes(src);
+			return payload;
 		}
 
 		override public function execute(island:IslandReplica):void{
