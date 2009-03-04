@@ -19,7 +19,7 @@ package com.croqodile{
 			target:IslandObject, 
 			msg:String, 
 			args:Array
-		):InternalMessage
+		):void
 		{
 			_timestamp = timestamp;
 			_targetGuid = target.guid();
@@ -50,12 +50,12 @@ package com.croqodile{
 			return _timestamp;
 		}
 
-		public function execute(island:IslandReplica):void{
+		override public function execute(island:IslandReplica):void{
 			var target:IslandObject = island.islandObjectbyGuid(_targetGuid);
 			target[_msg].apply(target, _args);
 		}
 		
-		public function toString():String{
+		override public function toString():String{
 			return "InternalMessage(" + [
 				_timestamp,
 				_targetGuid,

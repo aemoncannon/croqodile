@@ -22,9 +22,11 @@ package com.croqodile.test{
 			var con:RouterConnection = new RouterConnection({
 					host: "localhost", 
 					port: 6666, 
-					socket: new Socket()
+					socket: new Socket(),
+					userId: "aemon",
+					islandId: String(data)
 				});
-			con.connect("aemon", String(data));
+			con.connect();
 		}
 
 	}

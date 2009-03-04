@@ -57,7 +57,7 @@ package com.croqodile{
 
 		public function toBytes():ByteArray{ return null; }
 		
-		public function get time():Number{
+		override public function get time():Number{
 			return _timestamp;
 		}
 		
@@ -65,7 +65,7 @@ package com.croqodile{
 			return _sequenceNumber;
 		}
 		
-		public function toString():String{
+		override public function toString():String{
 			return "ExternalMessage(" + _timestamp + ")";
 		}
     }

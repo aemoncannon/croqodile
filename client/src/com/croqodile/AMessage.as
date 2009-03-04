@@ -10,9 +10,9 @@ package com.croqodile{
 			return this.time < msg.time;
 		}
 
-		function get time():Number { return 0; }
-		function execute(IslandReplica):void { }
-		function toString():String { return "Message"; }
+		public function get time():Number { return 0; }
+		public function execute(IslandReplica):void { }
+		public function toString():String { return "Message"; }
 	}
 
 }

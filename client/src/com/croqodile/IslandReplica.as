@@ -17,6 +17,10 @@ package com.croqodile{
 			_randGenerator = new SeededRandom();
 			_msgQ = new MessageQ(this);
 		}
+
+		public function islandObjectByGuid(guid:int):IslandObject{
+			return _islandObjDict[guid];
+		}
 		
 		protected function signalEvent(event:Event):void{
 			_controller.signalIslandEvent(event);

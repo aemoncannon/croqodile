@@ -22,11 +22,11 @@ package com.croqodile{
 		}
 
 		public function target():IslandObject {
-			return IslandObject.byGuid(_guid);
+			return _island.islandObjectByGuid(_guid);
 		}
 
 		public function send(msg:String, args:Array):void{
-			_island.controller().propagateFarSend(
+			_island.controller().propagateFarSend(new ExternalIslandMessage());
 				ExternalMessage.createRouterString(
 					_guid, 
 					msg, 

@@ -8,20 +8,12 @@ package com.croqodile {
 		protected var _island:IslandReplica;
 		protected var _guid:int;
 		
-		private static var _dict:Dictionary;
-		private static var _highestGuid:int = 0;
-		
 		public function IslandObject(island:IslandReplica){
-			if(!IslandObject._dict){
-				IslandObject._dict = new Dictionary();
-			}
-			IslandObject._highestGuid += 1;
-			IslandObject._dict[IslandObject._highestGuid] = this;
-			_guid = IslandObject._highestGuid;
+			_guid = island.internIslandObject(this);
 			_island = island;
 		}
 		
-		public function guid():int{
+		public function get guid():int{
 			return _guid;
 		}
 		
@@ -30,38 +22,21 @@ package com.croqodile {
 		}
 		
 		public function futureSend(offset:Number, msg:String, args:Array):void {
-			_island.scheduleInternalMessage(InternalMessage.create(_island.time() + offset,
+			_island.scheduleInternalMessage(new InternalMessage(
+					_island.time + offset,
 					this,
 					msg,
-					args,
-					_island));
+					args)
+			);
 		}
 		
 		public static function byRef(ref:FarRef):IslandObject{
-			return IslandObject.byGuid(ref.guid());
+			return _island.islandObjectByGuid(ref.guid());
 		}
-		
+
 		public static function byGuid(guid:int):IslandObject{
-			try {
-				return IslandObject._dict[guid];
-			}
-			catch(e:Error){
-				throw new Error("IslandObject for guid #" + 
-					guid + 
-					" not found. Highest guid is " + 
-					IslandObject._highestGuid);
-			}
-			return null;
+			return _island.islandObjectByGuid(guid);
 		}
-		
-		public static function setHighestGuid(guid:int):void{
-			IslandObject._highestGuid = guid;
-		}	
-		
-		public static function reset():void{
-			IslandObject.setHighestGuid(0);
-		}
-		
 		
     }
 }
