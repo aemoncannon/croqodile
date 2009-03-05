@@ -18,6 +18,12 @@ package com.croqodile{
 			_msgQ = new MessageQ(this);
 		}
 
+		public function internIslandObject(obj:IslandObject, guid:String = null):IslandObject{
+			var g:String = guid || GUID.create();
+			_islandObjDict[guid] = obj;
+			return obj;
+		}
+
 		public function islandObjectByGuid(guid:int):IslandObject{
 			return IslandObject(_islandObjDict[guid]);
 		}
@@ -25,7 +31,6 @@ package com.croqodile{
 		public static function islandObjectByRef(ref:FarRef):IslandObject{
 			return islandObjectByGuid(ref.guid());
 		}
-
 		
 		protected function signalEvent(event:Event):void{
 			_controller.signalIslandEvent(event);

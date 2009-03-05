@@ -8,13 +8,13 @@ package com.croqodile{
     
     public class ExternalIslandMessage extends ExternalMessage{
 
-		protected var _targetGuid:int;
+		protected var _targetGuid:String;
 		protected var _args:Array;
 		protected var _msg:String;
 
 		override protected function get type():uint{ return MSG_TYPE_NORMAL; }
 
-		public function ExternalIslandMessage(num:Number, timestamp:Number, targetGuid:int, msg:String, args:Array):void{
+		public function ExternalIslandMessage(num:Number, timestamp:Number, targetGuid:String, msg:String, args:Array):void{
 			super(num, timestamp);
 			_targetGuid = targetGuid;
 			_msg = msg;
@@ -27,7 +27,7 @@ package com.croqodile{
 			return new ExternalIslandMessage(num, timestamp, parts[0], parts[1], parts[2]);
 		}
 
-		public static function forCall(targetGuid:int, msg:String, args:Array):void{
+		public static function forCall(targetGuid:String, msg:String, args:Array):void{
 			return new ExternalIslandMessage(0, 0, targetGuid, msg, args);
 		}
 

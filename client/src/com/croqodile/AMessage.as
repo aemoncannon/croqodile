@@ -3,6 +3,8 @@ package com.croqodile{
     
     public class AMessage implements Message{
 
+		protected var _timestamp:Number = 0;
+
 		/*
 		* Return true if this sorts before msg.
 		*/

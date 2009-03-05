@@ -12,9 +12,7 @@ package com.croqodile{
 		public static const MSG_TYPE_HEARTBEAT:uint = 3;
 		public static const MSG_HEAD_LEN:int = 1 + 8 + 8 + 4;
 
-		protected var _timestamp:Number = 0;
 		protected var _sequenceNumber:Number = 0;
-
 		
 		public static function parseAll(buf:ByteArray):Array {
 			var msgs:Array = [];

@@ -6,14 +6,14 @@ package com.croqodile {
     
     public class IslandObject {
 		protected var _island:IslandReplica;
-		protected var _guid:int;
+		protected var _guid:String;
 		
-		public function IslandObject(island:IslandReplica){
-			_guid = island.internIslandObject(this);
+		public function IslandObject(island:IslandReplica, guid:String = null){
 			_island = island;
+			_island.internIslandObject(this, guid);
 		}
-		
-		public function get guid():int{
+
+		public function get guid():String{
 			return _guid;
 		}
 		

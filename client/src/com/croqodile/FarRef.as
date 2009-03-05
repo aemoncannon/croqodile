@@ -9,10 +9,10 @@ package com.croqodile{
     
     public class FarRef{
 		
-		private var _guid:int;
+		private var _guid:String;
 		private var _island:IslandReplica;
 
-		public function FarRef(guid:int, island:IslandReplica){
+		public function FarRef(guid:String, island:IslandReplica){
 			_guid = guid;
 			_island = island;
 		}
