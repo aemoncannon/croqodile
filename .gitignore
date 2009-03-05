@@ -1,3 +1,4 @@
 router/*.beam
 router/Mnesia.*
 router/*.dump
+*.swf
