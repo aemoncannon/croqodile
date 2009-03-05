@@ -45,8 +45,8 @@ run_test(Fun, TestState) ->
 
 
 test_protocol_parsing(_TestState) ->
-    Num = 1,
-    Time = 12345,
+    Num = 1.0,
+    Time = 12345.0,
 
     {[],<<>>} = parse_all_messages(<<>>),
 
