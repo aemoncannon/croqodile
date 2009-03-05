@@ -20,18 +20,18 @@ package com.croqodile{
 			return _msgArray.length;
 		}
 
-		public function readFromByteArray(b:ByteArray):void{
+		public function readFrom(b:IDataInput):void{
 			_msgArray = [];
 			var msgCount:uint = b.readUnsignedInt();
 			for(var i:int = 0; i < msgCount; i++){
-				_msgArray.push(InternalMessage.readFromByteArray(b));
+				_msgArray.push(InternalMessage.readFrom(b));
 			}
 		}
 		
-		public function writeToByteArray(b:ByteArray):void{
+		public function writeTo(b:IDataOutput):void{
 			b.writeUnsignedInt(_msgArray.length);
 			for each(var m:InternalMessage in _msgArray){
-				m.writeToByteArray(b);
+				m.writeTo(b);
 			}
 		}
 		

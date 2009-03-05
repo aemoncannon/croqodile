@@ -28,20 +28,20 @@ package com.croqodile{
 			_args = args;
 		}
 
-		public static function readFromByteArray(b:ByteArray):InternalMessage{
+		public static function readFrom(b:IDataInput):InternalMessage{
 			return new InternalMessage(
 				b.readDouble(),
 				b.readUTF(),
 				b.readUTF(),
-				JSON.decode(b.readUTF())
+				b.readObject() as Array
 			);
 		}
 
-		public function writeToByteArray(b:ByteArray):void{
+		public function writeTo(b:IDataOutput):void{
 			b.writeDouble(_timestamp);
 			b.writeUTF(_targetGuid);
 			b.writeUTF(_msg);
-			b.writeUTF(JSON.encode(_args));
+			b.writeObject(_args);
 		}
 		
 		override public function execute(island:IslandReplica):void{

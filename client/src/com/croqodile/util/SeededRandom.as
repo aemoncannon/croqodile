@@ -15,11 +15,11 @@ package com.croqodile.util{
 			_seed = seed;
 		}
 		
-		public function readFromByteArray(b:ByteArray):void { 
+		public function readFrom(b:IDataInput):void { 
 			_seed = b.readDouble();
 		}
 		
-		public function writeToByteArray(b:ByteArray):void {
+		public function writeTo(b:IDataOutput):void {
 			b.writeDouble(_seed);
 		}
 

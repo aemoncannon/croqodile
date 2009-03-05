@@ -5,7 +5,6 @@ package com.croqodile{
     import com.croqodile.util.*;
     import flash.events.*;
     import flash.utils.*;
-    import com.croqodile.serialization.json.JSON;
     
     public /*abstract*/ class IslandReplica extends IslandObject {
 		protected var _controller:Controller;
@@ -83,38 +82,38 @@ package com.croqodile{
 		
 		public function snapshot():ByteArray {
 			var b:ByteArray = new ByteArray();
-			writeFundamentalToByteArray(b);
-			writeToByteArray(b);
+			writeFundamentalTo(b);
+			writeTo(b);
 			b.position = 0;
 			return b;
 		}
 		
 		public function initFromSnapshot(snapshot:ByteArray):void{
-			readFundamentalFromByteArray(snapshot);
-			readFromByteArray(snapshot);
+			readFundamentalFrom(snapshot);
+			readFrom(snapshot);
 			snapshot.position = 0;
 		}
 		
-		private function readFundamentalFromByteArray(b:ByteArray):void{
+		private function readFundamentalFrom(b:IDataInput):void{
 			if(_islandTime > 0){
 				throw new Error("Hey! I'm not a fresh replica!");
 			}
 			_curGuid = b.readUnsignedInt();
 			_islandTime = b.readDouble();
-			_msgQ.readFromByteArray(b);
-			_randGenerator.readFromByteArray(b);
+			_msgQ.readFrom(b);
+			_randGenerator.readFrom(b);
 		}
 
-		private function writeFundamentalToByteArray(b:ByteArray):void{
+		private function writeFundamentalTo(b:IDataOutput):void{
 			b.writeUnsignedInt(_curGuid);
 			b.writeDouble(_islandTime);
-			_msgQ.writeToByteArray(b);
-			_randGenerator.writeToByteArray(b);
+			_msgQ.writeTo(b);
+			_randGenerator.writeTo(b);
 		}
 
-		protected function readFromByteArray(b:ByteArray):void { throw new Error("Subclass responsibility."); }
+		protected function readFrom(b:IDataInput):void { throw new Error("Subclass responsibility."); }
 
-		protected function writeToByteArray(b:ByteArray):void { throw new Error("Subclass responsibility."); }
+		protected function writeTo(b:IDataOutput):void { throw new Error("Subclass responsibility."); }
 		
 		
 		////////////////////////

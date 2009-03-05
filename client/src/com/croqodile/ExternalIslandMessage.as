@@ -4,7 +4,7 @@ package com.croqodile{
     import com.croqodile.Message;
     import com.croqodile.serialization.json.JSON;
     import flash.events.*;
-    import flash.utils.ByteArray;
+    import flash.utils.*;
     
     public class ExternalIslandMessage extends ExternalMessage{
 		protected var _targetGuid:String;
@@ -21,20 +21,26 @@ package com.croqodile{
 		}
 
 		public static function createFromPayload(num:Number, timestamp:Number, payload:ByteArray):ExternalIslandMessage{
-			var src:String = payload.readUTFBytes(payload.length);
-			var parts:Array = JSON.decode(src) as Array;
-			return new ExternalIslandMessage(num, timestamp, parts[0], parts[1], parts[2]);
+			return new ExternalIslandMessage(
+				num, 
+				timestamp, 
+				payload.readUTF(),
+				payload.readUTF(),
+				payload.readObject() as Array
+			);
 		}
 
 		public static function createForCall(targetGuid:String, msg:String, args:Array):ExternalIslandMessage{
 			return new ExternalIslandMessage(0, 0, targetGuid, msg, args);
 		}
 
-		override protected function payloadBytes():ByteArray{ 
+		override protected function writePayloadTo(b:IDataOutput):void{ 
 			var payload:ByteArray = new ByteArray();
-			var src:String = JSON.encode([_targetGuid, _msg, _args]);
-			payload.writeUTFBytes(src);
-			return payload;
+			payload.writeUTF(_targetGuid);
+			payload.writeUTF(_msg);
+			payload.writeObject(_args);
+			b.writeUnsignedInt(payload.length);
+			b.writeBytes(payload);
 		}
 
 		override public function execute(island:IslandReplica):void{

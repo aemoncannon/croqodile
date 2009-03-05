@@ -2,7 +2,7 @@ package com.croqodile{
     import com.croqodile.Message;
     import com.croqodile.IslandReplica;
     import flash.events.*;
-    import flash.utils.ByteArray;
+    import flash.utils.*;
     
     public class ExternalMessage extends AMessage{
 		
@@ -54,19 +54,20 @@ package com.croqodile{
 		}
 
 
-		public function toBytes():ByteArray{ 
+		public function toByteArray():ByteArray{ 
 			var b:ByteArray = new ByteArray();
-			b.writeByte(this.type);
-			b.writeDouble(_sequenceNumber);
-			b.writeDouble(_timestamp);
-			var payload:ByteArray = payloadBytes();
-			b.writeUnsignedInt(payload.length);
-			b.writeBytes(payload);
-			b.position = 0;
+			writeTo(b);
 			return b;
 		}
 
-		protected function payloadBytes():ByteArray{ return null; }
+		public function writeTo(b:IDataOutput):void{
+			b.writeByte(this.type);
+			b.writeDouble(_sequenceNumber);
+			b.writeDouble(_timestamp);
+			writePayloadTo(b);
+		}
+
+		protected function writePayloadTo(b:IDataOutput):void{ }
 
 		public function get sequenceNumber():int{
 			return _sequenceNumber;

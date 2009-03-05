@@ -1,7 +1,6 @@
 package com.croqodile {
     import flash.events.*;
-    import flash.utils.ByteArray;
-    import flash.utils.Timer;
+    import flash.utils.*;
     import flash.net.Socket;
     import com.croqodile.events.*;
     
@@ -55,7 +54,7 @@ package com.croqodile {
 			if(!_socket.connected) {
 				throw new Error("No connection to router; cannot send message.");
 			}
-			_socket.writeBytes(msg.toBytes());
+			msg.writeTo(_socket);
 			_socket.flush();
 		}	
 		
