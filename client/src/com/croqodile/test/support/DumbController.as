@@ -5,7 +5,6 @@ package com.croqodile.test.support {
     import com.croqodile.*;
     import flash.events.*;
     import com.croqodile.events.*;
-    import com.croqodile.serialization.json.JSON;
     
     public class DumbController extends Controller {
 	
@@ -14,13 +13,6 @@ package com.croqodile.test.support {
 	    this._island.setController(this);
 	}
 
-	public function triggerExternalMessage(timestamp:Number, msg:Array):void {
-	    this.onMessageFromRouter(new ExternalMessageEvent(String(timestamp) + 
-							      ExternalMessage.MESSAGE_SEP +
-							      JSON.encode(msg)));
-	}
-
-    }
 
 }
 

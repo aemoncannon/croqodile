@@ -2,7 +2,7 @@ package com.croqodile{
     import com.croqodile.IslandReplica;
     import com.croqodile.IslandObject;
     import com.croqodile.Message;
-    import com.croqodile.serialization.json.JSON;
+    import com.croqodile.util.Util;
     import flash.events.*;
     import flash.utils.*;
     
@@ -54,7 +54,7 @@ package com.croqodile{
 				o is ExternalIslandMessage && 
 				_targetGuid == o._targetGuid && 
 				_msg == o._msg &&
-				JSON.encode(_args) === JSON.encode(o._args)
+				Util.equal(_args, o._args)
 			);
 		}
 		

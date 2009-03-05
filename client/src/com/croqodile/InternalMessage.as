@@ -5,7 +5,6 @@ package com.croqodile{
     import com.croqodile.IslandObject;
     import com.croqodile.Controller;
     import com.croqodile.Message;
-    import com.croqodile.serialization.json.JSON;
     import flash.events.*;
     import flash.utils.*;
     

@@ -1,7 +1,6 @@
 package com.croqodile{
     import com.croqodile.*;
     import flash.events.*;
-    import com.croqodile.serialization.json.JSON;
     
     public class Animator extends IslandObject {
 		
