@@ -24,7 +24,7 @@ package com.croqodile {
 		public function futureSend(offset:Number, msg:String, args:Array):void {
 			_island.scheduleInternalMessage(new InternalMessage(
 					_island.time + offset,
-					this,
+					_guid,
 					msg,
 					args
 				)

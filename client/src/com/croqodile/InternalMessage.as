@@ -5,52 +5,47 @@ package com.croqodile{
     import com.croqodile.IslandObject;
     import com.croqodile.Controller;
     import com.croqodile.Message;
+    import com.croqodile.serialization.json.JSON;
     import flash.events.*;
+    import flash.utils.*;
     
     public class InternalMessage extends AMessage{
 		
-		private var _targetGuid:int;
+		private var _targetGuid:String;
 		private var _args:Array;
 		private var _msg:String;
 		
 		public function InternalMessage(
 			timestamp:Number,
-			target:IslandObject, 
+			guid:String, 
 			msg:String, 
 			args:Array
 		):void
 		{
 			_timestamp = timestamp;
-			_targetGuid = target.guid;
+			_targetGuid = guid;
 			_msg = msg;
 			_args = args;
 		}
 
-		public static function unfreeze(data:Object):InternalMessage{
-			var newMsg:InternalMessage = new InternalMessage();
-			newMsg._timestamp = data.timestamp;
-			newMsg._targetGuid = data.targetGuid;
-			newMsg._msg = data.msg;
-			newMsg._args = data.args;
-			return newMsg;
+		public static function readFromByteArray(b:ByteArray):InternalMessage{
+			return new InternalMessage(
+				b.readDouble(),
+				b.readUTF(),
+				b.readUTF(),
+				JSON.decode(b.readUTF())
+			);
 		}
 
-		public function freeze():Object{
-			var data:Object = new Object();
-			data.timestamp = _timestamp;
-			data.targetGuid = _targetGuid;
-			data.msg = _msg;
-			data.args = _args;
-			data.sequenceNumber = _sequenceNumber;
-			return data;
+		public function writeToByteArray(b:ByteArray):void{
+			b.writeDouble(_timestamp);
+			b.writeUTF(_targetGuid);
+			b.writeUTF(_msg);
+			b.writeUTF(JSON.encode(_args));
 		}
 		
-		public function executionTime():Number{
-			return _timestamp;
-		}
-
 		override public function execute(island:IslandReplica):void{
-			var target:IslandObject = island.islandObjectbyGuid(_targetGuid);
+			var target:IslandObject = island.islandObjectByGuid(_targetGuid);
 			target[_msg].apply(target, _args);
 		}
 		

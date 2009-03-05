@@ -17,7 +17,7 @@ package com.croqodile{
 			_island = island;
 		}
 
-		public function guid():int {
+		public function guid():String {
 			return _guid;
 		}
 
@@ -26,7 +26,7 @@ package com.croqodile{
 		}
 
 		public function send(msg:String, args:Array):void{
-			_island.controller().propagateFarSend(ExternalIslandMessage.forCall(_guid, msg, args));
+			_island.controller().propagateFarSend(ExternalIslandMessage.createForCall(_guid, msg, args));
 		}
 
     }

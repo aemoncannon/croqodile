@@ -7,10 +7,9 @@ package com.croqodile{
     import flash.utils.ByteArray;
     
     public class ExternalIslandMessage extends ExternalMessage{
-
 		protected var _targetGuid:String;
-		protected var _args:Array;
 		protected var _msg:String;
+		protected var _args:Array;
 
 		override protected function get type():uint{ return MSG_TYPE_NORMAL; }
 
@@ -21,19 +20,19 @@ package com.croqodile{
 			_args = args;
 		}
 
-		public static function fromBytes(num:Number, timestamp:Number, payload:ByteArray):ExternalIslandMessage{
+		public static function createFromPayload(num:Number, timestamp:Number, payload:ByteArray):ExternalIslandMessage{
 			var src:String = payload.readUTFBytes(payload.length);
-			var parts:Array = Array(JSON.decode(src));
+			var parts:Array = JSON.decode(src) as Array;
 			return new ExternalIslandMessage(num, timestamp, parts[0], parts[1], parts[2]);
 		}
 
-		public static function forCall(targetGuid:String, msg:String, args:Array):void{
+		public static function createForCall(targetGuid:String, msg:String, args:Array):ExternalIslandMessage{
 			return new ExternalIslandMessage(0, 0, targetGuid, msg, args);
 		}
 
 		override protected function payloadBytes():ByteArray{ 
 			var payload:ByteArray = new ByteArray();
-			var src:String = JSON.encode([targetGuid, msg, args]);
+			var src:String = JSON.encode([_targetGuid, _msg, _args]);
 			payload.writeUTFBytes(src);
 			return payload;
 		}
@@ -42,14 +41,24 @@ package com.croqodile{
 			var target:IslandObject = IslandObject(island.islandObjectByGuid(_targetGuid));
 			target[_msg].apply(target, _args);
 		}
+
+		override public function equals(o:Object):Boolean{
+			return (
+				super.equals(o) && 
+				o is ExternalIslandMessage && 
+				_targetGuid == o._targetGuid && 
+				_msg == o._msg &&
+				JSON.encode(_args) === JSON.encode(o._args)
+			);
+		}
 		
 		override public function toString():String{
 			return "ExternalIslandMessage(" + [
 				_timestamp,
 				_targetGuid,
 				_msg,
-				_args].join(",") + 
-			")";
+				_args
+			].join(",") + ")";
 		}
     }
     

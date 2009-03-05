@@ -5,6 +5,7 @@ package com.croqodile{
     import com.croqodile.Controller;
     import com.croqodile.ExternalMessage;
     import flash.events.*;
+    import flash.utils.*;
     
     public class MessageQ {
 		
@@ -15,25 +16,23 @@ package com.croqodile{
 			_island = island;
 		}
 
-		public function length():int{
+		public function get length():int{
 			return _msgArray.length;
 		}
-		
-		
-		public function unfreeze(data:Array):void{
+
+		public function readFromByteArray(b:ByteArray):void{
 			_msgArray = [];
-			for each(var datum:Object in data){
-				var m:InternalMessage = InternalMessage.unfreeze(datum, _island);
-				_msgArray.push(m);
+			var msgCount:uint = b.readUnsignedInt();
+			for(var i:int = 0; i < msgCount; i++){
+				_msgArray.push(InternalMessage.readFromByteArray(b));
 			}
 		}
 		
-		public function freeze():Array{
-			var data:Array = [];
+		public function writeToByteArray(b:ByteArray):void{
+			b.writeUnsignedInt(_msgArray.length);
 			for each(var m:InternalMessage in _msgArray){
-				data.push(m.freeze());
+				m.writeToByteArray(b);
 			}
-			return data;
 		}
 		
 		public function scheduleInternalMessage(msg:InternalMessage):void {
@@ -45,11 +44,11 @@ package com.croqodile{
 		}
 		
 		private function sortIntoQ(msg:Message):void{
-			
-			if(msg.executionTime() < _island.time()){
+
+			if(msg.time < _island.time){
 				throw new Error("Message out of date!: " + msg.toString());
 			}
-			
+
 			for(var i:int = _msgArray.length - 1; i > -1; i--){
 				var curMsg:Message = _msgArray[i];
 				if(curMsg.sortsBefore(msg)){
@@ -62,8 +61,7 @@ package com.croqodile{
 		
 		private function executeUpTo(msg:Message):void {
 			var curMsg:Message = null;
-			while((_msgArray.length > 0) &&
-				MessageQ.sortsBefore(_msgArray[0], msg)){
+			while((_msgArray.length > 0) && _msgArray[0].sortsBefore(msg)){
 				curMsg = _msgArray.shift();
 				_island.executeMessage(curMsg);
 			}
@@ -71,7 +69,7 @@ package com.croqodile{
 		}
 		
 		public function toString():String {
-			return _msgArray.map(function(ea, i, array){
+			return _msgArray.map(function(ea:InternalMessage, i:int, a:Array){
 					return ea.toString();
 				}).join(",\n");
 		}

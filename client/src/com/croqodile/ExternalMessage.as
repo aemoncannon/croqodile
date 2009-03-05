@@ -20,8 +20,8 @@ package com.croqodile{
 			while((buf.length - buf.position) >= MSG_HEAD_LEN){
 				msgBookmark = buf.position;
 				var type:uint = buf.readUnsignedByte();
-				var num:Number = (Number(buf.readUnsignedInt()) * Math.pow(2, 32)) + Number(buf.readUnsignedInt());
-				var time:Number = (Number(buf.readUnsignedInt()) * Math.pow(2, 32)) + Number(buf.readUnsignedInt());
+				var num:Number = buf.readDouble();
+				var time:Number = buf.readDouble();
 				var len:uint = buf.readUnsignedInt();
 				if((buf.length - buf.position) >= len){
 					var content:ByteArray = new ByteArray();
@@ -41,7 +41,7 @@ package com.croqodile{
 			switch(type){
 				case MSG_TYPE_TERM:          throw new Error("Should not receive term message.");
 				case MSG_TYPE_SNAPSHOT_REQ:  return new SnapshotRequestMessage(num, time);
-				case MSG_TYPE_NORMAL:        return ExternalIslandMessage.fromBytes(num, time, content);
+				case MSG_TYPE_NORMAL:        return ExternalIslandMessage.createFromPayload(num, time, content);
 				case MSG_TYPE_HEARTBEAT:     return new HeartbeatMessage(num, time);
 			}
 			throw new Error("Oops, unknown message type: " + type);
@@ -57,26 +57,17 @@ package com.croqodile{
 		public function toBytes():ByteArray{ 
 			var b:ByteArray = new ByteArray();
 			b.writeByte(this.type);
-
-			b.writeUnsignedInt(0);
-			b.writeUnsignedInt(0);
-
-			b.writeUnsignedInt(0);
-			b.writeUnsignedInt(0);
-
+			b.writeDouble(_sequenceNumber);
+			b.writeDouble(_timestamp);
 			var payload:ByteArray = payloadBytes();
 			b.writeUnsignedInt(payload.length);
 			b.writeBytes(payload);
-			return b; 
+			b.position = 0;
+			return b;
 		}
 
 		protected function payloadBytes():ByteArray{ return null; }
 
-		
-		override public function get time():Number{
-			return _timestamp;
-		}
-		
 		public function get sequenceNumber():int{
 			return _sequenceNumber;
 		}

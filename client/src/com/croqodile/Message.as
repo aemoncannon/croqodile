@@ -10,7 +10,7 @@ package com.croqodile{
 
 		function get time():Number;
 		
-		function execute(IslandReplica):void;
+		function execute(island:IslandReplica):void;
 
 		function sortsBefore(msg:Message):Boolean;
 		

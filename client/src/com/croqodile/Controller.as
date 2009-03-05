@@ -1,8 +1,10 @@
 package com.croqodile {
     import flash.display.MovieClip;
     import flash.system.Security;
-    import flash.utils.Timer;
+    import flash.utils.*;
     import flash.events.*;
+    import flash.net.URLLoader;
+    import flash.net.URLRequest;
     import com.croqodile.*;
     import com.croqodile.events.*;
     import com.croqodile.serialization.base64.Base64;
@@ -28,15 +30,15 @@ package com.croqodile {
 			_buffering = true;
 
 			_island.setController(this);
-			_messageCon = (config.messageCon ? config.messageCon : new RouterConnection({}));
-			_messageCon.addEventListener(RouterConnection.CONNECTION_CLOSED, onRouterConnectionClosed);
-			_messageCon.addEventListener(ExternalMessageEvent.type, onFirstExternalMessage);
-			_messageCon.connect({
+			_routerCon = (config.routerCon ? config.routerCon : new RouterConnection({
 					userId: _userId,
 					islandId: _island.id,
 					host: _host,
 					port: _port
-				});
+				}));
+			_routerCon.addEventListener(RouterConnection.CONNECTION_CLOSED, onRouterConnectionClosed);
+			_routerCon.addEventListener(ExternalMessageEvent.type, onFirstExternalMessage);
+			_routerCon.connect();
 		}
 		
 		public static function genUserId():String {
@@ -56,11 +58,11 @@ package com.croqodile {
 		}
 		
 		public function propagateFarSend(msg:ExternalMessage):void{
-			_messageCon.sendMessage(msg);
+			_routerCon.sendMessage(msg);
 		}
 		
 		public function disconnectFromRouter():void{
-			_messageCon.disconnect();
+			_routerCon.disconnect();
 		}
 		
 		///////////////////////////
@@ -118,7 +120,7 @@ package com.croqodile {
 				"id=" + _island.id + 
 				"&clientId=" + _userId
 			);
-			var data:ByteArray = Base64.encodeByteArray(_island.snapshot());
+			var data:String = Base64.encodeByteArray(_island.snapshot());
 			request.data = data;
 			request.method = "POST";
 			loader.load(request);

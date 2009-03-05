@@ -25,14 +25,14 @@ parse_all_messages(Buf) -> parse_all_messages(Buf, []).
 parse_all_messages(Buf, Messages) ->
     case Buf of
 
-	<<?MSG_TYPE_TERM:8,0:64,0:64,0:32,Rest/binary>> ->
+	<<?MSG_TYPE_TERM:8,0:64/float,0:64/float,0:32,Rest/binary>> ->
 	    {lists:reverse(Messages), Rest};
 
-	<<Type:8,Num:64,Time:64,Len:32,Rest/binary>> when (size(Rest) >= Len) ->
+	<<Type:8,Num:64/float,Time:64/float,Len:32,Rest/binary>> when (size(Rest) >= Len) ->
 	    {Payload, Remainder} = split_binary(Rest, Len),
 	    parse_all_messages(Remainder, [{msg, Type, Num, Time, Payload} | Messages]);
 
-	<<_Type:8,_Num:64,_Time:64,Len:32,Rest/binary>> when (size(Rest) < Len) ->
+	<<_Type:8,_Num:64/float,_Time:64/float,Len:32,Rest/binary>> when (size(Rest) < Len) ->
 	    {lists:reverse(Messages), Buf};
 
 	_Else -> 
@@ -56,7 +56,7 @@ make_term_message() ->
 
 encode_message({msg, Type, Num, Time, Payload}) ->
     Len = size(Payload),
-    <<Type:8,Num:64,Time:64,Len:32,Payload/binary>>.
+    <<Type:8,Num:64/float,Time:64/float,Len:32,Payload/binary>>.
 
 socket_pipe(FromSocket, ToSocket, Len) ->
     socket_pipe(FromSocket, ToSocket, 0, Len).

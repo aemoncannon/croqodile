@@ -2,6 +2,7 @@ package com.croqodile.util{
     import flash.utils.Timer;
     import com.croqodile.*;
     import flash.events.*;
+    import flash.utils.*;
     
     /*
     *  Based largely on Noel Billig's SeedRandom class (http://www.dncompute.com)
@@ -14,12 +15,12 @@ package com.croqodile.util{
 			_seed = seed;
 		}
 		
-		public function freeze():Object { 
-			return { seed: _seed }
+		public function readFromByteArray(b:ByteArray):void { 
+			_seed = b.readDouble();
 		}
 		
-		public function unfreeze(data:Object):void {
-			_seed = data.seed;
+		public function writeToByteArray(b:ByteArray):void {
+			b.writeDouble(_seed);
 		}
 
 		/**

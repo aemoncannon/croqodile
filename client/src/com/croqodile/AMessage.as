@@ -1,7 +1,7 @@
 package com.croqodile{
     import com.croqodile.Message;
     
-    public class AMessage implements Message{
+    public class AMessage extends Obj implements Message{
 
 		protected var _timestamp:Number = 0;
 
@@ -12,9 +12,13 @@ package com.croqodile{
 			return this.time < msg.time;
 		}
 
-		public function get time():Number { return 0; }
-		public function execute(IslandReplica):void { }
+		public function get time():Number { return _timestamp; }
+		public function execute(island:IslandReplica):void { }
 		public function toString():String { return "Message"; }
+
+		override public function equals(o:Object):Boolean{
+			return (o is AMessage && this.time == o.time);
+		}
 	}
 
 }

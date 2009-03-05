@@ -51,18 +51,18 @@ test_protocol_parsing(_TestState) ->
     {[],<<>>} = parse_all_messages(<<>>),
 
     %% Parse one message.
-    {[{msg, 1, Num, Time, <<"hello">>}],<<>>} = parse_all_messages(<<1:8,Num:64,Time:64,5:32,"hello">>),
+    {[{msg, 1, Num, Time, <<"hello">>}],<<>>} = parse_all_messages(<<1:8,Num:64/float,Time:64/float,5:32,"hello">>),
 
     %% Parse to messages.
     {[{msg, 1, Num, Time, <<"hello">>},{msg, 120, Num, Time, <<"121 &*">>}],<<>>} = 
-	parse_all_messages(<<1:8,Num:64,Time:64,5:32,"hello",120:8,Num:64,Time:64,6:32,"121 &*">>),
+	parse_all_messages(<<1:8,Num:64/float,Time:64/float,5:32,"hello",120:8,Num:64/float,Time:64/float,6:32,"121 &*">>),
 
     %% Shouldn't parse anything if payload is too short..
-    {[],<<1:8,Num:64,Time:64,10:32,"hello">>} = parse_all_messages(<<1:8,Num:64,Time:64,10:32,"hello">>),
+    {[],<<1:8,Num:64/float,Time:64/float,10:32,"hello">>} = parse_all_messages(<<1:8,Num:64/float,Time:64/float,10:32,"hello">>),
 
     %% Should stop at terminator header (Type=0,Length=0)..
     {[{msg, 1,Num,Time, <<"hello">>}],<<"don't read me'">>} = 
-	parse_all_messages(<<1:8,Num:64,Time:64,5:32,"hello",0:8,0:64,0:64,0:32,"don't read me'">>),
+	parse_all_messages(<<1:8,Num:64/float,Time:64/float,5:32,"hello",0:8,0:64/float,0:64/float,0:32,"don't read me'">>),
     ok.
 
 
