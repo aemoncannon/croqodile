@@ -30,6 +30,11 @@ package com.croqodile {
 				)
 			);
 		}
+
+
+		override public function equals(o:Object):Boolean { 
+			return o is IslandObject && _guid === o.guid;
+		}
 		
     }
 }

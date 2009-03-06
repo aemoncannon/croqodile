@@ -22,13 +22,11 @@ package com.croqodile {
 
 		public function Controller(config:Object):void{
 			super();
-
 			_userId = config.userId;
 			_island = config.island;
 			_host = config.host;
 			_port = config.port;
 			_buffering = true;
-
 			_island.controller = this;
 			_routerCon = (config.routerCon ? config.routerCon : new RouterConnection({
 					userId: _userId,

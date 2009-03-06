@@ -9,6 +9,7 @@ package com.croqodile.test {
 
 		private var _num:Number = 0;
 		private var _time:Number = 0;
+		private var _msgQ:Array = [];
 		
 		public function MockRouterConnection(config:Object) {
 			super(config);
@@ -18,8 +19,14 @@ package com.croqodile.test {
 			_num++;
 			_time++;
 			msg.unsafeStamp(_num, _time);
-			dispatchEvent(new ExternalMessageEvent(msg));
-		}	
+			_msgQ.push(msg);
+		}
+
+		public function pump():void{
+			if(_msgQ.length > 0){
+				dispatchEvent(new ExternalMessageEvent(_msgQ.shift()));
+			}
+		}
 		
 	}
 }
