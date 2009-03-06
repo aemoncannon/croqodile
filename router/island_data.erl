@@ -60,7 +60,7 @@ do(Q) ->
 
 island_to_json_obj(#island{id=Id, type=Type, description=Description, router_pid=_RouterPid}) ->
     {struct, [
-	      {<<"id">>, Id},
+	      {<<"id">>, list_to_binary(Id)},
 	      {<<"description">>, list_to_binary(Description)},
 	      {<<"type">>, list_to_binary(Type)}
 	     ]}.

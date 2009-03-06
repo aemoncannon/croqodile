@@ -1,32 +1,26 @@
 -module(island_http_interface).
 
--export([start/2, stop/1, run_snapshot_liason/5]).
+-export([start/3, stop/1, run_snapshot_liason/5]).
 
--import(http_driver, [header/1]).
+-import(http_driver, [header/1, classify/1]).
 -import(lists, [map/2]).
 -import(island_utils, [socket_pipe/3]).
 
 -include("island_manager.hrl").
 
--record(state, {master_pid=undefined, island_mgr_pid=undefined}).
-
-start(Port, IslandMgrPid) -> 
+start(Port, Docroot, IslandMgrPid) -> 
     io:format("Starting HTTP Interface on: ~w.~n", [Port]),
-    spawn_link(fun() -> server(Port, IslandMgrPid) end).
+    spawn_link(fun() -> server(Port, Docroot, IslandMgrPid) end).
 
 stop(Port) -> tcp_server:stop(Port).
 
 
-server(Port, IslandMgrPid) ->
-    S = self(),
+server(Port, Docroot, IslandMgrPid) ->
     process_flag(trap_exit, true),
     http_driver:start(
       Port, 
       fun(Client) -> 
-	      client_handler(Client, #state{
-			       island_mgr_pid=IslandMgrPid,
-			       master_pid=S
-			      })
+	      client_handler(Client, Docroot, IslandMgrPid)
       end, 15),
     loop().
 
@@ -39,7 +33,7 @@ loop() ->
 
 
 %% Handle a single HTTP request
-client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
+client_handler(DriverPid, Docroot, IslandMgrPid) ->
     receive
 	{DriverPid, closed} ->
 	    true;
@@ -94,10 +88,11 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 			    DriverPid ! { self(), { header(error), <<>>} },
 			    DriverPid ! { self(), close }
 		    end;
-		_ -> 
-		    DriverPid ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
+		_Filename -> 
+		    DriverPid ! { self(), file_response(F) },
+		    DriverPid ! { self(), close }
 	    end,
-	    client_handler(DriverPid, State);
+	    client_handler(DriverPid, Docroot, IslandMgrPid);
 
 	{DriverPid, {post, _Vsn, F, Args, _Env, Socket, DataSoFar, ContentLen}} ->
 	    io:format("Received POST for '~s'~n", [F]),
@@ -119,9 +114,27 @@ client_handler(DriverPid, State=#state{island_mgr_pid=IslandMgrPid}) ->
 		_ -> 
 		    DriverPid ! show({do_not_understand, F, args, Args, cwd, file:get_cwd()})
 	    end,
-	    client_handler(DriverPid, State)
+	    client_handler(DriverPid, Docroot, IslandMgrPid)
     end.
 
+
+file_response(F) ->
+    F1 = "." ++ F,
+    case file:read_file(F1) of
+        {ok, Bin} ->
+            case classify(F) of
+                html ->
+                    {header(html), Bin};
+                jpg ->
+                    {header(jpg), Bin};
+                gif ->
+                    {header(jpg), Bin};
+                _ ->
+                    {header(text), Bin }
+            end;
+        _ ->
+	    {header(not_found), <<>>}
+    end.
 
 create_snapshot_liason(ClientId, IslandId, DriverPid, Socket) ->
     Pid = spawn_link(?MODULE, run_snapshot_liason, [ClientId, IslandId, self(), DriverPid, Socket]),

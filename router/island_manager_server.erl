@@ -14,11 +14,11 @@
 start_link(Args) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, Args, []).
 
-init([Port, PolicyPort, _WorkingDir]) ->
+init([Port, PolicyPort, WorkingDir]) ->
     process_flag(trap_exit, true),
     island_data:start(),
     _FlashPolicyServerPid = flash_policy_server:start(PolicyPort, [Port]),
-    _HttpInterfacePid = island_http_interface:start(Port, self()),
+    _HttpInterfacePid = island_http_interface:start(Port, WorkingDir, self()),
     {ok, #manager_state{}}.
 
 handle_call({directory}, _From, State=#manager_state{islands=Islands}) ->

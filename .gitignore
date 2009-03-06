@@ -1,6 +1,6 @@
-router/*.beam
-router/Mnesia.*
-router/*.dump
+*.beam
+*.dump
 *.swf
 *.db
 *.stackdump
+router/Mnesia.*

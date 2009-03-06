@@ -4,7 +4,6 @@ require 'webrick'
 require 'date'
 require 'net/http'
 
-
 rule '.beam' => '.erl' do |t|
    sh "erlc #{t.source}"
 end

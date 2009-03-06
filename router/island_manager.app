@@ -6,7 +6,7 @@
   {env, [
     {port, 6666},
     {policy_port, 6667},
-    {working_dir, ".working"}
+    {working_dir, "."}
   ]},
   {applications, [kernel, stdlib]},
   {mod, {island_manager, []}}
