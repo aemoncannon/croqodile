@@ -10,6 +10,7 @@
 	     var suite:TestSuite = new TestSuite();
 	     suite.addTestSuite(MessageSerializationTest);
 	     suite.addTestSuite(IslandSynchTest);
+	     suite.addTestSuite(DIRunnerTest);
 	     testRunner.test = suite;
 	     testRunner.startTest();
 	     }

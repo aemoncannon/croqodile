@@ -7,7 +7,7 @@ package com.croqodile {
     import flash.net.URLRequest;
     import com.croqodile.*;
     import com.croqodile.events.*;
-    import com.croqodile.serialization.base64.Base64;
+    import com.croqodile.util.Base64;
     
 
     public class Controller extends EventDispatcher {
