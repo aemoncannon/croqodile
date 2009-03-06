@@ -41,39 +41,44 @@ package com.croqodile.demos.tankwars {
 			BlockParticle(_particle).paint();
 		}
 		
-		public function freeze():Object{
-			var data:Object = {
-				collidable: _particle.collidable,
-				fixed: _particle.fixed,
-				friction: _particle.friction,
-				mass: _particle.mass,
-				positionX: _particle.position.x,
-				positionY: _particle.position.y,
-				px: _particle.px,
-				py: _particle.py,
-				width: _particle.width,
-				height: _particle.height,
-				rotation: _particle.rotation,
-				velX: _particle.velocity.x,
-				velY: _particle.velocity.y,
-				visible: _particle.visible
-			}
-			return data;
+		override public function writeTo(b:IDataOutput):void{
+			super.writeTo(b);
+			b.writeBoolean(_particle.collidable);
+			b.writeBoolean(_particle.fixed);
+			b.writeDouble(_particle.friction);
+			b.writeDouble(_particle.mass);
+			b.writeDouble(_particle.position.x);
+			b.writeDouble(_particle.position.y);
+			b.writeDouble(_particle.px);
+			b.writeDouble(_particle.py);
+			b.writeDouble(_particle.width);
+			b.writeDouble(_particle.height);
+			b.writeDouble(_particle.rotation);
+			b.writeDouble(_particle.velocity.x);
+			b.writeDouble(_particle.velocity.y);
+			b.writeBoolean(_particle.visible);
 		}
 		
-		public function unfreeze(data:Object):void{
-			_particle.collidable = data.collidable;
-			_particle.fixed = data.fixed;
-			_particle.friction = data.friction;
-			_particle.mass = data.mass;
-			_particle.position = new Vector(data.positionX, data.positionY);
-			_particle.px = data.px;
-			_particle.py = data.py;
-			_particle.width = data.width;
-			_particle.height = data.height;
-			_particle.rotation = data.rotation;
-			_particle.velocity = new Vector(data.velX, data.velY);
-			_particle.visible = data.visible;
+		override public function readFrom(b:IDataInput):void{
+			super.readFrom(b)
+			_particle.collidable = b.readBoolean();
+			_particle.fixed = b.readBoolean();
+			_particle.friction = b.readDouble();
+			_particle.mass = b.readDouble();
+			_particle.position = new Vector(b.readDouble(), b.readDouble());
+			_particle.px = b.readDouble();
+			_particle.py = b.readDouble();
+			_particle.width = b.readDouble();
+			_particle.height = b.readDouble();
+			_particle.rotation = b.readDouble();
+			_particle.velocity = new Vector(b.readDouble(), b.readDouble());
+			_particle.visible = b.readBoolean();
+		}
+
+		public static function readFrom(b:IDataInput, island:IslandReplica):Block{
+			var block:Block = new Block(island);
+			block.readFrom(b);
+			return block;
 		}
 		
     }

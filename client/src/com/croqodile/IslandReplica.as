@@ -90,38 +90,32 @@ package com.croqodile{
 		
 		public function snapshot():ByteArray {
 			var b:ByteArray = new ByteArray();
-			writeFundamentalTo(b);
 			writeTo(b);
 			b.position = 0;
 			return b;
 		}
 		
 		public function initFromSnapshot(snapshot:ByteArray):void{
-			readFundamentalFrom(snapshot);
 			readFrom(snapshot);
 			snapshot.position = 0;
 		}
-		
-		private function readFundamentalFrom(b:IDataInput):void{
-			if(_islandTime > 0){
-				throw new Error("Hey! I'm not a fresh replica!");
-			}
+
+		override protected function readFrom(b:IDataInput):void { 
+			super.readFrom(b);
+			if(_islandTime > 0){ throw new Error("Hey! I'm not a fresh replica!"); }
 			_curGuid = b.readUnsignedInt();
 			_islandTime = b.readDouble();
 			_msgQ.readFrom(b);
 			_randGenerator.readFrom(b);
 		}
 
-		private function writeFundamentalTo(b:IDataOutput):void{
+		override protected function writeTo(b:IDataOutput):void { 
+			super.writeTo(b);
 			b.writeUnsignedInt(_curGuid);
 			b.writeDouble(_islandTime);
 			_msgQ.writeTo(b);
 			_randGenerator.writeTo(b);
 		}
-
-		protected function readFrom(b:IDataInput):void { throw new Error("Subclass responsibility."); }
-
-		protected function writeTo(b:IDataOutput):void { throw new Error("Subclass responsibility."); }
 
 
 		override public function equals(o:Object):Boolean { 

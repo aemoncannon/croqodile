@@ -31,6 +31,14 @@ package com.croqodile {
 			);
 		}
 
+		protected function readFrom(b:IDataInput):void {
+			_guid = _island.internIslandObject(this, b.readUTF());
+		}
+
+		protected function writeTo(b:IDataOutput):void { 
+			_guid = _island.internIslandObject(this, b.readUTF());
+		}
+
 
 		override public function equals(o:Object):Boolean { 
 			return o is IslandObject && _guid === o.guid;

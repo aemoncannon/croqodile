@@ -1,12 +1,9 @@
 package com.croqodile.demos.tankwars {
 
-    import flash.display.MovieClip;
-    import flash.display.Stage;
-    import flash.display.Sprite;
+    import flash.display.*;
     import flash.system.Security;
-    import flash.utils.Timer;
+    import flash.utils.*;
     import com.croqodile.*;
-    import com.croqodile.demos.tankwars.*;
     import flash.events.*;
     import org.cove.ape.*;
     
@@ -43,53 +40,40 @@ package com.croqodile.demos.tankwars {
 				APEngine.addParticle(ea);
 			}
 		}
-		
 
-		
-		override public function freeze():Object{
-			var data:Object = new Object();
-			
-			data.blocks = [];
+
+		override public function writeTo(b:IDataOutput):void{
+			b.writeUnsignedInt(_blocks.length);
 			for each(var block:Block in _blocks){
-				data.blocks.push(block.freeze());
+				block.writeTo(b);
 			}
-			
-			data.things = [];
+			b.writeUnsignedInt(_things.length);
 			for each(var thing:Thing in _things){
-				data.things.push(thing.freeze());
+				thing.writeTo(b);
 			}
-			
-			data.avatars = [];
+			b.writeUnsignedInt(_avatars.length);
 			for each(var avatar:Avatar in _avatars){
-				data.avatars.push(avatar.freeze());
+				avatar.writeTo(b);
 			}
-			
-			return data;
 		}
 
 
+		override public function readFrom(b:IDataInput):void {
+			var i:int;
+			var len:int = b.readUnsignedInt();
+			for(i = 0; i < len; i++){
+				_blocks.push(Block.readFrom(b, this));
+			}
 
-		
-		override public function unfreeze(data:Object):void {
-			
-			for each(var blockData:Object in data.blocks){
-				var block:Block = new Block(this);
-				block.unfreeze(blockData);
-				_blocks.push(block);
+			len = b.readUnsignedInt();
+			for(i = 0; i < len; i++){
+				_things.push(Thing.readFrom(b, this));
 			}
-			
-			for each(var thingData:Object in data.things){
-				var thing:Thing = new Thing(this);
-				thing.unfreeze(thingData);
-				_things.push(thing);
+
+			len = b.readUnsignedInt();
+			for(i = 0; i < len; i++){
+				_avatars.push(Avatar.readFrom(b, this));
 			}
-			
-			for each(var avatarData:Object in data.avatars){
-				var avatar:Avatar = new Avatar(this, avatarData.userId);
-				avatar.unfreeze(avatarData);
-				_avatars.push(avatar);
-			}
-			
 		}
 		
 		public function canvas():Sprite{
@@ -113,13 +97,10 @@ package com.croqodile.demos.tankwars {
 			}
 		}
 		
-
 		
 		////////////////////////
         // External Interface //
         ////////////////////////
-
-
 		
 		/* Executed only once, at the beginning of Island-Time.*/
 		override public function sunrise():void {
