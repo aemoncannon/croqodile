@@ -9,11 +9,13 @@ package com.croqodile{
 		* Return true if this sorts before msg.
 		*/
 		public function sortsBefore(msg:Message):Boolean{
-			return this.time < msg.time;
+			return this.time <= msg.time;
 		}
 
 		public function get time():Number { return _timestamp; }
+
 		public function execute(island:IslandReplica):void { }
+
 		public function toString():String { return "Message"; }
 
 		override public function equals(o:Object):Boolean{

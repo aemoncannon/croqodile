@@ -15,18 +15,18 @@ package com.croqodile{
 		protected var _curGuid:int = 0;
 		protected var _islandId:String;
 		
-		public function IslandReplica(islandId:String){
-			_islandId = islandId;
+		public function IslandReplica(config:Object){
+			_islandId = config.id;
 			_randGenerator = new SeededRandom();
 			_msgQ = new MessageQ(this);
 			_islandObjDict = new Dictionary();
 			super(this);
 		}
 
-		public function internIslandObject(obj:IslandObject, guid:String = null):IslandObject{
+		public function internIslandObject(obj:IslandObject, guid:String = null):String{
 			var g:String = guid || nextGuid();
 			_islandObjDict[g] = obj;
-			return obj;
+			return g;
 		}
 
 		public function islandObjectByGuid(guid:String):IslandObject{
@@ -34,7 +34,7 @@ package com.croqodile{
 		}
 
 		public function islandObjectByRef(ref:FarRef):IslandObject{
-			return islandObjectByGuid(ref.guid());
+			return islandObjectByGuid(ref.guid);
 		}
 
 		public function nextGuid():String{
@@ -48,11 +48,11 @@ package com.croqodile{
 			_controller.signalIslandEvent(event);
 		}
 		
-		public function setController(controller:Controller):void{
+		public function set controller(controller:Controller):void{
 			_controller = controller;
 		}
 		
-		public function controller():Controller{
+		public function get controller():Controller{
 			return _controller;
 		}
 		
@@ -114,15 +114,23 @@ package com.croqodile{
 		protected function readFrom(b:IDataInput):void { throw new Error("Subclass responsibility."); }
 
 		protected function writeTo(b:IDataOutput):void { throw new Error("Subclass responsibility."); }
-		
+
+
+		override public function equals(o:Object):Boolean { 
+			return (
+				super.equals(o) && 
+				o is IslandReplica && 
+				Util.equal(this.snapshot(), o.snapshot())
+			);
+		}		
 		
 		////////////////////////
-        // External Interface //
-        ////////////////////////
+		// External Interface //
+		////////////////////////
 		
 		public function sunrise():void { throw new Error("Subclass responsibility."); }
 		
-    }
+	}
 }
 
 

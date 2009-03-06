@@ -72,6 +72,12 @@ package com.croqodile{
 		public function get sequenceNumber():int{
 			return _sequenceNumber;
 		}
+		
+		/* For testing */
+		public function unsafeStamp(num:Number, time:Number):void{
+			_sequenceNumber = num;
+			_timestamp = time;
+		}
 
 		protected function get type():uint{ return 0; }
 		

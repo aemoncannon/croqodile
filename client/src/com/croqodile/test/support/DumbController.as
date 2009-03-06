@@ -7,13 +7,13 @@ package com.croqodile.test.support {
     import com.croqodile.events.*;
     
     public class DumbController extends Controller {
-	
-	function DumbController(config:Object){
-	    this._island = config.island;
-	    this._island.setController(this);
+		
+		function DumbController(config:Object){
+			this._island = config.island;
+			this._island.controller = this;
+		}
+
+
 	}
 
-
 }
-
-

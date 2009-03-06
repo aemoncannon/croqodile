@@ -17,16 +17,12 @@ package com.croqodile{
 			_island = island;
 		}
 
-		public function guid():String {
+		public function get guid():String {
 			return _guid;
 		}
 
-		public function target():IslandObject {
-			return _island.islandObjectByGuid(_guid);
-		}
-
 		public function send(msg:String, args:Array):void{
-			_island.controller().propagateFarSend(ExternalIslandMessage.createForCall(_guid, msg, args));
+			_island.controller.propagateFarSend(ExternalIslandMessage.createForCall(_guid, msg, args));
 		}
 
     }

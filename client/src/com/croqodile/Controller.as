@@ -29,7 +29,7 @@ package com.croqodile {
 			_port = config.port;
 			_buffering = true;
 
-			_island.setController(this);
+			_island.controller = this;
 			_routerCon = (config.routerCon ? config.routerCon : new RouterConnection({
 					userId: _userId,
 					islandId: _island.id,
@@ -38,6 +38,9 @@ package com.croqodile {
 				}));
 			_routerCon.addEventListener(RouterConnection.CONNECTION_CLOSED, onRouterConnectionClosed);
 			_routerCon.addEventListener(ExternalMessageEvent.type, onFirstExternalMessage);
+		}
+
+		public function connect():void{
 			_routerCon.connect();
 		}
 		

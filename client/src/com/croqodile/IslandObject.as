@@ -4,13 +4,13 @@ package com.croqodile {
     import flash.utils.Dictionary;
     import com.croqodile.*;
     
-    public class IslandObject {
+    public class IslandObject extends Obj{
 		protected var _island:IslandReplica;
 		protected var _guid:String;
 		
 		public function IslandObject(island:IslandReplica, guid:String = null){
 			_island = island;
-			_island.internIslandObject(this, guid);
+			_guid = _island.internIslandObject(this, guid);
 		}
 
 		public function get guid():String{

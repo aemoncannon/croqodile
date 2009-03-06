@@ -25,7 +25,7 @@ package com.croqodile {
 			_port = config.port;
 			_userId = config.userId;
 			_islandId = config.islandId;
-			_socket = config.socket;
+			_socket = config.socket || new Socket();
 			_socket.addEventListener(Event.CONNECT, onSocketConnect);
 			_socket.addEventListener(Event.CLOSE, onSocketClose);
 			_socket.addEventListener(IOErrorEvent.IO_ERROR, onSocketConnectError);

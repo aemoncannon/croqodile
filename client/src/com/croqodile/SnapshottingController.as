@@ -42,7 +42,7 @@ package com.croqodile {
 			_snapshotCon = (config.snapshotCon ? config.snapshotCon : new RouterSnapshotConnection({}));
 			
 			_island = config.island;
-			_island.setController(this);
+			_island.controller = this;
 			
 			_messageCon.addEventListener(RouterConnection.CONNECTION_CLOSED,
 				onRouterConnectionClosed);

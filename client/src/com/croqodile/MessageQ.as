@@ -40,15 +40,37 @@ package com.croqodile{
 		}
 		
 		public function advanceToExternalMessage(msg:ExternalMessage):void {
-			executeUpTo(msg);
+			executeUpToAndIncluding(msg);
 		}
 		
+		/**
+		* Starting at the end of the queue, locate the first existing message which
+		* 'sortsBefore' msg. Insert msg immediately after that message.
+		*
+		* Examples:
+		* msg = "5"
+		* q  = [112222234]
+		* q' = [112222234"5"]
+		*
+		* msg = "5"
+		* q  = [112222234555667]
+		* q' = [112222234555"5"667]
+		*
+		* msg = "1"
+		* q  = [112222234555667]
+		* q' = [11"1"2222234555667]
+		*
+		* msg = "0"
+		* q  = [112222234555667]
+		* q' = ["0"112222234555667]
+		* 
+		* @param msg 
+		* @return 
+		*/
 		private function sortIntoQ(msg:Message):void{
-
 			if(msg.time < _island.time){
-				throw new Error("Message out of date!: " + msg.toString());
+				throw new Error("Message time is in the past!: " + msg.toString());
 			}
-
 			for(var i:int = _msgArray.length - 1; i > -1; i--){
 				var curMsg:Message = _msgArray[i];
 				if(curMsg.sortsBefore(msg)){
@@ -58,8 +80,25 @@ package com.croqodile{
 			}
 			_msgArray.splice(0, 0, msg);
 		}
+
 		
-		private function executeUpTo(msg:Message):void {
+		/**
+		* Execute and discard all messages in the queue that 'sortsBefore' msg.
+		* Then execute msg.
+		*
+		* msg = "5"
+		* q  = [112222234555667]
+		* q' = [667]
+		*
+		*
+		* msg = "0"
+		* q  = [112222234555667]
+		* q' = [112222234555667]
+		*
+		* @param msg 
+		* @return 
+		*/		
+		private function executeUpToAndIncluding(msg:Message):void {
 			var curMsg:Message = null;
 			while((_msgArray.length > 0) && _msgArray[0].sortsBefore(msg)){
 				curMsg = _msgArray.shift();
@@ -67,9 +106,10 @@ package com.croqodile{
 			}
 			_island.executeMessage(msg);
 		}
+
 		
 		public function toString():String {
-			return _msgArray.map(function(ea:InternalMessage, i:int, a:Array){
+			return _msgArray.map(function(ea:InternalMessage, i:int, a:Array):String{
 					return ea.toString();
 				}).join(",\n");
 		}

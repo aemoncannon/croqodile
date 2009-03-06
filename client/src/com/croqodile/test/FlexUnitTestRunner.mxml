@@ -9,6 +9,7 @@
 	     private function onCreationComplete():void {
 	     var suite:TestSuite = new TestSuite();
 	     suite.addTestSuite(MessageSerializationTest);
+	     suite.addTestSuite(IslandSynchTest);
 	     testRunner.test = suite;
 	     testRunner.startTest();
 	     }
