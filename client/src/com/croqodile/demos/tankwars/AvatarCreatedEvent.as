@@ -1,4 +1,4 @@
-package com.croqodile.toybox {
+package com.croqodile.demos.tankwars {
     import flash.events.Event;
     import com.croqodile.FarRef;
     

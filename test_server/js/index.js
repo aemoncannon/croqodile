@@ -29,7 +29,12 @@ function refreshDirectory(){
 				directory.each(function(ea){
 								   var text = "id: " + ea.id + "  type: " + ea.type;
 								   var li = new Element("li", {});
-								   var url = "/island.html?islandId=" + ea.id;
+								   var url = ["/island.html?",
+											  "islandId=", ea.id,
+											  "&host=", "localhost",
+											  "&port=", "6666",
+											  "&userId=", "aemon"
+											 ];
 								   var link = new Element("a", {href: url}).update(text);
 								   li.appendChild(link);
 								   ul.appendChild(li);

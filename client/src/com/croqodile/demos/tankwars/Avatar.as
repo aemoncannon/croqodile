@@ -1,10 +1,10 @@
-package com.croqodile.toybox {
+package com.croqodile.demos.tankwars {
     import flash.display.MovieClip;
     import flash.display.Sprite;
     import flash.events.Event;
     import flash.events.MouseEvent;
     import com.croqodile.*;
-    import com.croqodile.toybox.*;
+    import com.croqodile.demos.tankwars.*;
     import org.cove.ape.*;
     
     public class Avatar extends IslandObject {
@@ -19,7 +19,7 @@ package com.croqodile.toybox {
 			super(island);
 			_userId = userId;
 			_clip = new AvatarClip();
-			var canvas:Sprite = ToyboxIsland(island).canvas();
+			var canvas:Sprite = TankWarsIsland(island).canvas();
 			canvas.addChild(_clip);
 			var part:CircleParticle = new CircleParticle(100, //x
 				100, //y

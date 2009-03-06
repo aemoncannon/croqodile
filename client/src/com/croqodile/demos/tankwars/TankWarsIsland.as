@@ -1,4 +1,4 @@
-package com.croqodile.toybox {
+package com.croqodile.demos.tankwars {
 
     import flash.display.MovieClip;
     import flash.display.Stage;
@@ -6,11 +6,11 @@ package com.croqodile.toybox {
     import flash.system.Security;
     import flash.utils.Timer;
     import com.croqodile.*;
-    import com.croqodile.toybox.*;
+    import com.croqodile.demos.tankwars.*;
     import flash.events.*;
     import org.cove.ape.*;
     
-    public class ToyboxIsland extends IslandReplica {
+    public class TankWarsIsland extends IslandReplica {
 		public static const ARENA_X:Number = 20;
 		public static const ARENA_Y:Number = 20;
 		public static const ARENA_WIDTH:Number = 800;
@@ -23,7 +23,7 @@ package com.croqodile.toybox {
 		private var _blocks:Array = [];
 		private var _walls:Array;
 		
-		public function ToyboxIsland(config:Object){
+		public function TankWarsIsland(config:Object){
 			super();
 			
 			_canvas = config.canvas;

@@ -1,9 +1,9 @@
-package com.croqodile.toybox {
+package com.croqodile.demos.tankwars {
     import flash.display.MovieClip;
     import flash.events.Event;
     import flash.events.MouseEvent;
     import com.croqodile.*;
-    import com.croqodile.toybox.*;
+    import com.croqodile.demos.tankwars.*;
     import org.cove.ape.*;
     
     public class Block extends IslandObject {

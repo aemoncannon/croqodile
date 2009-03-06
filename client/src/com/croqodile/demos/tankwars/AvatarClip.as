@@ -1,4 +1,4 @@
-package com.croqodile.toybox {
+package com.croqodile.demos.tankwars {
     import flash.display.MovieClip;
     import flash.events.Event;
     import flash.events.MouseEvent;
