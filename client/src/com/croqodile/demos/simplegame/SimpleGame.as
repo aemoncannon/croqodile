@@ -13,17 +13,15 @@ package com.croqodile.simplegame {
 		private var _worldRef:FarRef;
 		private var _avatarRef:FarRef;
 		
-		public function SimpleGame(){
-			this.stage.stageWidth = 500;
-			this.stage.stageHeight = 500;
+		public function SimpleGame(islandId:String){
 
 			var config:Object = DIRunner.run([
-					{name: "island", klass: SimpleGameWorld, args: {stage: this.stage}, injectArgs: {}},
-					{name: "controller", klass: SnapshottingController, args: {}, injectArgs: {island: "island"}} ]);
+					{name: "island", klass: SimpleGameWorld, args: {id: islandId, stage: this.stage}, injectArgs: {}},
+					{name: "controller", klass: SnapshottingController, args: {}, injectArgs: {island: "island"}} 
+				]);
 			
-			this._controller = config.controller;
-			this._controller.addEventListener(RouterConnectionReadyEvent.type, routerConnectionReady);
-			this.addChild(new Output());
+			_controller = config.controller;
+			_controller.addEventListener(RouterConnectionReadyEvent.type, routerConnectionReady);
 		}
 		
 		////////////////////
@@ -31,29 +29,28 @@ package com.croqodile.simplegame {
         ////////////////////
 		
 		public function routerConnectionReady(event:Event):void{
-			this._worldRef = this._controller.island().farRef();
-			this._controller.addEventListener(AvatarCreatedEvent.type, avatarCreated);
-			this._worldRef.send("createAvatar",[this._controller.userId()]);
-			this._controller.addEventListener(DisconnectedFromRouterEvent.type, disconnectedFromRouter);
+			_worldRef = _controller.island().farRef();
+			_controller.addEventListener(AvatarCreatedEvent.type, avatarCreated);
+			_worldRef.send("createAvatar",[_controller.userId()]);
+			_controller.addEventListener(DisconnectedFromRouterEvent.type, disconnectedFromRouter);
 		}
 		
-		public function disconnectedFromRouter(event:Event):void{
-		}
+		public function disconnectedFromRouter(event:Event):void{}
 		
 		private function onKeyDown(evt:KeyboardEvent):void{
 			evt.stopPropagation();
 			
 			if(evt.keyCode == Keyboard.LEFT){
-				this._avatarRef.send("setXVelocity", [-5]);
+				_avatarRef.send("setXVelocity", [-5]);
 			}
 			else if(evt.keyCode == Keyboard.RIGHT){
-				this._avatarRef.send("setXVelocity", [5]);
+				_avatarRef.send("setXVelocity", [5]);
 			}
 			else if(evt.keyCode == Keyboard.UP){
-				this._avatarRef.send("setYVelocity", [-5]);
+				_avatarRef.send("setYVelocity", [-5]);
 			}
 			else if(evt.keyCode == Keyboard.DOWN){
-				this._avatarRef.send("setYVelocity", [5]);
+				_avatarRef.send("setYVelocity", [5]);
 			}
 		}
 		
@@ -61,25 +58,25 @@ package com.croqodile.simplegame {
 			evt.stopPropagation();
 			
 			if(evt.keyCode == Keyboard.LEFT){
-				this._avatarRef.send("setXVelocity", [0]);
+				_avatarRef.send("setXVelocity", [0]);
 			}
 			else if(evt.keyCode == Keyboard.RIGHT){
-				this._avatarRef.send("setXVelocity", [0]);
+				_avatarRef.send("setXVelocity", [0]);
 			}
 			else if(evt.keyCode == Keyboard.UP){
-				this._avatarRef.send("setYVelocity", [0]);
+				_avatarRef.send("setYVelocity", [0]);
 			}
 			else if(evt.keyCode == Keyboard.DOWN){
-				this._avatarRef.send("setYVelocity", [0]);
+				_avatarRef.send("setYVelocity", [0]);
 			}
 		}
 		
 		public function avatarCreated(event:Event):void{
 			var e:AvatarCreatedEvent = AvatarCreatedEvent(event);
-			if(this._controller.userId() == e.userId){
-				this._avatarRef = e.avatarRef;
-				this.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-				this.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			if(_controller.userId() == e.userId){
+				_avatarRef = e.avatarRef;
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+				stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			}
 		}
 		
