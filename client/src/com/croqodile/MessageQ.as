@@ -95,6 +95,7 @@ package com.croqodile{
 		* q  = [112222234555667]
 		* q' = [112222234555667]
 		*
+		*
 		* @param msg 
 		* @return 
 		*/		

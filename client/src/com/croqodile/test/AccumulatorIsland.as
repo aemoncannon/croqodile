@@ -20,6 +20,11 @@ package com.croqodile.test {
 			b.writeUTF(_content);
 		}
 
+		/**
+		* Testing helper.
+		* 
+		* @return 
+		*/		
 		public function unsafeGetContent():String{
 			return _content;
 		}

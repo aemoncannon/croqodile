@@ -29,11 +29,11 @@ package com.croqodile {
 			_buffering = true;
 			_island.controller = this;
 			_routerCon = (config.routerCon ? config.routerCon : new RouterConnection({
-					userId: _userId,
-					islandId: _island.id,
-					host: _host,
-					port: _port
-				}));
+						userId: _userId,
+						islandId: _island.id,
+						host: _host,
+						port: _port
+					}));
 			_routerCon.addEventListener(RouterConnection.CONNECTION_CLOSED, onRouterConnectionClosed);
 			_routerCon.addEventListener(ExternalMessageEvent.type, onFirstExternalMessage);
 		}
@@ -151,13 +151,21 @@ package com.croqodile {
 
 		
 		protected function installSnapshot(data:ByteArray):void {
-			var time:Number = _island.time;
-			if(time > 0) throw new Error("Can't apply snapshot to non-fresh island replica.");
+			if(_island.time > 0) throw new Error("Can't apply snapshot to non-fresh island replica.");
 			_island.initFromSnapshot(data);
+
+			/*
+			* island.time is now set from snapshot, and we assume that all messages that
+			* 'sortsBefore' island.time have already been applied (via the snapshot).
+			*
+			* Now we take the messages that arrived before the snapshot and apply those 
+			* that do not 'sortsBefore' the new island.time. 
+			* That is, messages whose effects are not already part of the snapshot.
+			*
+			*/
+			var time:Number = _island.time;
 			for each(var m:ExternalMessage in _msgBuffer){
-				//Timestamps are guaranteed by router to be
-				//always increasing, never repeating
-				if(m.time > time){
+				if(!m.sortsBeforeTime(time)){
 					_island.advanceToExternalMessage(m);
 				}
 			}

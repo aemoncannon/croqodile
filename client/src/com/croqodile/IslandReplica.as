@@ -56,6 +56,14 @@ package com.croqodile{
 			return _controller;
 		}
 		
+		/**
+		* Postcondition: _islandTime will be msg.time and 
+		* all messages in messageQ that 'sortsBefore' msg
+		* will have been executed.
+		* 
+		* @param msg 
+		* @return 
+		*/		
 		public function executeMessage(msg:Message):void{
 			if(msg.time < this.time){
 				throw new Error("Executing old message!: " + msg.toString());

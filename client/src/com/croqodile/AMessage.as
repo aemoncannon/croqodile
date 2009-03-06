@@ -12,6 +12,13 @@ package com.croqodile{
 			return this.time <= msg.time;
 		}
 
+		/*
+		* Return true if this sorts before t.
+		*/
+		public function sortsBeforeTime(t:Number):Boolean{
+			return this.time <= time;
+		}
+
 		public function get time():Number { return _timestamp; }
 
 		public function execute(island:IslandReplica):void { }
