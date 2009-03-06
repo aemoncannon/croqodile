@@ -25,7 +25,7 @@ package com.croqodile.test{
 			assertTrue("islands should be equal.", isl1.equals(isl2));
 		}
 
-		public function testAFewMessagesMessage():void{
+		public function testAFewMessages():void{
 			var config1:Object = DIRunner.run([
 					{name: "island", klass: AccumulatorIsland, args: { id: "id" }, injectArgs: {}},
 					{name: "con", klass: MockRouterConnection, args: {}, injectArgs: {}},
@@ -46,7 +46,7 @@ package com.croqodile.test{
 			con.pump();
 			con.pump();
 			con.pump();
-			assertFalse("islands should be equal.", isl1.equals(isl2));
+			assertTrue("islands should be equal.", isl1.equals(isl2));
 			assertTrue("island1 content should be...", isl1.unsafeGetContent() === "appledoghello");
 			assertTrue("island2 content should be...", isl2.unsafeGetContent() === "appledoghello");
 		}
