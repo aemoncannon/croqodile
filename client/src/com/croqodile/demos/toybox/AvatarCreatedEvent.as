@@ -8,9 +8,9 @@ package com.croqodile.toybox {
 	    public static var type:String = "avatarCreated";
 	    
 	    public function AvatarCreatedEvent( avatarRef:FarRef, userId:String){
-		super(AvatarCreatedEvent.type);
-		this.userId = userId;
-		this.avatarRef = avatarRef;
+			super(AvatarCreatedEvent.type);
+			userId = userId;
+			avatarRef = avatarRef;
 	    }
 	    
 	}

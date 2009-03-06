@@ -26,19 +26,20 @@ package com.croqodile.toybox {
 		public function ToyboxIsland(config:Object){
 			super();
 			
-			this._canvas = config.canvas;
+			_canvas = config.canvas;
 			
-			APEngine.init(1/3);
-			APEngine.defaultContainer = this._canvas;
+			APEngine.init(1.0/3.0);
+			APEngine.defaultContainer = _canvas;
 			
 			// Create the walls. These will never change.
-			this._walls = [new RectangleParticle(ARENA_WIDTH/2,0,ARENA_WIDTH,ARENA_WALL_THICKNESS,0,true),
-				new RectangleParticle(ARENA_WIDTH/2,ARENA_HEIGHT,ARENA_WIDTH,ARENA_WALL_THICKNESS,0,true),
-				new RectangleParticle(0,ARENA_HEIGHT/2,ARENA_WALL_THICKNESS,ARENA_HEIGHT,0,true),
-				new RectangleParticle(ARENA_WIDTH,ARENA_HEIGHT/2,ARENA_WALL_THICKNESS,ARENA_HEIGHT,0,true)
+			_walls = [
+				new RectangleParticle(ARENA_WIDTH/2, 0, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, true),
+				new RectangleParticle(ARENA_WIDTH/2, ARENA_HEIGHT,ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, true),
+				new RectangleParticle(0, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, true),
+				new RectangleParticle(ARENA_WIDTH, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, true)
 			];
 			
-			for each(var ea:RectangleParticle in this._walls){
+			for each(var ea:RectangleParticle in _walls){
 				APEngine.addParticle(ea);
 			}
 		}
@@ -49,17 +50,17 @@ package com.croqodile.toybox {
 			var data:Object = new Object();
 			
 			data.blocks = [];
-			for each(var block:Block in this._blocks){
+			for each(var block:Block in _blocks){
 				data.blocks.push(block.freeze());
 			}
 			
 			data.things = [];
-			for each(var thing:Thing in this._things){
+			for each(var thing:Thing in _things){
 				data.things.push(thing.freeze());
 			}
 			
 			data.avatars = [];
-			for each(var avatar:Avatar in this._avatars){
+			for each(var avatar:Avatar in _avatars){
 				data.avatars.push(avatar.freeze());
 			}
 			
@@ -74,40 +75,40 @@ package com.croqodile.toybox {
 			for each(var blockData:Object in data.blocks){
 				var block:Block = new Block(this);
 				block.unfreeze(blockData);
-				this._blocks.push(block);
+				_blocks.push(block);
 			}
 			
 			for each(var thingData:Object in data.things){
 				var thing:Thing = new Thing(this);
 				thing.unfreeze(thingData);
-				this._things.push(thing);
+				_things.push(thing);
 			}
 			
 			for each(var avatarData:Object in data.avatars){
 				var avatar:Avatar = new Avatar(this, avatarData.userId);
 				avatar.unfreeze(avatarData);
-				this._avatars.push(avatar);
+				_avatars.push(avatar);
 			}
 			
 		}
 		
 		public function canvas():Sprite{
-			return this._canvas;
+			return _canvas;
 		}
 		
 		public function render():void {
-			for each(var av:Avatar in this._avatars){
+			for each(var av:Avatar in _avatars){
 				av.render();
 			}
-			for each(var th:Thing in this._things){
+			for each(var th:Thing in _things){
 				th.render();
 			}
 			
-			for each(var b:Block in this._blocks){
+			for each(var b:Block in _blocks){
 				b.render();
 			}
 			
-			for each(var w:RectangleParticle in this._walls){
+			for each(var w:RectangleParticle in _walls){
 				w.paint();
 			}
 		}
@@ -126,32 +127,32 @@ package com.croqodile.toybox {
 			var block:Block = null;
 			for(var i:int = 0; i < 3; i ++){
 				block = new Block(this,
-					this.rand().numInRange(20, ARENA_WIDTH),
-					this.rand().numInRange(20, ARENA_HEIGHT),
-					this.rand().numInRange(10, 100),
-					this.rand().numInRange(10, 100),
-					this.rand().numInRange(0.0, 4.0)
+					rand.numInRange(20, ARENA_WIDTH),
+					rand.numInRange(20, ARENA_HEIGHT),
+					rand.numInRange(10, 100),
+					rand.numInRange(10, 100),
+					rand.numInRange(0.0, 4.0)
 				);
-				this._blocks.push(block);
+				_blocks.push(block);
 			}
 			
 			var thing:Thing = null;
 			for(i = 0; i < 20; i ++){
 				thing = new Thing(this);
-				this._things.push(thing);
+				_things.push(thing);
 			}
-			this.futureSend(50, "stepPhysics", []);
+			futureSend(50, "stepPhysics", []);
 		}
 		
 		public function createAvatar(userId:String):void {
 			var avatar:Avatar = new Avatar(this, userId);
-			this._avatars.push(avatar);
-			this.signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
+			_avatars.push(avatar);
+			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
 		}
 		
 		public function stepPhysics():void{
 			APEngine.step();
-			this.futureSend(20, "stepPhysics", []);
+			futureSend(20, "stepPhysics", []);
 		}
 		
 		

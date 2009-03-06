@@ -76,7 +76,7 @@ package com.croqodile{
 			return _islandTime;
 		}
 
-		public function rand():SeededRandom {
+		public function get rand():SeededRandom {
 			return _randGenerator;
 		}
 		
