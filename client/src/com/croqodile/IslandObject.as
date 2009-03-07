@@ -3,6 +3,7 @@ package com.croqodile {
     import flash.events.MouseEvent;
     import flash.utils.Dictionary;
     import com.croqodile.*;
+    import flash.utils.*;
     
     public class IslandObject extends Obj{
 		protected var _island:IslandReplica;
@@ -36,7 +37,7 @@ package com.croqodile {
 		}
 
 		protected function writeTo(b:IDataOutput):void { 
-			_guid = _island.internIslandObject(this, b.readUTF());
+			b.writeUTF(_guid);
 		}
 
 
