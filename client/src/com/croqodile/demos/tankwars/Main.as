@@ -1,14 +1,15 @@
 package com.croqodile.demos.tankwars {
-
-    import flash.display.MovieClip;
-    import flash.display.Stage;
-    import flash.display.Sprite;
+    import flash.display.*;
     import flash.system.Security;
-    import flash.utils.Timer;
+    import flash.utils.*;
+    import flash.ui.Keyboard;
     import com.croqodile.*;
+    import com.croqodile.events.*;
+    import com.croqodile.di.DIRunner;
     import com.croqodile.demos.tankwars.*;
     import flash.events.*;
     import org.cove.ape.*;
+    import mx.core.UIComponent;
     
     public class Main extends Sprite {
 
@@ -17,7 +18,6 @@ package com.croqodile.demos.tankwars {
 		/* Use this carefully; unless necessary,
 		prefer a FarRef for accessing the island. */
 		private var _island:TankWarsIsland;
-
 		private var _islandRef:FarRef;
 		private var _avatarRef:FarRef;
 		private var _APEContainer:Sprite;
@@ -25,14 +25,8 @@ package com.croqodile.demos.tankwars {
 		private static const CHAT_KEY_CODE:uint = 84; // 't'
 
 		public function Main():void{
-			var canvasComp:UIComponent = new UIComponent();
-			canvasComp.x = 0;
-			canvasComp.y = 0;
-			canvasComp.width = stage.stageWidth;
-			canvasComp.height = stage.stageHeight;
 			_APEContainer = new Sprite();
-			addChild(canvasComp);
-			canvasComp.addChild(_APEContainer);
+			addChild(_APEContainer);
 
 			var flashVars:Object = LoaderInfo(root.loaderInfo).parameters;
 
@@ -61,7 +55,7 @@ package com.croqodile.demos.tankwars {
 
 		public function routerConnectionReady(event:Event):void{
 			_island = TankWarsIsland(_controller.island);
-			_islandRef = _controller.island().farRef();
+			_islandRef = _controller.island.farRef();
 			_controller.addEventListener(DisconnectedFromRouterEvent.type, disconnectedFromRouter);
 			
 			_controller.addEventListener(AvatarCreatedEvent.type, onAvatarCreated);

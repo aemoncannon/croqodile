@@ -27,8 +27,8 @@ package org.cove.ape {
 	public class WheelParticle extends CircleParticle {
 	
 		private var rp:RimParticle;
-		private var tan:Vector;	
-		private var normSlip:Vector;
+		private var tan:Vector2D;	
+		private var normSlip:Vector2D;
 		
 		private var _edgePositions:Array;
 		private var _edgeParticles:Array;
@@ -62,8 +62,8 @@ package org.cove.ape {
 				traction:Number = 1) {
 	
 			super(x,y,radius,fixed, mass, elasticity, friction);
-			tan = new Vector(0,0);
-			normSlip = new Vector(0,0);
+			tan = new Vector2D(0,0);
+			normSlip = new Vector2D(0,0);
 			rp = new RimParticle(radius, 2); 	
 			
 			this.traction = traction;	
@@ -157,7 +157,7 @@ package org.cove.ape {
 	
 	
 		/**
-		 * An Array of 4 <code>Vector</code> objects storing the location of the 4
+		 * An Array of 4 <code>Vector2D</code> objects storing the location of the 4
 		 * edge positions of this WheelParticle. The edge positions
 		 * are located relatively at the 12, 3, 6, and 9 o'clock positions.
 		 */
@@ -165,10 +165,10 @@ package org.cove.ape {
 					
 			if (_edgePositions == null) {
 				_edgePositions = new Array(
-						new Vector(0,0), 
-						new Vector(0,0), 
-						new Vector(0,0), 
-						new Vector(0,0));
+						new Vector2D(0,0), 
+						new Vector2D(0,0), 
+						new Vector2D(0,0), 
+						new Vector2D(0,0));
 						
 				updateEdgePositions();
 			}
@@ -230,9 +230,9 @@ package org.cove.ape {
 		 * @private
 		 */		
 		internal override function resolveCollision(
-				mtd:Vector, 
-				velocity:Vector, 
-				normal:Vector,
+				mtd:Vector2D, 
+				velocity:Vector2D, 
+				normal:Vector2D,
 				depth:Number,
 				order:Number):void {
 					
@@ -245,7 +245,7 @@ package org.cove.ape {
 		 * simulates torque/wheel-ground interaction - n is the surface normal
 		 * Origins of this code thanks to Raigan Burns, Metanet software
 		 */
-		private function resolve(n:Vector):void {
+		private function resolve(n:Vector2D):void {
 	
 			// this is the tangent vector at the rim particle
 			tan.setTo(-rp.curr.y, rp.curr.x);
@@ -254,10 +254,10 @@ package org.cove.ape {
 			tan = tan.normalize();
 	
 			// velocity of the wheel's surface 
-			var wheelSurfaceVelocity:Vector = tan.mult(rp.speed);
+			var wheelSurfaceVelocity:Vector2D = tan.mult(rp.speed);
 			
 			// the velocity of the wheel's surface relative to the ground
-			var combinedVelocity:Vector = velocity.plusEquals(wheelSurfaceVelocity);
+			var combinedVelocity:Vector2D = velocity.plusEquals(wheelSurfaceVelocity);
 		
 			// the wheel's comb velocity projected onto the contact normal
 			var cp:Number = combinedVelocity.cross(n);

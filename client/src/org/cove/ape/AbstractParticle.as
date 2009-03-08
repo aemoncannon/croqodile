@@ -34,9 +34,9 @@ package org.cove.ape {
 		// internal properties are not hidden from asdoc?
 		
 		/** @private */
-		internal var curr:Vector;
+		internal var curr:Vector2D;
 		/** @private */
-		internal var prev:Vector;
+		internal var prev:Vector2D;
 		/** @private */
 		internal var isColliding:Boolean;
 		/** @private */
@@ -45,8 +45,8 @@ package org.cove.ape {
 		protected var dc:Sprite;
 		
 		
-		private var forces:Vector;
-		private var temp:Vector;
+		private var forces:Vector2D;
+		private var temp:Vector2D;
 		
 		private var _kfr:Number;
 		private var _mass:Number;
@@ -71,13 +71,13 @@ package org.cove.ape {
 		
 			interval = new Interval(0,0);
 			
-			curr = new Vector(x, y);
-			prev = new Vector(x, y);
-			temp = new Vector(0,0);
+			curr = new Vector2D(x, y);
+			prev = new Vector2D(x, y);
+			temp = new Vector2D(0,0);
 			fixed = isFixed;
 			
-			forces = new Vector(0,0);
-			collision = new Collision(new Vector(0,0), new Vector(0,0));
+			forces = new Vector2D(0,0);
+			collision = new Collision(new Vector2D(0,0), new Vector2D(0,0));
 			isColliding = false;
 			
 			this.mass = mass;
@@ -87,6 +87,8 @@ package org.cove.ape {
 			collidable = true;
 			visible = true;
 		}
+
+		public function paint():void {}
 	
 	
 		/**
@@ -222,8 +224,8 @@ package org.cove.ape {
 		 * <p>
 		 * When you get the <code>position</code> of a particle you are given a copy of the current
 		 * location. Because of this you cannot change the position of a particle by
-		 * altering the <code>x</code> and <code>y</code> components of the Vector you have retrieved from the position property.
-		 * You have to do something instead like: <code> position = new Vector(100,100)</code>, or
+		 * altering the <code>x</code> and <code>y</code> components of the Vector2D you have retrieved from the position property.
+		 * You have to do something instead like: <code> position = new Vector2D(100,100)</code>, or
 		 * you can use the <code>px</code> and <code>py</code> properties instead.
 		 * </p>
 		 * 
@@ -234,15 +236,15 @@ package org.cove.ape {
 		 * its position will behave as if it's attached there by a 0 length sprint constraint. 
 		 * </p>
 		 */
-		public function get position():Vector {
-			return new Vector(curr.x,curr.y);
+		public function get position():Vector2D {
+			return new Vector2D(curr.x,curr.y);
 		}
 		
 		
 		/**
 		 * @private
 		 */
- 		public function set position(p:Vector):void {
+ 		public function set position(p:Vector2D):void {
 			curr.copy(p);
 			prev.copy(p);
 		}
@@ -289,7 +291,7 @@ package org.cove.ape {
 		 * is good for instantaneously setting the velocity, e.g., for projectiles.
 		 * 
 		 */
-		public function get velocity():Vector {
+		public function get velocity():Vector2D {
 			return curr.minus(prev);
 		}
 		
@@ -297,7 +299,7 @@ package org.cove.ape {
 		/**
 		 * @private
 		 */	
-		public function set velocity(v:Vector):void {
+		public function set velocity(v:Vector2D):void {
 			prev = curr.minus(v);	
 		}
 		
@@ -328,9 +330,9 @@ package org.cove.ape {
 		 * size (not to be confused with mass) of the particle has no effect 
 		 * on its physical behavior.
 		 * 
-		 * @param f A Vector represeting the force added.
+		 * @param f A Vector2D represeting the force added.
 		 */ 
-		public function addForce(f:Vector):void {
+		public function addForce(f:Vector2D):void {
 			forces.plusEquals(f.multEquals(invMass));
 		}
 		
@@ -341,9 +343,9 @@ package org.cove.ape {
 		 * adding forces that simulate effects like gravity. Particles with 
 		 * larger masses will be affected the same as those with smaller masses.
 		 *
-		 * @param f A Vector represeting the force added.
+		 * @param f A Vector2D represeting the force added.
 		 */ 	
-		public function addMasslessForce(f:Vector):void {
+		public function addMasslessForce(f:Vector2D):void {
 			forces.plusEquals(f);
 		}
 		
@@ -361,7 +363,7 @@ package org.cove.ape {
 	
 			// integrate
 			temp.copy(curr);
-			var nv:Vector = velocity.plus(forces.multEquals(dt2));
+			var nv:Vector2D = velocity.plus(forces.multEquals(dt2));
 			curr.plusEquals(nv.multEquals(APEngine.damping));
 			prev.copy(temp);
 		
@@ -373,8 +375,8 @@ package org.cove.ape {
 		/**
 		 * @private
 		 */		
-		internal function getComponents(collisionNormal:Vector):Collision {
-			var vel:Vector = velocity;
+		internal function getComponents(collisionNormal:Vector2D):Collision {
+			var vel:Vector2D = velocity;
 			var vdotn:Number = collisionNormal.dot(vel);
 			collision.vn = collisionNormal.mult(vdotn);
 			collision.vt = vel.minus(collision.vn);	
@@ -385,7 +387,7 @@ package org.cove.ape {
 		/**
 		 * @private
 		 */	
-		internal function resolveCollision(mtd:Vector, vel:Vector, n:Vector, d:Number, o:Number):void {
+		internal function resolveCollision(mtd:Vector2D, vel:Vector2D, n:Vector2D, d:Number, o:Number):void {
 			
 			curr.plusEquals(mtd);
 			
@@ -434,7 +436,7 @@ package org.cove.ape {
 		/**
 		 * @private
 		 */		
-		internal function getProjection(axis:Vector):Interval {
+		internal function getProjection(axis:Vector2D):Interval {
 			return null;
 		}
 	}	

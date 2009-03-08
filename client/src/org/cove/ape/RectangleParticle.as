@@ -65,7 +65,7 @@ package org.cove.ape {
 			super(x, y, fixed, mass, elasticity, friction);
 			
 			_extents = new Array(width/2, height/2);
-			_axes = new Array(new Vector(0,0), new Vector(0,0));
+			_axes = new Array(new Vector2D(0,0), new Vector2D(0,0));
 			this.rotation = rotation;	
 		}
 		
@@ -140,7 +140,7 @@ package org.cove.ape {
 		
 		
 		/**
-		 * An Array of <code>Vector</code> objects storing the location of the 4
+		 * An Array of <code>Vector2D</code> objects storing the location of the 4
 		 * corners of this RectangleParticle. This method would usually be called
 		 * in a painting method if the locations of the corners were needed. If the
 		 * RectangleParticle is being drawn using its position and angle properties 
@@ -150,10 +150,10 @@ package org.cove.ape {
 					
 			if (_cornerPositions == null) {
 				_cornerPositions = new Array(
-						new Vector(0,0), 
-						new Vector(0,0), 
-						new Vector(0,0), 
-						new Vector(0,0));
+						new Vector2D(0,0), 
+						new Vector2D(0,0), 
+						new Vector2D(0,0), 
+						new Vector2D(0,0));
 						
 				 updateCornerPositions();
 			}
@@ -168,7 +168,7 @@ package org.cove.ape {
 		 * APE particle classes. Then within that class you can define your own custom
 		 * painting method.
 		 */
-		public function paint():void {
+		override public function paint():void {
 			
 			if (dc == null) dc = getDefaultContainer();
 			
@@ -221,7 +221,7 @@ package org.cove.ape {
 		/**
 		 * @private
 		 */	
-		internal override function getProjection(axis:Vector):Interval {
+		internal override function getProjection(axis:Vector2D):Interval {
 			
 			var radius:Number =
 			    extents[0] * Math.abs(axis.dot(axes[0]))+

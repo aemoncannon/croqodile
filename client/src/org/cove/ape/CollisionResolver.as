@@ -26,10 +26,10 @@ package org.cove.ape {
 		internal static function resolveParticleParticle(
 				pa:AbstractParticle, 
 				pb:AbstractParticle, 
-				normal:Vector, 
+				normal:Vector2D, 
 				depth:Number):void {
 			
-			var mtd:Vector = normal.mult(depth);
+			var mtd:Vector2D = normal.mult(depth);
 			var te:Number = pa.elasticity + pb.elasticity;
 			
 			// the total friction in a collision is combined but clamped to [0,1]
@@ -47,14 +47,14 @@ package org.cove.ape {
 			var cb:Collision = pb.getComponents(normal);
 		 
 		 	// calculate the coefficient of restitution based on the mass
-			var vnA:Vector = (cb.vn.mult((te + 1) * mb).plus(ca.vn.mult(ma - te * mb))).divEquals(tm);		
-			var vnB:Vector = (ca.vn.mult((te + 1) * ma).plus(cb.vn.mult(mb - te * ma))).divEquals(tm);
+			var vnA:Vector2D = (cb.vn.mult((te + 1) * mb).plus(ca.vn.mult(ma - te * mb))).divEquals(tm);		
+			var vnB:Vector2D = (ca.vn.mult((te + 1) * ma).plus(cb.vn.mult(mb - te * ma))).divEquals(tm);
 			ca.vt.multEquals(tf);
 			cb.vt.multEquals(tf);
 			
 			// scale the mtd by the ratio of the masses. heavier particles move less
-			var mtdA:Vector = mtd.mult( mb / tm);
-			var mtdB:Vector = mtd.mult(-ma / tm);
+			var mtdA:Vector2D = mtd.mult( mb / tm);
+			var mtdB:Vector2D = mtd.mult(-ma / tm);
 			
 			if (! pa.fixed) pa.resolveCollision(mtdA, vnA.plusEquals(ca.vt), normal, depth, -1);
 			if (! pb.fixed) pb.resolveCollision(mtdB, vnB.plusEquals(cb.vt), normal, depth,  1);

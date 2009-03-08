@@ -21,7 +21,7 @@ package com.croqodile.demos.tankwars {
 		private var _walls:Array;
 		
 		public function TankWarsIsland(config:Object){
-			super();
+			super(this);
 			
 			_canvas = config.canvas;
 			

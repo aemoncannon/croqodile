@@ -12,11 +12,11 @@ package com.croqodile.test {
 			super(config);
 		}
 		
-		override protected function readFrom(b:IDataInput):void { 
+		override public function readFrom(b:IDataInput):void { 
 			_content = b.readUTF();
 		}
 
-		override protected function writeTo(b:IDataOutput):void { 
+		override public function writeTo(b:IDataOutput):void { 
 			b.writeUTF(_content);
 		}
 

@@ -54,16 +54,16 @@ package org.cove.ape {
 		 */
 		private static function testOBBvsOBB(ra:RectangleParticle, rb:RectangleParticle):void {
 			
-			var collisionNormal:Vector;
+			var collisionNormal:Vector2D;
 			var collisionDepth:Number = Number.POSITIVE_INFINITY;
 			
 			for (var i:int = 0; i < 2; i++) {
 		
-			    var axisA:Vector = ra.axes[i];
+			    var axisA:Vector2D = ra.axes[i];
 			    var depthA:Number = testIntervals(ra.getProjection(axisA), rb.getProjection(axisA));
 			    if (depthA == 0) return;
 				
-			    var axisB:Vector = rb.axes[i];
+			    var axisB:Vector2D = rb.axes[i];
 			    var depthB:Number = testIntervals(ra.getProjection(axisB), rb.getProjection(axisB));
 			    if (depthB == 0) return;
 			    
@@ -87,14 +87,14 @@ package org.cove.ape {
 		 */
 		private static function testOBBvsCircle(ra:RectangleParticle, ca:CircleParticle):void {
 			
-			var collisionNormal:Vector;
+			var collisionNormal:Vector2D;
 			var collisionDepth:Number = Number.POSITIVE_INFINITY;
 			var depths:Array = new Array(2);
 			
 			// first go through the axes of the rectangle
 			for (var i:int = 0; i < 2; i++) {
 	
-				var boxAxis:Vector = ra.axes[i];
+				var boxAxis:Vector2D = ra.axes[i];
 				var depth:Number = testIntervals(ra.getProjection(boxAxis), ca.getProjection(boxAxis));
 				if (depth == 0) return;
 	
@@ -109,7 +109,7 @@ package org.cove.ape {
 			var r:Number = ca.radius;
 			if (Math.abs(depths[0]) < r && Math.abs(depths[1]) < r) {
 	
-				var vertex:Vector = closestVertexOnOBB(ca.curr, ra);
+				var vertex:Vector2D = closestVertexOnOBB(ca.curr, ra);
 	
 				// get the distance from the closest vertex on rect to circle center
 				collisionNormal = vertex.minus(ca.curr);
@@ -141,7 +141,7 @@ package org.cove.ape {
 			var depthY:Number = testIntervals(ca.getIntervalY(), cb.getIntervalY());
 			if (depthY == 0) return;
 			
-			var collisionNormal:Vector = ca.curr.minus(cb.curr);
+			var collisionNormal:Vector2D = ca.curr.minus(cb.curr);
 			var mag:Number = collisionNormal.magnitude();
 			var collisionDepth:Number = (ca.radius + cb.radius) - mag;
 			
@@ -170,10 +170,10 @@ package org.cove.ape {
 		/**
 		 * Returns the location of the closest vertex on r to point p
 		 */
-	 	private static function closestVertexOnOBB(p:Vector, r:RectangleParticle):Vector {
+	 	private static function closestVertexOnOBB(p:Vector2D, r:RectangleParticle):Vector2D {
 	
-			var d:Vector = p.minus(r.curr);
-			var q:Vector = new Vector(r.curr.x, r.curr.y);
+			var d:Vector2D = p.minus(r.curr);
+			var q:Vector2D = new Vector2D(r.curr.x, r.curr.y);
 	
 			for (var i:int = 0; i < 2; i++) {
 				var dist:Number = d.dot(r.axes[i]);

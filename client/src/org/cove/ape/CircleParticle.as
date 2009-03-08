@@ -74,7 +74,7 @@ package org.cove.ape {
 		 * APE particle and constraint classes, or is a composite of them. Then within that 
 		 * class you can define your own custom painting method.
 		 */
-		public function paint():void {
+		override public function paint():void {
 			
 			if (dc == null) dc = getDefaultContainer();
 			
@@ -90,7 +90,7 @@ package org.cove.ape {
 		/**
 		 * @private
 		 */
-		internal override function getProjection(axis:Vector):Interval {
+		internal override function getProjection(axis:Vector2D):Interval {
 			var c:Number = curr.dot(axis);
 			interval.min = c - _radius;
 			interval.max = c + _radius;

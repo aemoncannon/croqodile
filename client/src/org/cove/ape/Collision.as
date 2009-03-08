@@ -22,10 +22,10 @@ package org.cove.ape {
 
 	internal final class Collision {
 	
-		internal var vn:Vector;
-		internal var vt:Vector;
+		internal var vn:Vector2D;
+		internal var vt:Vector2D;
 		
-		public function Collision(vn:Vector, vt:Vector) {
+		public function Collision(vn:Vector2D, vt:Vector2D) {
 			this.vn = vn;
 			this.vt = vt;
 		}

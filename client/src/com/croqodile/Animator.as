@@ -1,12 +1,13 @@
 package com.croqodile{
     import com.croqodile.*;
     import flash.events.*;
+    import flash.utils.*;
     
     public class Animator extends IslandObject {
 		
-		private var _step:int = 0;
-		private var _stepFunc:Function;
-		private var _timeIncrement:Number;
+		protected var _step:int = 0;
+		protected var _stepFunc:Function;
+		protected var _timeIncrement:Number;
 		
 		public function Animator(island:IslandReplica, timeIncrement:Number, stepFunc:Function){
 			super(island);
@@ -16,26 +17,26 @@ package com.croqodile{
 		}
 
 		public function start():void {
-			this.step();
+			step();
 		}
 
 		public function restart():void {
-			this._step = 0;
-			this.start();
+			_step = 0;
+			start();
 		}
 
-		public function freeze():Object { 
-			return { step: this._step }
+		override public function readFrom(b:IDataInput):void { 
+			_step = b.readUnsignedInt();
 		}
 		
-		public function unfreeze(data:Object):void {
-			this._step = data.step;
+		override public function writeTo(b:IDataOutput):void {
+			b.writeUnsignedInt(_step);
 		}
 
 		public function step():void {
-			this._step += 1;
-			if(this._stepFunc(this._step)){
-				this.futureSend(this._timeIncrement, "step", []);
+			_step += 1;
+			if(_stepFunc(_step)){
+				futureSend(_timeIncrement, "step", []);
 			}
 		}
 

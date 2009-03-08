@@ -24,14 +24,14 @@ package org.cove.ape {
 		
 		private var p1:AbstractParticle;
 		private var p2:AbstractParticle;
-		private var avgVelocity:Vector;
+		private var avgVelocity:Vector2D;
 		
 		
 		public function SpringConstraintParticle(p1:AbstractParticle, p2:AbstractParticle) {
 			super(0,0,0,0,0,false);
 			this.p1 = p1;
 			this.p2 = p2;
-			avgVelocity = new Vector(0,0);
+			avgVelocity = new Vector2D(0,0);
 		}
 		
 		
@@ -46,9 +46,9 @@ package org.cove.ape {
 		/**
 		 * returns the average velocity of the two connected particles
 		 */
-		public override function get velocity():Vector {
-			var p1v:Vector =  p1.velocity;
-			var p2v:Vector =  p2.velocity;
+		public override function get velocity():Vector2D {
+			var p1v:Vector2D =  p1.velocity;
+			var p2v:Vector2D =  p2.velocity;
 			
 			avgVelocity.setTo(((p1v.x + p2v.x) / 2), ((p1v.y + p2v.y) / 2));
 			return avgVelocity;
@@ -61,7 +61,7 @@ package org.cove.ape {
 		}
 		
 		
-		internal override function resolveCollision(mtd:Vector, vel:Vector, n:Vector, d:Number, o:Number):void {
+		internal override function resolveCollision(mtd:Vector2D, vel:Vector2D, n:Vector2D, d:Number, o:Number):void {
 		
 			if (! p1.fixed) {
 				p1.curr.plusEquals(mtd);

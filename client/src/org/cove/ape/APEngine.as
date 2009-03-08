@@ -37,9 +37,9 @@ package org.cove.ape {
 		public static const SIMPLE:Number = 300;
 		
 		/**@private */
-		internal static var force:Vector;
+		internal static var force:Vector2D;
 		/**@private */
-		internal static var masslessForce:Vector;
+		internal static var masslessForce:Vector2D;
 			
 		private static var timeStep:Number;
 		private static var particles:Array;
@@ -66,8 +66,8 @@ package org.cove.ape {
 			particles = new Array();
 			constraints = new Array();
 			
-			force = new Vector(0,0);
-			masslessForce = new Vector(0,0);
+			force = new Vector2D(0,0);
+			masslessForce = new Vector2D(0,0);
 			
 			damping = 1;
 		}
@@ -177,9 +177,9 @@ package org.cove.ape {
 		 * smaller masses. Note that the size (not to be confused with mass) of the particle has
 		 * no effect on its physical behavior.
 		 * 
-		 * @param f A Vector represeting the force added.
+		 * @param f A Vector2D represeting the force added.
 		 */ 
-		public static function addForce(v:Vector):void {
+		public static function addForce(v:Vector2D):void {
 			force.plusEquals(v);
 		}
 		
@@ -190,9 +190,9 @@ package org.cove.ape {
 		 * as those with smaller masses. Note that the size (not to be confused with mass) of 
 		 * the particle has no effect on its physical behavior.
 		 * 
-		 * @param f A Vector represeting the force added.
+		 * @param f A Vector2D represeting the force added.
 		 */ 	
-		public static function addMasslessForce(v:Vector):void {
+		public static function addMasslessForce(v:Vector2D):void {
 			masslessForce.plusEquals(v);
 		}
 		

@@ -100,7 +100,7 @@ package com.croqodile{
 			snapshot.position = 0;
 		}
 
-		override protected function readFrom(b:IDataInput):void { 
+		override public function readFrom(b:IDataInput):void { 
 			super.readFrom(b);
 			if(_islandTime > 0){ throw new Error("Hey! I'm not a fresh replica!"); }
 			_curGuid = b.readUnsignedInt();
@@ -109,7 +109,7 @@ package com.croqodile{
 			_randGenerator.readFrom(b);
 		}
 
-		override protected function writeTo(b:IDataOutput):void { 
+		override public function writeTo(b:IDataOutput):void { 
 			super.writeTo(b);
 			b.writeUnsignedInt(_curGuid);
 			b.writeDouble(_islandTime);

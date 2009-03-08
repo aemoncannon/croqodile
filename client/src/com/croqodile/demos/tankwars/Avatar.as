@@ -1,111 +1,154 @@
 package com.croqodile.demos.tankwars {
-    import flash.display.MovieClip;
     import flash.display.Sprite;
-    import flash.events.Event;
-    import flash.events.MouseEvent;
+    import flash.events.*;
+    import flash.utils.*;
     import com.croqodile.*;
     import com.croqodile.demos.tankwars.*;
     import org.cove.ape.*;
     
-    public class Avatar extends IslandObject {
+    public class Avatar extends PhysObj {
 		
 		private var _userId:String;
-		private var _clip:MovieClip;
-		private var _particle:AbstractParticle;
+		private var _view:Sprite;
 		private var _wordBubbleFadeAnimator:Animator;
-		private var _wordBubble:WordBubbleClip;
+		private var _wordBubble:WordBubbleView;
 		
-		public function Avatar(island:IslandReplica, userId:String){
-			super(island);
+		public function Avatar(island:IslandReplica, userId:String = null){
 			_userId = userId;
-			_clip = new AvatarClip();
+			_view = new AvatarView();
 			var canvas:Sprite = TankWarsIsland(island).canvas();
-			canvas.addChild(_clip);
-			var part:CircleParticle = new CircleParticle(100, //x
+			canvas.addChild(_view);
+			var part:CircleParticle = new CircleParticle(
+				100, //x
 				100, //y
 				25, //radius
 				false, //fixed?
 				1, //mass
 				0.3, //elasticity
-				0.2); //friction
-			APEngine.addParticle(part);
-			_particle = part;
+				0.2  //friction
+			);
+			super(island, part);
 
-			_wordBubble = new WordBubbleClip();
+			_wordBubble = new WordBubbleView();
 			canvas.addChild(_wordBubble);
 			
-			var self:Avatar = this;
-
 			_wordBubbleFadeAnimator = new Animator(island, 400, function(step:int):Boolean {
-					self._wordBubble.alpha = (1 - (step/10.0));
+					_wordBubble.alpha = (1 - (step/10.0));
 					return step < 10;
 				});
 		}
 		
-		public function render():void{
-			_clip.x = _particle.px;
-			_clip.y = _particle.py;
+		override public function render():void{
+			_view.x = _particle.px;
+			_view.y = _particle.py;
+			_wordBubble.x = _view.x + _view.width;
+			_wordBubble.y = _view.y - 20;
+		}
 
-			_wordBubble.x = _clip.x + _clip.width;
-			_wordBubble.y = _clip.y - 20;
+
+		override public function writeTo(b:IDataOutput):void{
+			super.writeTo(b);
+			b.writeUTF(_userId);
+			b.writeUTF(_wordBubble.text),
+			b.writeDouble(_wordBubble.alpha),
+			_wordBubbleFadeAnimator.writeTo(b);
 		}
 		
-		public function freeze():Object{
-			var data:Object = {
-				userId: _userId,
-				collidable: _particle.collidable,
-				fixed: _particle.fixed,
-				friction: _particle.friction,
-				mass: _particle.mass,
-				positionX: _particle.position.x,
-				positionY: _particle.position.y,
-				px: _particle.px,
-				py: _particle.py,
-				velX: _particle.velocity.x,
-				velY: _particle.velocity.y,
-				visible: _particle.visible,
-				
-				wordBubbleText: _wordBubble.text(),
-				wordBubbleAlpha: _wordBubble.alpha,
-
-				wordBubbleFadeAnimator: _wordBubbleFadeAnimator.freeze()
-			}
-			return data;
+		override public function readFrom(b:IDataInput):void{
+			super.readFrom(b)
+			_userId = b.readUTF();
+			_wordBubble.text = b.readUTF();
+			_wordBubble.alpha = b.readDouble();
+			_wordBubbleFadeAnimator.readFrom(b);
 		}
-		
-		public function unfreeze(data:Object):void{
-			_userId = data.userId;
-			_particle.collidable = data.collidable;
-			_particle.fixed = data.fixed;
-			_particle.friction = data.friction;
-			_particle.mass = data.mass;
-			_particle.position = new Vector(data.positionX, data.positionY);
-			_particle.px = data.px;
-			_particle.py = data.py;
-			_particle.velocity = new Vector(data.velX, data.velY);
-			_particle.visible = data.visible;
 
-			_wordBubble.setText(data.wordBubbleText);
-			_wordBubble.alpha = data.wordBubbleAlpha;
-			
-			_wordBubbleFadeAnimator.unfreeze(data.wordBubbleFadeAnimator);
+		public static function readFrom(b:IDataInput, island:IslandReplica):Avatar{
+			var avatar:Avatar = new Avatar(island);
+			avatar.readFrom(b);
+			return avatar;
 		}
-		
+
 		
 		///////////////////////////////
         // External Interface	     //
         ///////////////////////////////
 		
 		
-		public function addForce(x:Number, y:Number):void{
-			_particle.addForce(new Vector(x,y));
-		}
-
 		public function sayWords(words:String):void{
 			_wordBubbleFadeAnimator.restart();
-			_wordBubble.setText("\"" + words + "\"");
+			_wordBubble.text = "\"" + words + "\"";
 		}
 		
 		
     }
 }
+
+
+
+import flash.display.*;
+import flash.events.*;
+import flash.text.*;
+
+
+
+class AvatarView extends Sprite {
+	
+	public function AvatarView(){
+		var g:Graphics = this.graphics;
+		g.beginFill(0xff0000, 1.0);
+		g.drawCircle(0, 0, 20);
+		g.endFill();
+	}
+	
+}
+
+
+class WordBubbleView extends Sprite {
+	protected var _field:TextField;
+	
+	[Embed(source="Aller_Rg.ttf", fontFamily="Aller")]
+	private var _arialStr:String;
+	
+
+	public function WordBubbleView(){
+
+		// Set up a background shape for the text ..
+		var rect:Shape = new Shape();
+		rect.graphics.beginFill(0xFFFFFF);
+		rect.graphics.drawRect(0, 0, 100, 100);
+		rect.x = 0;
+		rect.y = 0;
+		rect.alpha = 0.0; //make it invisible
+		addChild(rect);
+		
+		var arialFmt:TextFormat = new TextFormat();
+		arialFmt.font = "Aller";
+		arialFmt.size = 12;
+		
+		_field = new TextField();
+		_field.embedFonts = true;
+		_field.defaultTextFormat = arialFmt;
+		_field.backgroundColor = 0xFFFFFF;
+		_field.multiline = true;
+		_field.wordWrap = true;
+		_field.x = 0;
+		_field.y = 0;
+		_field.width = width;
+		_field.height = height;
+		_field.text = "";
+		addChild(_field);
+	}
+	
+
+	public function get text():String{
+		return _field.text;
+	}
+
+	public function set text(val:String):void{
+		_field.text = val;
+	}
+
+	
+}
+
+

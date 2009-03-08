@@ -51,7 +51,7 @@ task :units => [UNIT_TEST_RUNNER_TARGET] do
   sh "#{DEBUG_PROJECTOR} #{UNIT_TEST_RUNNER_TARGET}"
 end
 
-task :demo_tankwars => [DEMO_TANKWARS_TARGET] do
+task :tankwars => [DEMO_TANKWARS_TARGET] do
 end
 
 task :router_con_harness => [ROUTER_CON_HARNESS] do

@@ -34,7 +34,7 @@ package org.cove.ape {
 		
 		private var restLen:Number;
 
-		private var delta:Vector;
+		private var delta:Vector2D;
 		private var deltaLength:Number;
 		
 		private var _collisionRectWidth:Number;
@@ -83,9 +83,9 @@ package org.cove.ape {
 		 * SpringConstraint. You can use this property to in your own painting methods, along with the 
 		 * rotation property.
 		 * 
-		 * @returns A Vector representing the center of this SpringConstraint
+		 * @returns A Vector2D representing the center of this SpringConstraint
 		 */			
-		public function get center():Vector {
+		public function get center():Vector2D {
 			return (p1.curr.plus(p2.curr)).divEquals(2);
 		}
 		
@@ -213,7 +213,7 @@ package org.cove.ape {
 			if (collidable) orientCollisionRectangle();
 			
 			var diff:Number = (deltaLength - restLength) / deltaLength;
-			var dmd:Vector = delta.mult(diff * stiffness);
+			var dmd:Vector2D = delta.mult(diff * stiffness);
 	
 			var invM1:Number = p1.invMass;
 			var invM2:Number = p2.invMass;
@@ -238,7 +238,7 @@ package org.cove.ape {
 		 */	
 		private function orientCollisionRectangle():void {
 	
-			var c:Vector = center;
+			var c:Vector2D = center;
 			var rot:Number = rotation;
 			
 			collisionRect.curr.setTo(c.x, c.y);

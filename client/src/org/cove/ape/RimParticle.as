@@ -22,8 +22,8 @@ package org.cove.ape {
 	
 	internal class RimParticle {
 		
-		internal var curr:Vector;
-		internal var prev:Vector;
+		internal var curr:Vector2D;
+		internal var prev:Vector2D;
 	
 		private var wr:Number;
 		private var av:Number;
@@ -40,8 +40,8 @@ package org.cove.ape {
 		 */
 		public function RimParticle(r:Number, mt:Number) {
 	
-			curr = new Vector(r, 0);
-			prev = new Vector(0, 0);
+			curr = new Vector2D(r, 0);
+			prev = new Vector2D(0, 0);
 			
 			sp = 0; 
 			av = 0;
