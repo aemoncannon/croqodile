@@ -44,6 +44,7 @@ policy_string(AllowPorts) ->
 		   "</cross-domain-policy>"]).
 
 
+
 read_req(_Socket, "<policy-file-request/>\0") -> ok;
 read_req(Socket, SoFar) -> 
     case gen_tcp:recv(Socket, 0) of
