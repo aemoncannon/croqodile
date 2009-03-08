@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+
+  <head>
+    <title>Island Directory</title>
+    <link rel="stylesheet" href="css/main.css" type="text/css" media="screen" />
+    <script type="text/javascript" src="/js/prototype-1.6.0.3.js"></script>
+    <script type="text/javascript" src="/js/swfobject.js"></script>
+    <script type="text/javascript" src="/js/directory.js"></script>
+  </head>
+
+  <body>
+    <ul id="directoryList">
+      <%@dir_list.each do |isl| %>
+      <li>
+	<a id="islandLink" href="/island?id=<%=isl.id%>"><%=isl.id%></a>
+      </li>
+      <%end%>
+    </ul>
+    <a id="createIslandLink" href="/new_island?type=dude&desc=island">Create new..</a>
+  </body>
+
+
+</html>

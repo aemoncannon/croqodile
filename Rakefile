@@ -11,7 +11,7 @@ task :test_server => [] do
   Dir.chdir("client"){
     sh "#{RAKE} tankwars"
   }
-  cp "./client/bin/tankwars.swf", "./test_server/bin/tankwars.swf"
+  cp "./client/bin/tankwars.swf", "./test_server/public/bin/tankwars.swf"
   Dir.chdir("router"){
     sh "#{RAKE} build"
   }
