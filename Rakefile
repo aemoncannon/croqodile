@@ -9,9 +9,9 @@ RAKE = IS_NIX ? "rake" : "rake.bat"
 
 task :test_server => [] do
   Dir.chdir("client"){
-    sh "#{RAKE} demo_tankwars"
+    sh "#{RAKE} tankwars"
   }
-  cp "./client/bin/tankwars.swf", "./test_server/bin"
+  cp "./client/bin/tankwars.swf", "./test_server/bin/tankwars.swf"
   Dir.chdir("router"){
     sh "#{RAKE} build"
   }

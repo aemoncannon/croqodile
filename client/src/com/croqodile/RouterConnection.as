@@ -3,6 +3,7 @@ package com.croqodile {
     import flash.utils.*;
     import flash.net.Socket;
     import com.croqodile.events.*;
+    import com.croqodile.util.Log;
     
     public class RouterConnection extends EventDispatcher {
 		
@@ -74,7 +75,8 @@ package com.croqodile {
 		}
 		
 		protected function onSocketConnectError(event:IOErrorEvent):void {
-			throw new Error("An error occurred wile connecting.");
+			Log.ffTrace("An error occurred while connecting to " + _host + ":" + _port + "  " + event + ".");
+			throw new Error("An error occurred while connecting to " + _host + ":" + _port + "  " + event + ".");
 		}
 		
 		protected function onSocketData(event:ProgressEvent):void {

@@ -34,7 +34,7 @@ function refreshDirectory(){
 											  "&host=", "localhost",
 											  "&port=", "6666",
 											  "&userId=", "aemon"
-											 ];
+											 ].join("");
 								   var link = new Element("a", {href: url}).update(text);
 								   li.appendChild(link);
 								   ul.appendChild(li);
