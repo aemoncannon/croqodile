@@ -15,8 +15,7 @@ package com.croqodile.demos.tankwars {
 
 		private var _controller:Controller;
 
-		/* Use this carefully; unless necessary,
-		prefer a FarRef for accessing the island. */
+		/* Use this carefully! always prefer a FarRef for accessing the island. */
 		private var _island:TankWarsIsland;
 		private var _islandRef:FarRef;
 		private var _avatarRef:FarRef;
@@ -25,10 +24,14 @@ package com.croqodile.demos.tankwars {
 		private static const CHAT_KEY_CODE:uint = 84; // 't'
 
 		public function Main():void{
+
 			_APEContainer = new Sprite();
 			addChild(_APEContainer);
 
+
 			var flashVars:Object = LoaderInfo(root.loaderInfo).parameters;
+
+			Security.loadPolicyFile("xmlsocket://" + flashVars.host + ":" + flashVars.policyPort);
 
 			var config:Object = DIRunner.run([
 					{   name: "island", klass: TankWarsIsland, 

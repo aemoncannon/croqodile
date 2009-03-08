@@ -33,6 +33,7 @@ function refreshDirectory(){
 											  "islandId=", ea.id,
 											  "&host=", "localhost",
 											  "&port=", "6666",
+											  "&policyPort=", "6665",
 											  "&userId=", "aemon"
 											 ].join("");
 								   var link = new Element("a", {href: url}).update(text);

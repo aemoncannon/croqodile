@@ -75,7 +75,6 @@ package com.croqodile {
 		}
 		
 		protected function onSocketConnectError(event:IOErrorEvent):void {
-			Log.ffTrace("An error occurred while connecting to " + _host + ":" + _port + "  " + event + ".");
 			throw new Error("An error occurred while connecting to " + _host + ":" + _port + "  " + event + ".");
 		}
 		
@@ -112,6 +111,7 @@ package com.croqodile {
 					_loggedIn = true;
 					dispatchEvent(new Event(CONNECTION_READY));
 					_processor = processMessages;
+					trace("Finished HTTP header, processing messages..")
 					break;
 				}
 				i = (i + 1) % mem.length;
@@ -125,6 +125,7 @@ package com.croqodile {
 		* @return 
 		*/		
 		protected function processMessages():void{
+			trace("Processing messages..")
 			var msgs:Array = ExternalMessage.parseAll(_buf);
 			for each(var msg:ExternalMessage in msgs){
 				trace(msg.toString());
