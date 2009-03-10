@@ -26,7 +26,6 @@ init_client(Client, IslandMgrPid, Island, Socket) ->
 run_client(Client, IslandMgrPid, Island=#island{router_pid=RouterPid}, DriverPid, Socket) ->
     receive
 	{router_message, Msg} ->
-	    io:format("Sending msg ~p~n", [Msg]),
 	    gen_tcp:send(Socket, encode_message(Msg)),
 	    run_client(Client, IslandMgrPid, Island, DriverPid, Socket);
 	{driver_message, Msg} ->

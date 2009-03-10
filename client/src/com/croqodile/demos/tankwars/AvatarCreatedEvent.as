@@ -9,8 +9,8 @@ package com.croqodile.demos.tankwars {
 	    
 	    public function AvatarCreatedEvent( avatarRef:FarRef, userId:String){
 			super(AvatarCreatedEvent.type);
-			userId = userId;
-			avatarRef = avatarRef;
+			this.userId = userId;
+			this.avatarRef = avatarRef;
 	    }
 	    
 	}

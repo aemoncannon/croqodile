@@ -126,6 +126,7 @@ package com.croqodile.demos.tankwars {
 		}
 		
 		public function createAvatar(userId:String):void {
+			trace("creating " + userId);
 			var avatar:Avatar = new Avatar(this, userId);
 			_avatars.push(avatar);
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));

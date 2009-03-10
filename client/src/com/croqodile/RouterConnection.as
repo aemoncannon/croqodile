@@ -86,8 +86,9 @@ package com.croqodile {
 			// TODO: This needs to be more efficient.
 
 			var pos:int = _buf.position;
-			_buf.length = _buf.length + _socket.bytesAvailable + 1;
-			_socket.readBytes(_buf, _buf.length + 1, _socket.bytesAvailable);
+			var writePos:int = _buf.length;
+			_buf.length = _buf.length + _socket.bytesAvailable;
+			_socket.readBytes(_buf, writePos, _socket.bytesAvailable);
 			_buf.position = pos;
 			_processor();
 		}
@@ -127,7 +128,6 @@ package com.croqodile {
 		protected function processMessages():void{
 			var msgs:Array = ExternalMessage.parseAll(_buf);
 			for each(var msg:ExternalMessage in msgs){
-				trace(msg.toString());
 				dispatchEvent(new ExternalMessageEvent(msg));
 			}
 		}

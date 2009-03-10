@@ -59,6 +59,7 @@ package com.croqodile.demos.tankwars {
 		}
 
 		public function routerConnectionReady(event:Event):void{
+			trace("routerConnectionReady");
 			_island = TankWarsIsland(_controller.island);
 			_islandRef = _controller.island.farRef();
 			_controller.addEventListener(DisconnectedFromRouterEvent.type, disconnectedFromRouter);
@@ -77,9 +78,12 @@ package com.croqodile.demos.tankwars {
 
 		public function onAvatarCreated(event:Event):void{
 			var e:AvatarCreatedEvent = AvatarCreatedEvent(event);
+			trace("controller user id " + _controller.userId);
+			trace("onAvatarCreated " + e.userId);
 			if(_controller.userId == e.userId){
 				_avatarRef = e.avatarRef;
 				stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+				trace("My avatar created, added key listener.");
 			}
 		}
 
