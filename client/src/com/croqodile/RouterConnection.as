@@ -86,8 +86,8 @@ package com.croqodile {
 			// TODO: This needs to be more efficient.
 
 			var pos:int = _buf.position;
-			_buf.length = _buf.length + _socket.bytesAvailable;
-			_socket.readBytes(_buf, pos, _socket.bytesAvailable);
+			_buf.length = _buf.length + _socket.bytesAvailable + 1;
+			_socket.readBytes(_buf, _buf.length + 1, _socket.bytesAvailable);
 			_buf.position = pos;
 			_processor();
 		}
