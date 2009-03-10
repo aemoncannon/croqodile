@@ -57,7 +57,7 @@ run_router(Clients, MsgNum, Time, MgrPid, Island) ->
 		false ->
 		    run_router(Clients, MsgNum, Time, MgrPid, Island)
 	    end;
-	heartbeat ->
+	heartbeat when length(Clients) > 0 ->
 	    {NextMsgNum, NextTime} = {MsgNum + 1, next_time(Time)},
 	    Message = make_heartbeat_message(NextMsgNum, NextTime),
 	    send_to_active(Clients, Message),

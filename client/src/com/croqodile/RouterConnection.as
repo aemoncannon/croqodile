@@ -125,7 +125,6 @@ package com.croqodile {
 		* @return 
 		*/		
 		protected function processMessages():void{
-			trace("Processing messages..")
 			var msgs:Array = ExternalMessage.parseAll(_buf);
 			for each(var msg:ExternalMessage in msgs){
 				trace(msg.toString());

@@ -22,7 +22,7 @@ package com.croqodile{
 		}
 
 		override public function toString():String {
-			return "HeartbeatMessage(" + _timestamp + ")";
+			return "HeartbeatMessage(" + _sequenceNumber + ", " + _timestamp + ")";
 		}
 
     }

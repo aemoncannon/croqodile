@@ -40,6 +40,7 @@ package com.croqodile{
 			payload.writeUTF(_msg);
 			payload.writeObject(_args);
 			b.writeUnsignedInt(payload.length);
+			payload.position = 0;
 			b.writeBytes(payload);
 		}
 
@@ -60,10 +61,11 @@ package com.croqodile{
 		
 		override public function toString():String{
 			return "ExternalIslandMessage(" + [
+				_sequenceNumber,
 				_timestamp,
 				_targetGuid,
 				_msg,
-				_args
+				"[" + _args + "]",
 			].join(",") + ")";
 		}
     }

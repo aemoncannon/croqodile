@@ -23,9 +23,9 @@ package com.croqodile{
 				var num:Number = buf.readDouble();
 				var time:Number = buf.readDouble();
 				var len:uint = buf.readUnsignedInt();
-				if((buf.length - buf.position) >= len){
+				if((buf.position + len) < buf.length){
 					var content:ByteArray = new ByteArray();
-					buf.readBytes(content, 0, len);
+					if(len > 0) buf.readBytes(content, 0, len);
 					msgs.push(create(type, num, time, content));
 				}
 				else{
@@ -53,13 +53,6 @@ package com.croqodile{
 			_timestamp = timestamp;
 		}
 
-
-		public function toByteArray():ByteArray{ 
-			var b:ByteArray = new ByteArray();
-			writeTo(b);
-			return b;
-		}
-
 		public function writeTo(b:IDataOutput):void{
 			b.writeByte(this.type);
 			b.writeDouble(_sequenceNumber);
@@ -83,6 +76,12 @@ package com.croqodile{
 		
 		override public function toString():String{
 			return "ExternalMessage(" + _timestamp + ")";
+		}
+
+		public function toByteArray():ByteArray{ 
+			var b:ByteArray = new ByteArray();
+			writeTo(b);
+			return b;
 		}
     }
     
