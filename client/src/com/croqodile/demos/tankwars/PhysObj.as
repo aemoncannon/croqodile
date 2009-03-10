@@ -1,6 +1,7 @@
 package com.croqodile.demos.tankwars {
     import flash.events.*;
     import flash.utils.*;
+    import flash.display.*;
     import com.croqodile.*;
     import com.croqodile.demos.tankwars.*;
     import org.cove.ape.*;
@@ -8,6 +9,7 @@ package com.croqodile.demos.tankwars {
     public class PhysObj extends IslandObject {
 		
 		protected var _particle:AbstractParticle;
+		protected var _view:Sprite;
 		
 		public function PhysObj(island:IslandReplica, particle:AbstractParticle){
 			super(island);
@@ -19,9 +21,7 @@ package com.croqodile.demos.tankwars {
 			_particle.addForce(new Vector2D(x,y));
 		}
 		
-		public function render():void{
-			_particle.paint();
-		}
+		public function render():void{}
 		
 		override public function writeTo(b:IDataOutput):void{
 			super.writeTo(b);

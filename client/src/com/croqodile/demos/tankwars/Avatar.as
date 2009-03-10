@@ -1,5 +1,5 @@
 package com.croqodile.demos.tankwars {
-    import flash.display.Sprite;
+    import flash.display.*;
     import flash.events.*;
     import flash.utils.*;
     import com.croqodile.*;
@@ -9,15 +9,10 @@ package com.croqodile.demos.tankwars {
     public class Avatar extends PhysObj {
 		
 		private var _userId:String;
-		private var _view:Sprite;
 		private var _wordBubbleFadeAnimator:Animator;
 		private var _wordBubble:WordBubbleView;
 		
 		public function Avatar(island:IslandReplica, userId:String = null){
-			_userId = userId;
-			_view = new AvatarView();
-			var canvas:Sprite = TankWarsIsland(island).canvas();
-			canvas.addChild(_view);
 			var part:CircleParticle = new CircleParticle(
 				100, //x
 				100, //y
@@ -29,6 +24,12 @@ package com.croqodile.demos.tankwars {
 			);
 			super(island, part);
 
+			_userId = userId;
+
+			_view = new AvatarView();
+			var canvas:Sprite = TankWarsIsland(island).canvas;
+			canvas.addChild(_view);
+
 			_wordBubble = new WordBubbleView();
 			canvas.addChild(_wordBubble);
 			
@@ -39,9 +40,11 @@ package com.croqodile.demos.tankwars {
 		}
 		
 		override public function render():void{
-			_view.x = _particle.px;
-			_view.y = _particle.py;
-			_wordBubble.x = _view.x + _view.width;
+			if(_particle.px != _view.x || _particle.py != _view.y){
+				_view.x = _particle.px;
+				_view.y = _particle.py;
+			}
+			_wordBubble.x = _view.x + _view.width/2;
 			_wordBubble.y = _view.y - 20;
 		}
 
@@ -95,8 +98,9 @@ class AvatarView extends Sprite {
 	
 	public function AvatarView(){
 		var g:Graphics = this.graphics;
-		g.beginFill(0xff0000, 1.0);
-		g.drawCircle(0, 0, 20);
+		g.lineStyle(2.0, 0xff0000, 1.0);
+		g.beginFill(0x000000, 0.0);
+		g.drawCircle(0, 0, 25);
 		g.endFill();
 	}
 	

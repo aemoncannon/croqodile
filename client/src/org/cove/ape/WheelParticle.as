@@ -175,44 +175,7 @@ package org.cove.ape {
 			return _edgePositions;
 		}
 		
-		
-		/**
-		 * The default paint method for the particle. Note that you should only use
-		 * the default painting methods for quick prototyping. For anything beyond that
-		 * you should always write your own classes that either extend one of the
-		 * APE particle and constraint classes, or is a composite of them. Then within that 
-		 * class you can define your own custom painting method.
-		 */	
-		public override function paint():void {
-			
-			var px:Number = curr.x;
-			var py:Number = curr.y;
-			var rx:Number = rp.curr.x;
-			var ry:Number = rp.curr.y;
-			
-			if (dc == null) dc = getDefaultContainer();
-			dc.graphics.clear();
-			if (! visible) return;
-			
-			dc.graphics.lineStyle(0, 0x666666, 100);
-			
-			// draw rim cross
-			dc.graphics.moveTo(px, py);
-			dc.graphics.lineTo(rx + px, ry + py);
-			
-			dc.graphics.moveTo(px, py);
-			dc.graphics.lineTo(-rx + px, -ry + py);
-			
-			dc.graphics.moveTo(px, py);
-			dc.graphics.lineTo(-ry + px, rx + py);
-			
-			dc.graphics.moveTo(px, py);
-			dc.graphics.lineTo(ry + px, -rx + py);
-			
-			// draw wheel circle
-			dc.graphics.drawCircle(curr.x, curr.y, radius);
-		}
-	
+
 	
 		/**
 		 * @private

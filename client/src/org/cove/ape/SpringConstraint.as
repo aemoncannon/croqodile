@@ -177,29 +177,7 @@ package org.cove.ape {
 			return (p == p1 || p == p2);
 		}
 		
-		
-		/**
-		 * The default paint method for the constraint. Note that you should only use
-		 * the default painting methods for quick prototyping. For anything beyond that
-		 * you should always write your own classes that either extend one of the
-		 * APE particle and constraint classes, or is a composite of them. Then within that 
-		 * class you can define your own custom painting method.
-		 */			
-		public function paint():void {
-			
-			if (dc == null) dc = getDefaultContainer();
-			
-			if (collidable) {
-				collisionRect.paint();
-			} else {
-				dc.graphics.clear();
-				if (! visible) return;
-				dc.graphics.lineStyle(0, 0x666666, 100);
-				dc.graphics.moveTo(p1.curr.x, p1.curr.y);
-				dc.graphics.lineTo(p2.curr.x, p2.curr.y);
-			}
-		}
-		
+
 		
 		/**
 		 * @private

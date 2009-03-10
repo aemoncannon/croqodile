@@ -3,6 +3,7 @@ package com.croqodile.demos.tankwars {
     import flash.utils.*;
     import com.croqodile.*;
     import com.croqodile.demos.tankwars.*;
+    import flash.display.*;
     import org.cove.ape.*;
     
     public class Thing extends PhysObj {
@@ -17,6 +18,22 @@ package com.croqodile.demos.tankwars {
 				0.3, //elasticity
 				0.1); //friction
 			super(island, part);
+
+			_view = new Sprite();
+			var g:Graphics = _view.graphics;
+			g.lineStyle(1.0, 0, 1.0);
+			g.beginFill(0x555555, 0x333333);
+			g.drawCircle(0, 0, part.radius);
+			g.endFill();
+			var canvas:Sprite = TankWarsIsland(island).canvas;
+			canvas.addChild(_view);
+		}
+
+		override public function render():void{
+			if(_particle.px != _view.x || _particle.py != _view.y){
+				_view.x = _particle.px;
+				_view.y = _particle.py;
+			}
 		}
 
 

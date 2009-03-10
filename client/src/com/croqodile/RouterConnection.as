@@ -79,17 +79,19 @@ package com.croqodile {
 		}
 		
 		protected function onSocketData(event:ProgressEvent):void {
-			// 			var oldBuf:ByteArray = new ByteArray();
-			// 			_buf = new ByteArray();
-			// 			oldBuf.readBytes(_buf, 0);
+			// TODO: This could be more efficient.
+			var avail:int = _socket.bytesAvailable;
+			var oldBuf:ByteArray = _buf;
+			var newBuf:ByteArray = new ByteArray();
 
-			// TODO: This needs to be more efficient.
+			var oldSize:int = oldBuf.length - oldBuf.position;
+			var newSize:int = oldSize + avail;
 
-			var pos:int = _buf.position;
-			var writePos:int = _buf.length;
-			_buf.length = _buf.length + _socket.bytesAvailable;
-			_socket.readBytes(_buf, writePos, _socket.bytesAvailable);
-			_buf.position = pos;
+			newBuf.writeBytes(oldBuf, oldBuf.position, oldSize);
+			_socket.readBytes(newBuf, oldSize, avail);
+			newBuf.position = 0;
+			_buf = newBuf;
+
 			_processor();
 		}
 

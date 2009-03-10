@@ -10,15 +10,15 @@ package com.croqodile.demos.tankwars {
     public class TankWarsIsland extends IslandReplica {
 		public static const ARENA_X:Number = 20;
 		public static const ARENA_Y:Number = 20;
-		public static const ARENA_WIDTH:Number = 800;
-		public static const ARENA_HEIGHT:Number = 500;
-		public static const ARENA_WALL_THICKNESS:Number = 10;
+		public static const ARENA_WIDTH:Number = 1000;
+		public static const ARENA_HEIGHT:Number = 600;
+		public static const ARENA_WALL_THICKNESS:Number = 5;
 		
 		private var _canvas:Sprite;
 		private var _avatars:Array = [];
 		private var _things:Array = [];
 		private var _blocks:Array = [];
-		private var _walls:Array;
+		private var _walls:Array = [];
 		
 		public function TankWarsIsland(config:Object){
 			super(config);
@@ -26,19 +26,14 @@ package com.croqodile.demos.tankwars {
 			_canvas = config.canvas;
 			
 			APEngine.init(1.0/3.0);
-			APEngine.defaultContainer = _canvas;
 			
 			// Create the walls. These will never change.
 			_walls = [
-				new RectangleParticle(ARENA_WIDTH/2, 0, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, true),
-				new RectangleParticle(ARENA_WIDTH/2, ARENA_HEIGHT,ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, true),
-				new RectangleParticle(0, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, true),
-				new RectangleParticle(ARENA_WIDTH, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, true)
+				new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
+				new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
+				new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true),
+				new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true)
 			];
-			
-			for each(var ea:RectangleParticle in _walls){
-				APEngine.addParticle(ea);
-			}
 		}
 
 
@@ -76,7 +71,7 @@ package com.croqodile.demos.tankwars {
 			}
 		}
 		
-		public function canvas():Sprite{
+		public function get canvas():Sprite{
 			return _canvas;
 		}
 		
@@ -92,8 +87,8 @@ package com.croqodile.demos.tankwars {
 				b.render();
 			}
 			
-			for each(var w:RectangleParticle in _walls){
-				w.paint();
+			for each(var w:Block in _walls){
+				w.render();
 			}
 		}
 		
@@ -126,7 +121,6 @@ package com.croqodile.demos.tankwars {
 		}
 		
 		public function createAvatar(userId:String):void {
-			trace("creating " + userId);
 			var avatar:Avatar = new Avatar(this, userId);
 			_avatars.push(avatar);
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));

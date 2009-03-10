@@ -161,34 +161,7 @@ package org.cove.ape {
 		}
 		
 		
-		/**
-		 * The default paint method for the particle. Note that you should only use
-		 * the default painting methods for quick prototyping. For anything beyond that
-		 * you should always write your own particle classes that extend one of the
-		 * APE particle classes. Then within that class you can define your own custom
-		 * painting method.
-		 */
-		override public function paint():void {
-			
-			if (dc == null) dc = getDefaultContainer();
-			
-			dc.graphics.clear();
-			if (! visible) return;
-			
-			var c:Array = cornerPositions;
-			dc.graphics.lineStyle(0, 0x666666, 100);
-			
-			with (dc.graphics) {
-				for (var j:Number = 0; j < 5; j++) {
-					var i:Number = j & 3;
-					if (j == 0) {
-						moveTo(c[i].x, c[i].y);
-					} else {
-						lineTo(c[i].x, c[i].y);
-					}
-				}
-			}
-		}
+
 
 
 		/**
