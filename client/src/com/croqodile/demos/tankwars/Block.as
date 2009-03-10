@@ -66,6 +66,7 @@ package com.croqodile.demos.tankwars {
 			p.width = b.readDouble();
 			p.height = b.readDouble();
 			p.rotation = b.readDouble();
+			render();
 		}
 
 		public static function readFrom(b:IDataInput, island:IslandReplica):Block{

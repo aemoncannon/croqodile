@@ -38,6 +38,7 @@ package com.croqodile.demos.tankwars {
 
 
 		override public function writeTo(b:IDataOutput):void{
+			super.writeTo(b);
 			b.writeUnsignedInt(_blocks.length);
 			for each(var block:Block in _blocks){
 				block.writeTo(b);
@@ -54,6 +55,7 @@ package com.croqodile.demos.tankwars {
 
 
 		override public function readFrom(b:IDataInput):void {
+			super.readFrom(b);
 			var i:int;
 			var len:int = b.readUnsignedInt();
 			for(i = 0; i < len; i++){

@@ -32,13 +32,9 @@ package com.croqodile {
 			);
 		}
 
-		public function readFrom(b:IDataInput):void {
-			_guid = _island.internIslandObject(this, b.readUTF());
-		}
+		public function readFrom(b:IDataInput):void {}
 
-		public function writeTo(b:IDataOutput):void { 
-			b.writeUTF(_guid);
-		}
+		public function writeTo(b:IDataOutput):void {}
 
 
 		override public function equals(o:Object):Boolean { 

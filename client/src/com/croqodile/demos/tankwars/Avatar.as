@@ -63,6 +63,7 @@ package com.croqodile.demos.tankwars {
 			_wordBubble.text = b.readUTF();
 			_wordBubble.alpha = b.readDouble();
 			_wordBubbleFadeAnimator.readFrom(b);
+			render();
 		}
 
 		public static function readFrom(b:IDataInput, island:IslandReplica):Avatar{
