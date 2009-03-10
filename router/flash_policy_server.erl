@@ -23,11 +23,11 @@ policy_request_handler(LSocket, AllowPorts) ->
 	    io:format("Receiving policy request...~n", []),
 	    ok = read_req(Socket, []),
 	    Policy = policy_string(AllowPorts),
-	    io:format("Got request. Sending ~s.~n", [Policy]),
+	    io:format("Got request. Sending ~p.~n", [Policy]),
 	    ok = gen_tcp:send(Socket, Policy ++ "\0"),
 	    ok = gen_tcp:shutdown(Socket, write);
         {error, Reason} ->
-            io:format("PolicySocket accept error: ~s~n", [Reason])
+            io:format("PolicySocket accept error: ~p~n", [Reason])
     end,
     policy_request_handler(LSocket, AllowPorts).
 

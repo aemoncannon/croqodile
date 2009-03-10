@@ -28,8 +28,10 @@ package com.croqodile.demos.tankwars {
 			_APEContainer = new Sprite();
 			addChild(_APEContainer);
 
-
 			var flashVars:Object = LoaderInfo(root.loaderInfo).parameters;
+			if(!flashVars.islandId || !flashVars.userId || !flashVars.host || !flashVars.port){
+				throw new Error("Incomplete parameters.");
+			}
 
 			Security.loadPolicyFile("xmlsocket://" + flashVars.host + ":" + flashVars.policyPort);
 
@@ -131,22 +133,22 @@ package com.croqodile.demos.tankwars {
 		// 				stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		// 				break;
 		// 			}
-		// 		}
+	// 		}
 
 
-		// 		private function clearChatInput():void{
-		// 			var range:TextRange = new TextRange(chatInput, false, 0);
-		// 			range.text = "";
-		// 			range.htmlText = "";
-		// 		}
+// 		private function clearChatInput():void{
+	// 			var range:TextRange = new TextRange(chatInput, false, 0);
+	// 			range.text = "";
+	// 			range.htmlText = "";
+	// 		}
 
 
-		private function onEnterFrame(evt:Event):void{
-			_island.render();
-		}
+private function onEnterFrame(evt:Event):void{
+	_island.render();
+}
 
-		
-    }
+
+}
 }
 
 

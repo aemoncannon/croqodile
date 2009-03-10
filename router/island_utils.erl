@@ -11,7 +11,7 @@
 	  stamp_message/3, 
 	  make_client_message/3, 
 	  make_heartbeat_message/2,
-	  make_snapshot_req_message/0,
+	  make_snapshot_req_message/2,
 	  make_term_message/0,
 	  encode_message/1,
 	  socket_pipe/3,
@@ -47,8 +47,8 @@ make_client_message(Num, Time, Payload) ->
 make_heartbeat_message(Num, Time) ->
     {msg, ?MSG_TYPE_HEARTBEAT, Num, Time, <<>>}.
 
-make_snapshot_req_message() ->
-    {msg, ?MSG_TYPE_SNAPSHOT_REQ, 0, 0, <<>>}.
+make_snapshot_req_message(Num, Time) ->
+    {msg, ?MSG_TYPE_SNAPSHOT_REQ, Num, Time, <<>>}.
 
 make_term_message() ->
     {msg, ?MSG_TYPE_TERM, 0, 0, <<>>}.

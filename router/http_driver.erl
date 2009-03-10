@@ -1,6 +1,6 @@
 -module(http_driver).
 
--import(lists, [map/2, reverse/1, reverse/2]).
+-import(lists, [map/2, reverse/1]).
 
 -export([start/3]).
 -export([classify/1, header/1]).
@@ -85,9 +85,9 @@ got_header(Socket, Server, Header, After) ->
 	    exit(debug)
     end.
 
-%collect_chunk(0,New,Buf)      -> {yes, reverse(Buf), New};
-%collect_chunk(N, [H|T], Buff) -> collect_chunk(N-1,T,[H|Buff]);
-%collect_chunk(N, [], Buff)    -> {no, Buff, N}.
+						%collect_chunk(0,New,Buf)      -> {yes, reverse(Buf), New};
+						%collect_chunk(N, [H|T], Buff) -> collect_chunk(N-1,T,[H|Buff]);
+						%collect_chunk(N, [], Buff)    -> {no, Buff, N}.
 
 scan_header([$\n|T], [$\r,$\n,$\r|L]) -> {yes, reverse(L), T};
 scan_header([H|T],  L)                -> scan_header(T, [H|L]);

@@ -38,7 +38,7 @@ client_handler(DriverPid, Docroot, IslandMgrPid) ->
 	{DriverPid, closed} ->
 	    true;
 	{DriverPid, {get, _Vsn, F, Args, _Env, Socket}} ->
-	    io:format("Received GET for '~s'~n", [F]),
+	    io:format("Received GET for ~s, ~p.~n", [F, Args]),
 	    case F of
 		"/directory" -> 
 		    {response, IslandList} = gen_server:call(IslandMgrPid, {directory}, 5000),

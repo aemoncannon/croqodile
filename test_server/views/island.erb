@@ -12,7 +12,17 @@
 
     <div id="app"></div>
 
-    <script type="text/javascript" src="js/island.js"></script>
+    <script type="text/javascript">
+      var flashVars = {
+      islandId: "<%=@island_id%>",
+      userId: "<%=@user_id%>",
+      host: "<%=@host%>",
+      port: "<%=@port%>",
+      policyPort: "<%=@policy_port%>"
+      };
+      var params = { allowfullscreen: "true", allownetworkaccess: "true", bgcolor: "#ffffff" };
+      swfobject.embedSWF("/bin/tankwars.swf", "app", "1280", "720", "10", null, flashVars, params);
+    </script>
 
   </body>
 

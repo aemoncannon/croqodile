@@ -13,11 +13,11 @@
     <ul id="directoryList">
       <%@dir_list.each do |isl| %>
       <li>
-	<a id="islandLink" href="/island?id=<%=isl.id%>"><%=isl.id%></a>
+	<a id="islandLink" href="/island?id=<%=isl["id"]%>"><%=isl["id"]%></a>
       </li>
       <%end%>
     </ul>
-    <a id="createIslandLink" href="/new_island?type=dude&desc=island">Create new..</a>
+    <a id="createIslandLink" href="/new_island?desc=island&type=dude">Create new..</a>
   </body>
 
 
