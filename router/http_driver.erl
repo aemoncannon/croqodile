@@ -33,8 +33,7 @@ relay(Socket, Server, State) ->
 	    gen_tcp:close(Socket);
 	{Server, {Headers, BinaryData}} ->
 	    Len = size(BinaryData),
-	    Headers1 = Headers ++ "Content-Length: " ++ 
-		integer_to_list(Len) ++ "\r\n\r\n",
+	    Headers1 = Headers ++ "Content-Length: " ++ integer_to_list(Len) ++ "\r\n\r\n",
     	    gen_tcp:send(Socket, [Headers1, BinaryData]),
 	    relay(Socket, Server, State);
 	{'EXIT', Server, _} ->
@@ -113,7 +112,7 @@ classify(FileName) ->
     end.
 
 header(text) -> 
-    ["HTTP/1.0 200 Ok\r\n", powered_by(), content_type("text/html")];
+    ["HTTP/1.0 200 Ok\r\n", powered_by(), content_type("text/plain")];
 header(html) -> 
     ["HTTP/1.0 200 Ok\r\n", powered_by(), content_type("text/html")];
 header(jpg)  -> 

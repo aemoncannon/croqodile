@@ -14,6 +14,7 @@
 	  make_snapshot_req_message/2,
 	  make_term_message/0,
 	  encode_message/1,
+	  pretty_print_msg/1,
 	  socket_pipe/3,
 	  join/2
 	 ]).
@@ -57,6 +58,9 @@ make_term_message() ->
 encode_message({msg, Type, Num, Time, Payload}) ->
     Len = size(Payload),
     <<Type:8,Num:64/float,Time:64/float,Len:32,Payload/binary>>.
+
+pretty_print_msg({msg, Type, Num, Time, Payload}) ->
+    io_lib:format("{~w, ~w, ~w, ~w, ~s}", [msg, Type, Num, Time, binary_to_list(Payload)]).
 
 socket_pipe(FromSocket, ToSocket, Len) ->
     socket_pipe(FromSocket, ToSocket, 0, Len).

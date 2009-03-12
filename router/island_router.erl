@@ -4,7 +4,7 @@
 
 -export([start/2, run_router/5]).
 
--import(island_utils, [stamp_message/3, make_heartbeat_message/2, make_snapshot_req_message/2]).
+-import(island_utils, [stamp_message/3, make_heartbeat_message/2, make_snapshot_req_message/2, pretty_print_msg/1]).
 
 -include("island_manager.hrl").
 
@@ -35,7 +35,7 @@ run_router(Clients, MsgNum, Time, MgrPid, Island) ->
 	    end;
         {message, _FromPid, Message} ->
 	    {NextMsgNum, NextTime} = {MsgNum + 1, next_time(Time)},
-	    io:format("Message from client: ~p~n", [Message]),
+	    io:format("Message from client: ~s~n", [pretty_print_msg(Message)]),
 	    StampedMsg = stamp_message(Message, NextMsgNum, NextTime),
 	    send_to_active(Clients, StampedMsg),
 	    run_router(Clients, NextMsgNum, NextTime, MgrPid, Island);

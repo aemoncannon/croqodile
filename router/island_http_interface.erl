@@ -68,7 +68,7 @@ client_handler(DriverPid, Docroot, IslandMgrPid) ->
 				{response, #island{}} ->
 				    %% Send header, but don't close the socket.
 				    %% Msg routing is now happening on this socket.
-				    DriverPid ! { self(), { header(text), <<>> }};
+				    DriverPid ! { self(), { header(html), <<>> }};
 				{response, no_such_island} ->
 				    DriverPid ! { self(), { header(not_found), <<>> } },
 				    DriverPid ! { self(), close }
