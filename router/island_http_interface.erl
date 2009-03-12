@@ -95,7 +95,7 @@ client_handler(DriverPid, Docroot, IslandMgrPid) ->
 	    client_handler(DriverPid, Docroot, IslandMgrPid);
 
 	{DriverPid, {post, _Vsn, F, Args, _Env, Socket, DataSoFar, ContentLen}} ->
-	    io:format("Received POST for '~s'~n", [F]),
+	    io:format("Received POST for '~s' with Content-Length: ~w~n", [F, ContentLen]),
 	    case F of
 		"/send_snapshot" -> 
 		    case lookup_args(["id", "clientId"], Args) of
@@ -152,7 +152,8 @@ run_snapshot_liason(ClientId, IslandId, ServerPid, DriverPid, Socket) ->
     	    gen_tcp:send(Socket, [header(text), "Content-Length: " ++ integer_to_list(TotalContentLen) ++ "\r\n\r\n"]),
 	    gen_tcp:send(Socket, DataSoFar),
 	    ok = socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
-	    gen_tcp:close(Socket),
+	    gen_tcp:shutdown(Socket, write),
+	    io:format("Finished piping ~w bytes between peers.", [TotalContentLen]),
 	    ok
     end,
     run_snapshot_liason(ClientId, IslandId, ServerPid, DriverPid, Socket).

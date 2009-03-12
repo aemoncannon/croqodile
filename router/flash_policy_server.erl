@@ -40,7 +40,6 @@ policy_string(AllowPorts) ->
 		   "<cross-domain-policy>",
 		   %%"<site-control permitted-cross-domain-policies=\"master-only\"/>",
 		   "<allow-access-from domain=\"*\" to-ports=\"", PortStr, "\" />",
-		   %%"<allow-access-from domain=\"*\" to-ports=\"*\" />",
 		   "</cross-domain-policy>"]).
 
 

@@ -24,7 +24,7 @@ end
 
 get '/island' do
   @island_id = params[:id]
-  @user_id = Digest::MD5.hexdigest(request.env["rack.request.cookie_string"])
+  @user_id = session[:user_id] || Digest::MD5.hexdigest(request.env["rack.request.cookie_string"])
   @host = request.env["SERVER_NAME"]
   @port = "6666"
   @policy_port = "6665"
@@ -33,6 +33,11 @@ end
 
 get '/new_island' do
   Net::HTTP.get(URI.parse("http://#{request.env["SERVER_NAME"]}:6666/new_island?type=#{params[:type]}&desc=#{params[:desc]}"))
+  redirect '/directory', 303
+end
+
+post '/set_user_id' do
+  session[:user_id] = params[:user_id]
   redirect '/directory', 303
 end
 

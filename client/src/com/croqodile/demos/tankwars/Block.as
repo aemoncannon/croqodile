@@ -29,19 +29,28 @@ package com.croqodile.demos.tankwars {
 				fixed, //fixed?
 				mass, //mass
 				0.3, //elasticity
-				friction); //friction
+				friction //friction
+			); 
 			super(island, part);
 
 			_view = new Sprite();
-			var g:Graphics = _view.graphics;
-			g.lineStyle(1.0, 0, 1.0);
-			g.beginFill(0x555555, 0x222222);
-			g.drawRect(-width/2, -height/2, width, height);
-			g.endFill();
 			var canvas:Sprite = TankWarsIsland(island).canvas;
 			canvas.addChild(_view);
+			paint();
 			render();
 		}
+
+		protected function paint():void{
+			var w:Number = BlockParticle(_particle).width;
+			var h:Number = BlockParticle(_particle).height;
+			var g:Graphics = _view.graphics;
+			g.clear();
+			g.lineStyle(1.0, 0, 1.0);
+			g.beginFill(0x555555, 0x222222);
+			g.drawRect(-w/2, -h/2, w, h);
+			g.endFill();
+		}
+		
 
 		override public function render():void{
 			var r:Number = (BlockParticle(_particle).rotation * 180.0) / Math.PI;
@@ -66,6 +75,7 @@ package com.croqodile.demos.tankwars {
 			p.width = b.readDouble();
 			p.height = b.readDouble();
 			p.rotation = b.readDouble();
+			paint();
 			render();
 		}
 

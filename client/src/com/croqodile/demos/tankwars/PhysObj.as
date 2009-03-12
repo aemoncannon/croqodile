@@ -44,10 +44,14 @@ package com.croqodile.demos.tankwars {
 			_particle.fixed = b.readBoolean();
 			_particle.friction = b.readDouble();
 			_particle.mass = b.readDouble();
-			_particle.position = new Vector2D(b.readDouble(), b.readDouble());
+			var x:Number = b.readDouble();
+			var y:Number = b.readDouble();
+			_particle.position = new Vector2D(x, y);
 			_particle.px = b.readDouble();
 			_particle.py = b.readDouble();
-			_particle.velocity = new Vector2D(b.readDouble(), b.readDouble());
+			x = b.readDouble();
+			y = b.readDouble();
+			_particle.velocity = new Vector2D(x, y);
 			_particle.visible = b.readBoolean();
 		}
 		

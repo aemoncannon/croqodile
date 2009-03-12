@@ -16,7 +16,8 @@ package com.croqodile.demos.tankwars {
 				false, //fixed?
 				0.2, //mass
 				0.3, //elasticity
-				0.1); //friction
+				0.1  //friction
+			);
 			super(island, part);
 
 			_view = new Sprite();

@@ -28,12 +28,11 @@ package com.croqodile{
 		}
 
 		public static function readFrom(b:IDataInput):InternalMessage{
-			return new InternalMessage(
-				b.readDouble(),
-				b.readUTF(),
-				b.readUTF(),
-				b.readObject() as Array
-			);
+			var time:Number = b.readDouble();
+			var guid:String = b.readUTF();
+			var msg:String = b.readUTF();
+			var args:Array = b.readObject() as Array;
+			return new InternalMessage(time, guid, msg, args);
 		}
 
 		public function writeTo(b:IDataOutput):void{

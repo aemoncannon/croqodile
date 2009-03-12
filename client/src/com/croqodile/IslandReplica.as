@@ -90,13 +90,13 @@ package com.croqodile{
 		
 		public function snapshot():ByteArray {
 			var b:ByteArray = new ByteArray();
-			writeTo(b);
+			writeTo(new TracingDataOutput(b));
 			b.position = 0;
 			return b;
 		}
 		
 		public function initFromSnapshot(snapshot:ByteArray):void{
-			readFrom(snapshot);
+			readFrom(new TracingDataInput(snapshot));
 			snapshot.position = 0;
 		}
 

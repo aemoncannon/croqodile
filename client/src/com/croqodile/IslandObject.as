@@ -33,9 +33,8 @@ package com.croqodile {
 		}
 
 		public function readFrom(b:IDataInput):void {}
-
+		
 		public function writeTo(b:IDataOutput):void {}
-
 
 		override public function equals(o:Object):Boolean { 
 			return o is IslandObject && _guid === o.guid;

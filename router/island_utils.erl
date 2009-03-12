@@ -68,10 +68,7 @@ socket_pipe(FromSocket, ToSocket, SoFar, Len) ->
         {ok, Data} ->
 	    gen_tcp:send(ToSocket, Data),
 	    NewSoFar = SoFar + size(Data),
-	    if
-		NewSoFar >= Len -> ok;
-		true -> socket_pipe(FromSocket, ToSocket, NewSoFar, Len)
-	    end;
+	    socket_pipe(FromSocket, ToSocket, NewSoFar, Len);
 	{error, _Reason} -> ok
     end.
 

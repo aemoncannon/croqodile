@@ -122,6 +122,7 @@ package com.croqodile {
 				"&clientId=" + _userId
 			);
 			var data:String = Base64.encodeByteArray(_island.snapshot());
+			trace("Sending snapshot of length " + data.length);
 			request.data = data;
 			request.method = "POST";
 			loader.load(request);
@@ -133,9 +134,10 @@ package com.croqodile {
 				throw new Error("Could not get a snapshot :(");
 			};
 			var completeHandler:Function = function(e:Event):void{
-				trace("Got snapshot, applying.")
-				var data:ByteArray = Base64.decodeToByteArray(String(loader.data));
-				installSnapshot(data);
+				var data:String = String(loader.data);
+				trace("Got snapshot of length " + data.length);
+				var b:ByteArray = Base64.decodeToByteArray(data);
+				installSnapshot(b);
 			};
 			loader.addEventListener(Event.COMPLETE, completeHandler);
             loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, errHandler);

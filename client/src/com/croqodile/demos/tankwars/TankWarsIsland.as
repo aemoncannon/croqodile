@@ -39,17 +39,24 @@ package com.croqodile.demos.tankwars {
 
 		override public function writeTo(b:IDataOutput):void{
 			super.writeTo(b);
-			b.writeUnsignedInt(_blocks.length);
-			for each(var block:Block in _blocks){
-				block.writeTo(b);
+
+			var i:int;
+			var len:int = _blocks.length;
+			b.writeUnsignedInt(len);
+			for(i = 0; i < len; i++){
+				Block(_blocks[i]).writeTo(b);
 			}
-			b.writeUnsignedInt(_things.length);
-			for each(var thing:Thing in _things){
-				thing.writeTo(b);
+
+			len = _things.length;
+			b.writeUnsignedInt(len);
+			for(i = 0; i < len; i++){
+				Thing(_things[i]).writeTo(b);
 			}
-			b.writeUnsignedInt(_avatars.length);
-			for each(var avatar:Avatar in _avatars){
-				avatar.writeTo(b);
+
+			len = _avatars.length;
+			b.writeUnsignedInt(len);
+			for(i = 0; i < len; i++){
+				Avatar(_avatars[i]).writeTo(b);
 			}
 		}
 
