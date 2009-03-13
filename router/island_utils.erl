@@ -70,10 +70,10 @@ socket_pipe(_FromSocket, _ToSocket, SoFar, Len) when SoFar >= Len -> ok;
 socket_pipe(FromSocket, ToSocket, SoFar, Len) ->
     case gen_tcp:recv(FromSocket, 0) of
         {ok, Data} ->
-	    gen_tcp:send(ToSocket, Data),
-	    NewSoFar = SoFar + size(Data),
-	    socket_pipe(FromSocket, ToSocket, NewSoFar, Len);
-	{error, _Reason} -> ok
+	    ok = gen_tcp:send(ToSocket, Data),
+	    io:format("Piped ~w bytes.~n", [size(Data)]),
+	    socket_pipe(FromSocket, ToSocket, SoFar + size(Data), Len);
+	{error, Reason} -> {error, Reason}
     end.
 
 

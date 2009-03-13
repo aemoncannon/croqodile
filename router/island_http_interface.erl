@@ -82,6 +82,7 @@ client_handler(DriverPid, Docroot, IslandMgrPid) ->
 			[{"id", IslandId}, {"clientId", ClientId}] ->
 			    %% Liason will be notified if snapshot is not available or will hang around and 
 			    %% facilitate data exchange once a partner starts uploading a snapshot..
+			    inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
 			    LiasonPid = create_snapshot_liason(ClientId, IslandId, DriverPid, Socket),
 			    gen_server:cast(IslandMgrPid, { add_snapshot_liason, ClientId, IslandId, LiasonPid });
 			_Else -> 
@@ -103,6 +104,7 @@ client_handler(DriverPid, Docroot, IslandMgrPid) ->
 			    DriverPid ! { self(), { header(text), <<>> }},
 			    case gen_server:call(IslandMgrPid, { get_snapshot_liason, ClientId, IslandId }) of
 				{response, {liason, LiasonPid, IslandId}} -> 
+				    inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
 				    LiasonPid ! {partner, list_to_binary(DataSoFar), ContentLen, Socket};
 				_Else -> 
 				    DriverPid ! { self(), close }
@@ -143,16 +145,15 @@ create_snapshot_liason(ClientId, IslandId, DriverPid, Socket) ->
 run_snapshot_liason(ClientId, IslandId, ServerPid, DriverPid, Socket) ->
     receive
 	snapshot_not_available -> 
-	    DriverPid ! { ServerPid, { header(not_found), <<>>}},
-	    DriverPid ! { ServerPid, close },
+	    ok = gen_tcp:send(Socket, lists:flatten([header(not_found), ""])),
+	    ok = gen_tcp:close(Socket),
 	    ok;
 	{partner, DataSoFar, TotalContentLen, PartnerSocket } -> 
-	    inet:setopts(Socket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
-	    inet:setopts(PartnerSocket, [{packet, 0}, {active, false}, {reuseaddr, true}, {nodelay, true}]),
-    	    gen_tcp:send(Socket, [header(text), "Content-Length: " ++ integer_to_list(TotalContentLen) ++ "\r\n\r\n"]),
-	    gen_tcp:send(Socket, DataSoFar),
+    	    ok = gen_tcp:send(Socket, lists:flatten([header(text), "Content-Length: ", integer_to_list(TotalContentLen), "\r\n\r\n"])),
+	    ok = gen_tcp:send(Socket, DataSoFar),
+	    io:format("Piped ~w bytes.~n", [size(DataSoFar)]),
 	    ok = socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
-	    gen_tcp:shutdown(Socket, write),
+	    ok = gen_tcp:close(Socket),
 	    io:format("Finished piping ~w bytes between peers.", [TotalContentLen]),
 	    ok
     end,

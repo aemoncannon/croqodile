@@ -26,6 +26,7 @@ relay(Socket, Server, State) ->
     receive
 	{tcp, Socket, Bin} ->
 	    Data = binary_to_list(Bin),
+	    io:format("got data ~w.", [length(Data)]),
 	    parse_request(State, Socket, Server, Data);
 	{tcp_closed, Socket} ->
 	    Server ! {self(), closed};

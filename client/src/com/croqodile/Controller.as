@@ -121,6 +121,7 @@ package com.croqodile {
 				"id=" + _island.id + 
 				"&clientId=" + _userId
 			);
+			request.contentType = "text/plain";
 			var data:String = Base64.encodeByteArray(_island.snapshot());
 			trace("Sending snapshot of length " + data.length);
 			request.data = data;
