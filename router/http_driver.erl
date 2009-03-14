@@ -14,40 +14,52 @@ server(Port, Fun, Max) ->
 				Max,
 			        0).
 
-input_handler(Socket, Fun) ->
-    %% When we get spawned we spawn an
-    %% additional process to handle the input
-    S = self(),
-    Server = spawn_link(fun() -> Fun(S) end),
-    process_flag(trap_exit, true),
-    relay(Socket, Server, {header, []}).
+						%input_handler(Socket, Fun) ->
+						%    RequestHandler = spawn_link(fun() -> Fun(S) end),
+						%    S = self(),
+						%    Server = spawn_link(fun() -> Fun(S) end),
+						%    process_flag(trap_exit, true),
+						%    relay(Socket, Server, {header, []}).
 
-relay(Socket, Server, State) ->
-    receive
-	{tcp, Socket, Bin} ->
-	    Data = binary_to_list(Bin),
-	    io:format("got data ~w.", [length(Data)]),
-	    parse_request(State, Socket, Server, Data);
-	{tcp_closed, Socket} ->
-	    Server ! {self(), closed};
-	{Server, close} ->
-	    gen_tcp:close(Socket);
-	{Server, {Headers, BinaryData}} ->
-	    Len = size(BinaryData),
-	    Headers1 = Headers ++ "Content-Length: " ++ integer_to_list(Len) ++ "\r\n\r\n",
-    	    gen_tcp:send(Socket, [Headers1, BinaryData]),
-	    relay(Socket, Server, State);
-	{'EXIT', Server, _} ->
-	    io:format("HTTP Driver 'EXIT'~n", []),
-	    gen_tcp:close(Socket)
+input_handler(Socket, Fun) ->
+    spawn_link(fun() -> request_handler(Socket, Fun, {header, []}) end).
+
+request_handler(Socket, Fun, {header, Buf}) ->
+    case gen_tcp:recv(Socket, 0) of
+        {ok, Bin} ->
+	    Combined = list_to_binary([Buf, Bin]),
+	    case parse_request(Combined) of
+		{no, Remainder} -> 
+		    {yes, Remainder} -> 
+					end
+		lists:foreach(fun(M) -> ClientPid ! {driver_message, M } end, Messages),
+	    input_driver(Socket, ClientPid, RemainingBuffer);
+        {error, closed} ->
+            ClientPid ! {driver_closed}
     end.
 
-parse_request({header, Buff}, Socket, Server, Data) ->
+receive
+    {tcp, Socket, Bin} ->
+	Data = binary_to_list(Bin),
+	parse_request(State, Data);
+    {tcp_closed, Socket} ->
+	Server ! {self(), closed};
+    {Server, close} ->
+	gen_tcp:close(Socket);
+    {Server, {Headers, BinaryData}} ->
+	Len = size(BinaryData),
+	Headers1 = Headers ++ "Content-Length: " ++ integer_to_list(Len) ++ "\r\n\r\n",
+	gen_tcp:send(Socket, [Headers1, BinaryData]),
+	relay(Socket, Server, State);
+    {'EXIT', Server, _} ->
+	io:format("HTTP Driver 'EXIT'~n", []),
+	gen_tcp:close(Socket)
+end.
+
+parse_request({header, Buff}, Data) ->
     case scan_header(Data, Buff) of
-	{no, Buff1} ->
-	    relay(Socket, Server, {header, Buff1});
-	{yes, Header, After} ->
-	    got_header(Socket, Server, Header, After)
+	{no, Buff1} -> {no, Buff1 };
+	{yes, Header, After} ->  {yes, parse_header(Header, After)}
     end.
 
 %%parse_request({post, Buff, Len, X}, Socket, Server, Data) ->
@@ -65,21 +77,10 @@ parse_request({header, Buff}, Socket, Server, Data) ->
 %%	    relay(Socket, Server, State)
 %%    end.
 
-got_header(Socket, Server, Header, After) ->
+parse_header(Header, After) ->
     %% We've got the header - parse it
     case parse_header(Header) of
-	_Result = {Op, ContentLen, Vsn, URI, Args, Env} ->
-	    case ContentLen of
-		0 ->
-		    %% Send the parsed request to the server
-		    Server ! {self(), {Op, Vsn, URI, Args, Env, Socket}},
-		    %% go get the next request
-		    %%parse_request({header,[]}, Socket, Server, After);
-		    relay(Socket, Server, {header, []});
-		_ ->
-		    Server ! {self(), {Op, Vsn, URI, Args, Env, Socket, After, ContentLen}},
-		    relay(Socket, Server, {header, []})
-	    end;
+	Result = {_Op, _Vsn, _URI, _Args, _Env, _ContentLen} -> Result;
 	Other ->
 	    io:format("Oops ~p ~n", [Other]),
 	    exit(debug)

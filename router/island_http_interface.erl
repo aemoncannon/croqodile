@@ -154,7 +154,7 @@ run_snapshot_liason(ClientId, IslandId, ServerPid, DriverPid, Socket) ->
 	    io:format("Piped ~w bytes.~n", [size(DataSoFar)]),
 	    ok = socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
 	    ok = gen_tcp:close(Socket),
-	    io:format("Finished piping ~w bytes between peers.", [TotalContentLen]),
+	    io:format("Finished piping ~w bytes between peers.~n", [TotalContentLen]),
 	    ok
     end,
     run_snapshot_liason(ClientId, IslandId, ServerPid, DriverPid, Socket).
