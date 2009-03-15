@@ -4,9 +4,15 @@
 
 -export([start/3]).
 -export([classify/1, header/1]).
+-export([send_response/3]).
+-export([begin_response/2]).
+-export([begin_response/3]).
+-export([end_response/2]).
+
 
 start(Port, Fun, Max) ->
     spawn(fun() -> server(Port, Fun, Max) end).
+
 
 server(Port, Fun, Max) ->
     tcp_server:start_raw_server(Port,
@@ -14,89 +20,60 @@ server(Port, Fun, Max) ->
 				Max,
 			        0).
 
-						%input_handler(Socket, Fun) ->
-						%    RequestHandler = spawn_link(fun() -> Fun(S) end),
-						%    S = self(),
-						%    Server = spawn_link(fun() -> Fun(S) end),
-						%    process_flag(trap_exit, true),
-						%    relay(Socket, Server, {header, []}).
 
 input_handler(Socket, Fun) ->
     spawn_link(fun() -> request_handler(Socket, Fun, {header, []}) end).
+
 
 request_handler(Socket, Fun, {header, Buf}) ->
     case gen_tcp:recv(Socket, 0) of
         {ok, Bin} ->
 	    Combined = list_to_binary([Buf, Bin]),
-	    case parse_request(Combined) of
-		{no, Remainder} -> 
-		    {yes, Remainder} -> 
-					end
-		lists:foreach(fun(M) -> ClientPid ! {driver_message, M } end, Messages),
-	    input_driver(Socket, ClientPid, RemainingBuffer);
-        {error, closed} ->
-            ClientPid ! {driver_closed}
+	    case check_for_request(Combined) of
+		{yes, Header, Remainder} -> Fun(Header, Socket, Remainder);
+		{no, _Remainder} -> request_handler(Socket, Fun, {header, Combined})
+	    end;
+        {error, closed} -> error
     end.
 
-receive
-    {tcp, Socket, Bin} ->
-	Data = binary_to_list(Bin),
-	parse_request(State, Data);
-    {tcp_closed, Socket} ->
-	Server ! {self(), closed};
-    {Server, close} ->
-	gen_tcp:close(Socket);
-    {Server, {Headers, BinaryData}} ->
-	Len = size(BinaryData),
-	Headers1 = Headers ++ "Content-Length: " ++ integer_to_list(Len) ++ "\r\n\r\n",
-	gen_tcp:send(Socket, [Headers1, BinaryData]),
-	relay(Socket, Server, State);
-    {'EXIT', Server, _} ->
-	io:format("HTTP Driver 'EXIT'~n", []),
-	gen_tcp:close(Socket)
-end.
 
-parse_request({header, Buff}, Data) ->
-    case scan_header(Data, Buff) of
-	{no, Buff1} -> {no, Buff1 };
-	{yes, Header, After} ->  {yes, parse_header(Header, After)}
+check_for_request(Buf) ->
+    case scan_header(Buf) of
+	{yes, Header, _Remainder} ->  {yes, parse_header(Header)};
+	{no, Remainder} -> {no, Remainder }
     end.
 
-%%parse_request({post, Buff, Len, X}, Socket, Server, Data) ->
-%%    case collect_chunk(Len, Data, Buff) of
-%%        {yes,PostData,After} ->
-%%            Args2 = parse_uri_args(PostData),
-%%	    {Op,Vsn,URI,Args1,Env} = X,
-%%	    Request = {Op,Vsn,URI,Args1++Args2,Env,Socket},
-%%            Server ! {self(), Request},
-%%	    io:format("PostData ~w~n", [PostData]),
-%%	    io:format("After ~w~n", [After]),
-%%	    parse_request({header,[]}, Socket, Server, After);
-%%        {no,Buff1, Len1} ->
-%%            State = {post, Buff1, Len1, X},
-%%	    relay(Socket, Server, State)
-%%    end.
 
-parse_header(Header, After) ->
-    %% We've got the header - parse it
-    case parse_header(Header) of
-	Result = {_Op, _Vsn, _URI, _Args, _Env, _ContentLen} -> Result;
-	Other ->
-	    io:format("Oops ~p ~n", [Other]),
-	    exit(debug)
-    end.
-
-						%collect_chunk(0,New,Buf)      -> {yes, reverse(Buf), New};
-						%collect_chunk(N, [H|T], Buff) -> collect_chunk(N-1,T,[H|Buff]);
-						%collect_chunk(N, [], Buff)    -> {no, Buff, N}.
+scan_header(Q) -> scan_header(Q,[]).
 
 scan_header([$\n|T], [$\r,$\n,$\r|L]) -> {yes, reverse(L), T};
 scan_header([H|T],  L)                -> scan_header(T, [H|L]);
 scan_header([], L)                    -> {no, L}.
 
+
 %%----------------------------------------------------------------------
 
+send_response(Socket, Type, Bin) ->
+    begin_response(Socket, Type),
+    end_response(Socket, Bin).
 
+begin_response(Socket, Type) ->
+    ok = gen_tcp:send(Socket, lists:flatten(header(Type))).
+
+begin_response(Socket, Type, CLen) ->
+    ok = gen_tcp:send(Socket, lists:flatten([header(Type), 
+					     "Content-Length: ", 
+					     integer_to_list(CLen), 
+					     "\r\n\r\n"])).
+end_response(Socket, Bin) ->
+    ok = gen_tcp:send(Socket, lists:flatten(["Content-Length: ", 
+					     integer_to_list(size(Bin)), 
+					     "\r\n\r\n"])),
+    ok = gen_tcp:send(Socket, Bin),
+    ok = gen_tcp:close(Socket).
+
+
+%%---------------------------------------------------------------------
 
 classify(FileName) ->
     case filename:extension(FileName) of
