@@ -105,14 +105,10 @@ handle_request({post, CLen, _Vsn, "/send_snapshot", Args, _Env}, Socket, DataSoF
 	    send_response(Socket, error, <<>>)
     end.
 
-
-
-
 create_snapshot_liason(ClientId, IslandId, Socket) ->
     Pid = spawn_link(?MODULE, run_snapshot_liason, [ClientId, IslandId, self(), Socket]),
     gen_tcp:controlling_process(Socket, Pid),
     Pid.
-
 
 run_snapshot_liason(ClientId, IslandId, ServerPid, Socket) ->
     receive
@@ -123,7 +119,7 @@ run_snapshot_liason(ClientId, IslandId, ServerPid, Socket) ->
 	    gen_tcp:controlling_process(PartnerSocket, self()),
 	    begin_response(Socket, text, TotalContentLen),
 	    ok = gen_tcp:send(Socket, DataSoFar),
-	    io:format("Piped ~w bytes.~n", [size(DataSoFar)]),
+	    io:format("Piped ~w bytes ~s.~n", [size(DataSoFar), DataSoFar]),
 	    ok = socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
 	    ok = gen_tcp:close(Socket),
 	    io:format("Finished piping ~w bytes between peers.~n", [TotalContentLen]),

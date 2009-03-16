@@ -2,9 +2,7 @@
 
 -export([start_raw_server/2, run_accept/2]).
 
-
--define(TCP_OPTIONS,[list, {packet, 0}, {active, false}, {reuseaddr, true} ]).
-
+-define(TCP_OPTIONS,[list, {packet, 0}, {active, false}, {reuseaddr, true}, {recbuf, 5000} ]).
 
 start_raw_server(Port, Fun) ->
     {ok, LSocket} = gen_tcp:listen(Port, ?TCP_OPTIONS),
