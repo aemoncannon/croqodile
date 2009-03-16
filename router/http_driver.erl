@@ -39,7 +39,7 @@ request_handler(Socket, Fun, {header, Buf}) ->
 
 check_for_request(Buf) ->
     case scan_header(Buf) of
-	{yes, Header, _Remainder} ->  {yes, parse_header(Header)};
+	{yes, Header, Remainder} ->  {yes, parse_header(Header), Remainder};
 	{no, Remainder} -> {no, Remainder }
     end.
 
