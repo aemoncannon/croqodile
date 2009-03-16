@@ -9,9 +9,8 @@ package com.croqodile {
 		protected var _island:IslandReplica;
 		protected var _guid:String;
 		
-		public function IslandObject(island:IslandReplica, guid:String = null){
+		public function IslandObject(island:IslandReplica){
 			_island = island;
-			_guid = _island.internIslandObject(this, guid);
 		}
 
 		public function get guid():String{
@@ -32,9 +31,13 @@ package com.croqodile {
 			);
 		}
 
-		public function readFrom(b:IDataInput):void {}
+		public function readFrom(b:IDataInput):void {
+			_guid = _island.internIslandObject(this, b.readUTF());
+		}
 		
-		public function writeTo(b:IDataOutput):void {}
+		public function writeTo(b:IDataOutput):void {
+			b.writeUTF(_guid);
+		}
 
 		override public function equals(o:Object):Boolean { 
 			return o is IslandObject && _guid === o.guid;

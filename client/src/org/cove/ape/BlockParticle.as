@@ -11,12 +11,12 @@ package org.cove.ape {
 	protected var _height:Number;
 
 	public function BlockParticle (
-				       x:Number, 
-				       y:Number, 
-				       width:Number, 
-				       height:Number,
-				       rotation:Number,
-				       fixed:Boolean,
+				       x:Number = 0, 
+				       y:Number = 0, 
+				       width:Number = 0, 
+				       height:Number = 0,
+				       rotation:Number = 0,
+				       fixed:Boolean = false,
 				       mass:Number = 1, 
 				       elasticity:Number = 0.3,
 				       friction:Number = 0) {

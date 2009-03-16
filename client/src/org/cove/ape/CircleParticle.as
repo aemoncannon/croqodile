@@ -39,10 +39,10 @@ package org.cove.ape {
 		 * @param friction The surface friction of the particle.
 		 */
 		public function CircleParticle (
-				x:Number, 
-				y:Number, 
-				radius:Number, 
-				fixed:Boolean,
+				x:Number = 0, 
+				y:Number = 0, 
+				radius:Number = 10, 
+				fixed:Boolean = false,
 				mass:Number = 1, 
 				elasticity:Number = 0.3,
 				friction:Number = 0) {

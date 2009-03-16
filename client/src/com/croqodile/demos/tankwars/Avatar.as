@@ -13,17 +13,7 @@ package com.croqodile.demos.tankwars {
 		private var _wordBubble:WordBubbleView;
 		
 		public function Avatar(island:IslandReplica, userId:String = null){
-			var part:CircleParticle = new CircleParticle(
-				100, //x
-				100, //y
-				25, //radius
-				false, //fixed?
-				1, //mass
-				0.3, //elasticity
-				0.2  //friction
-			);
-			super(island, part);
-
+			super(island);
 			_userId = userId;
 
 			_view = new AvatarView();
@@ -58,12 +48,13 @@ package com.croqodile.demos.tankwars {
 		}
 		
 		override public function readFrom(b:IDataInput):void{
+			_particle = new CircleParticle();
 			super.readFrom(b)
 			_userId = b.readUTF();
 			_wordBubble.text = b.readUTF();
 			_wordBubble.alpha = b.readDouble();
 			_wordBubbleFadeAnimator.readFrom(b);
-			render();
+			init();
 		}
 
 		public static function readFrom(b:IDataInput, island:IslandReplica):Avatar{

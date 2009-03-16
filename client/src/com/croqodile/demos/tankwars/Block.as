@@ -8,36 +8,11 @@ package com.croqodile.demos.tankwars {
     
     public class Block extends PhysObj {
 		
-
-		public function Block(island:IslandReplica, 
-			x:Number = 300,
-			y:Number = 200,
-			width:Number = 50, 
-			height:Number = 50, 
-			rotation:Number = 0,
-			mass:Number = 5.0,
-			friction:Number = 0.8,
-			fixed:Boolean = false
-		)
-		{
-			var part:BlockParticle = new BlockParticle(
-				x, //x
-				y, //y
-				width, //width
-				height, //height
-				rotation, //rotation
-				fixed, //fixed?
-				mass, //mass
-				0.3, //elasticity
-				friction //friction
-			); 
-			super(island, part);
-
+		public function Block(island:IslandReplica){
+			super(island);
 			_view = new Sprite();
 			var canvas:Sprite = TankWarsIsland(island).canvas;
 			canvas.addChild(_view);
-			paint();
-			render();
 		}
 
 		protected function paint():void{
@@ -51,7 +26,6 @@ package com.croqodile.demos.tankwars {
 			g.endFill();
 		}
 		
-
 		override public function render():void{
 			var r:Number = (BlockParticle(_particle).rotation * 180.0) / Math.PI;
 			if(_particle.px != _view.x || _particle.py != _view.y || r != _view.rotation){
@@ -70,13 +44,13 @@ package com.croqodile.demos.tankwars {
 		}
 		
 		override public function readFrom(b:IDataInput):void{
+			_particle = new BlockParticle();
 			super.readFrom(b)
 			var p:BlockParticle = BlockParticle(_particle);
 			p.width = b.readDouble();
 			p.height = b.readDouble();
 			p.rotation = b.readDouble();
-			paint();
-			render();
+			init();
 		}
 
 		public static function readFrom(b:IDataInput, island:IslandReplica):Block{
@@ -84,7 +58,13 @@ package com.croqodile.demos.tankwars {
 			block.readFrom(b);
 			return block;
 		}
-		
-    }
+
+		public static function createRandom(island:IslandReplica, x0:Number, y0:Number, w:Number, h:Number):Block{
+			var b:ByteArray = new ByteArray();
+			
+			return readFrom(b, island);
+		}
+
+	}
 }
 
