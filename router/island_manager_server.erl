@@ -16,7 +16,7 @@ start_link(Args) ->
 
 init([Port, PolicyPort, WorkingDir]) ->
     process_flag(trap_exit, true),
-    island_data:start(),
+%%    island_data:start(),
     _FlashPolicyServerPid = flash_policy_server:start(PolicyPort, [Port]),
     _HttpInterfacePid = island_http_interface:start(Port, WorkingDir, self()),
     {ok, #manager_state{}}.
