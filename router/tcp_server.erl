@@ -3,7 +3,7 @@
 -export([start_raw_server/2, run_accept/2]).
 
 
--define(TCP_OPTIONS,[binary, {packet, 0}, {active, false}, {reuseaddr, true} ]).
+-define(TCP_OPTIONS,[list, {packet, 0}, {active, false}, {reuseaddr, true} ]).
 
 
 start_raw_server(Port, Fun) ->

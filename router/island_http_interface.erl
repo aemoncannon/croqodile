@@ -4,7 +4,7 @@
 
 -import(http_driver, [classify/1, send_response/3, begin_response/2, begin_response/3]).
 -import(lists, [map/2]).
--import(island_utils, [socket_pipe/3]).
+-import(island_utils, [socket_pipe/3, read_all/2]).
 
 -include("island_manager.hrl").
 
@@ -50,7 +50,7 @@ handle_request({get, _CLen, _Vsn, "/join_island", Args, _Env}, Socket, _Remainde
 		{response, #island{}} ->
 		    %% Send header, but don't close the socket.
 		    %% Msg routing is now happening on this socket.
-		    begin_response(Socket, text);
+		    begin_response(Socket, html, 0);
 		{response, no_such_island} ->
 		    send_response(Socket, not_found, <<>>)
 	    end;
@@ -110,6 +110,7 @@ handle_request({post, CLen, _Vsn, "/send_snapshot", Args, _Env}, Socket, DataSoF
 
 create_snapshot_liason(ClientId, IslandId, Socket) ->
     Pid = spawn_link(?MODULE, run_snapshot_liason, [ClientId, IslandId, self(), Socket]),
+    gen_tcp:controlling_process(Socket, Pid),
     Pid.
 
 
@@ -119,6 +120,7 @@ run_snapshot_liason(ClientId, IslandId, ServerPid, Socket) ->
 	    send_response(Socket, not_found, <<>>),
 	    ok;
 	{partner, DataSoFar, TotalContentLen, PartnerSocket } -> 
+	    gen_tcp:controlling_process(PartnerSocket, self()),
 	    begin_response(Socket, text, TotalContentLen),
 	    ok = gen_tcp:send(Socket, DataSoFar),
 	    io:format("Piped ~w bytes.~n", [size(DataSoFar)]),

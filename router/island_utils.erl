@@ -16,7 +16,8 @@
 	  encode_message/1,
 	  pretty_print_msg/1,
 	  socket_pipe/3,
-	  join/2
+	  join/2,
+	  read_all/2
 	 ]).
 
 
@@ -73,9 +74,18 @@ socket_pipe(FromSocket, ToSocket, SoFar, Len) ->
 	    ok = gen_tcp:send(ToSocket, Data),
 	    io:format("Piped ~w bytes.~n", [size(Data)]),
 	    socket_pipe(FromSocket, ToSocket, SoFar + size(Data), Len);
-	{error, Reason} -> {error, Reason}
+	{error, Reason} -> 
+	    io:format("Error, intended to pipe ~w bytes, only piped ~w before sending socket closed.~n", [Len, SoFar]),
+	    {error, Reason}
     end.
 
+read_all(Socket, Buf) ->
+    case gen_tcp:recv(Socket, 0) of
+        {ok, Data} ->
+	    read_all(Socket, Buf ++ Data);
+        {error, closed} ->
+            Buf
+    end.
 
 %% A simple string join implementation.
 join([], _Sep) -> [];

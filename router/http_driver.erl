@@ -25,8 +25,8 @@ input_handler(Socket, Fun) ->
 
 request_handler(Socket, Fun, {header, Buf}) ->
     case gen_tcp:recv(Socket, 0) of
-        {ok, Bin} ->
-	    Combined = Buf ++ binary_to_list(Bin),
+        {ok, Data} ->
+	    Combined = Buf ++ Data,
 	    case check_for_request(Combined) of
 		{yes, Header, Remainder} -> Fun(Header, Socket, Remainder);
 		{no, _Remainder} -> request_handler(Socket, Fun, {header, Combined})
