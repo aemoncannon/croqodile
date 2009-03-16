@@ -2,7 +2,7 @@
 
 -import(lists, [map/2, reverse/1]).
 
--export([start/3]).
+-export([start/2]).
 -export([classify/1, header/1]).
 -export([send_response/3]).
 -export([begin_response/2]).
@@ -10,30 +10,30 @@
 -export([end_response/2]).
 
 
-start(Port, Fun, Max) ->
-    spawn(fun() -> server(Port, Fun, Max) end).
+start(Port, Fun) ->
+    spawn(fun() -> server(Port, Fun) end).
 
 
-server(Port, Fun, Max) ->
+server(Port, Fun) ->
     tcp_server:start_raw_server(Port,
-				fun(Socket) -> input_handler(Socket, Fun) end, 
-				Max,
-			        0).
-
+				fun(Socket) -> input_handler(Socket, Fun) end
+			       ).
 
 input_handler(Socket, Fun) ->
-    spawn_link(fun() -> request_handler(Socket, Fun, {header, []}) end).
+    request_handler(Socket, Fun, {header, []}).
 
 
 request_handler(Socket, Fun, {header, Buf}) ->
     case gen_tcp:recv(Socket, 0) of
         {ok, Bin} ->
-	    Combined = list_to_binary([Buf, Bin]),
+	    Combined = lists:flatten([Buf, binary_to_list(Bin)]),
 	    case check_for_request(Combined) of
 		{yes, Header, Remainder} -> Fun(Header, Socket, Remainder);
 		{no, _Remainder} -> request_handler(Socket, Fun, {header, Combined})
 	    end;
-        {error, closed} -> error
+        {error, closed} -> 	    
+	    io:format("Error! socket closed.", []), 
+	    error
     end.
 
 

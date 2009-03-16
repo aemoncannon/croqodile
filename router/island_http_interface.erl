@@ -13,13 +13,12 @@ start(Port, Docroot, IslandMgrPid) ->
     io:format("Starting HTTP Interface on: ~w.~n", [Port]),
     process_flag(trap_exit, true),
     http_driver:start(
-      Port, 
+      Port,
       fun(Header, Socket, Remainder) -> 
 	      handle_request(Header, Socket, Remainder, Docroot, IslandMgrPid)
-      end, 15).
+      end).
 
 stop(Port) -> tcp_server:stop(Port).
-
 
 handle_request({get, _CLen, _Vsn, "/directory", _Args, _Env}, Socket, _Remainder, _Docroot, IslandMgrPid) ->
     {response, IslandList} = gen_server:call(IslandMgrPid, {directory}, 5000),
