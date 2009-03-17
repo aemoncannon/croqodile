@@ -18,22 +18,11 @@ package com.croqodile.demos.tankwars {
 		private var _avatars:Array = [];
 		private var _things:Array = [];
 		private var _blocks:Array = [];
-		private var _walls:Array = [];
 		
 		public function TankWarsIsland(config:Object){
 			super(config);
-			
 			_canvas = config.canvas;
-			
 			APEngine.init(1.0/3.0);
-			
-			// Create the walls. These will never change.
-			_walls = [
-				new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
-				new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
-				new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true),
-				new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true)
-			];
 		}
 
 
@@ -96,9 +85,6 @@ package com.croqodile.demos.tankwars {
 				b.render();
 			}
 			
-			for each(var w:Block in _walls){
-				w.render();
-			}
 		}
 		
 		////////////////////////
@@ -123,7 +109,7 @@ package com.croqodile.demos.tankwars {
 		}
 		
 		public function createAvatar(userId:String):void {
-			var avatar:Avatar = Avatar.create(this, userId);
+			var avatar:Avatar = Avatar.createRandom(this, userId, 20, 20, ARENA_WIDTH, ARENA_HEIGHT);
 			_avatars.push(avatar);
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
 		}

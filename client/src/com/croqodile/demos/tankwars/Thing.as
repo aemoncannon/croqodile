@@ -40,6 +40,15 @@ package com.croqodile.demos.tankwars {
 			return thing;
 		}
 
+		public static function createRandom(island:IslandReplica, x0:Number, y0:Number, w:Number, h:Number):Thing{
+			var b:ByteArray = new ByteArray();
+			writeBytesForCreateRandom(b, island, x0, y0, w, h);
+			return readFrom(b, island);
+		}
+		protected static function writeBytesForCreateRandom(b:ByteArray, island:IslandReplica, x0:Number, y0:Number, w:Number, h:Number):void{
+			PhysObj.writeBytesForCreateRandom(b, island, x0, y0, w, h);
+		}
+
 		
     }
 }

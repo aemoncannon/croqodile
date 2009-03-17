@@ -42,6 +42,11 @@ package com.croqodile {
 		override public function equals(o:Object):Boolean { 
 			return o is IslandObject && _guid === o.guid;
 		}
+
+
+		protected static function writeBytesForCreateRandom(b:ByteArray, island:IslandReplica, x0:Number, y0:Number, w:Number, h:Number):void{
+			b.writeUTF(island.nextGuid());
+		}
 		
     }
 }

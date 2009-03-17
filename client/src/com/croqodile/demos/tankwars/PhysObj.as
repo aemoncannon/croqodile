@@ -17,8 +17,6 @@ package com.croqodile.demos.tankwars {
 
 		public function addForce(x:Number, y:Number):void{
 			_particle.addForce(new Vector2D(x,y));
-			paint();
-			render();
 		}
 		
 		public function render():void{}
@@ -57,8 +55,25 @@ package com.croqodile.demos.tankwars {
 
 		protected function init():void{
 			APEngine.addParticle(_particle);
-			paint();
 			render();
+		}
+
+
+		protected static function writeBytesForCreateRandom(b:ByteArray, island:IslandReplica, x0:Number, y0:Number, w:Number, h:Number):void{
+			IslandObject.writeBytesForCreateRandom(b, island, x0, y0, w, h);
+			b.writeBoolean(true);
+			b.writeBoolean(false);
+			b.writeDouble(0.5);
+			b.writeDouble(5);
+			var x:Number = island.rand.numInRange(x0, w);
+			var y:Number = island.rand.numInRange(y0, h);
+			b.writeDouble(x);
+			b.writeDouble(y);
+			b.writeDouble(x);
+			b.writeDouble(y);
+			b.writeDouble(0);
+			b.writeDouble(0);
+			b.writeBoolean(true);
 		}
 		
     }

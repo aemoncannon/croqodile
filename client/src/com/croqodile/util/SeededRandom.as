@@ -33,8 +33,8 @@ package com.croqodile.util{
 		
 		
 		/**
-		*	Utility method for getting real numbers in the provided range
-		*	The range is inclusive	 
+		*	Utility method for getting a double in the provided, inclusive range.
+		*
 		*/
 		public function numInRange(bottom:Number, top:Number):Number {
 			var dif:Number = top-bottom + 1;
