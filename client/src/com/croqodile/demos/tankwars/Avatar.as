@@ -63,20 +63,6 @@ package com.croqodile.demos.tankwars {
 			return avatar;
 		}
 
-
-		public static function createRandom(island:IslandReplica, userId:String, x0:Number, y0:Number, w:Number, h:Number):Avatar{
-			var b:ByteArray = new ByteArray();
-			writeBytesForCreateRandom(b, island, userId, x0, y0, w, h);
-			return readFrom(b, island);
-		}
-		protected static function writeBytesForCreateRandom(b:ByteArray, island:IslandReplica, userId:String, x0:Number, y0:Number, w:Number, h:Number):void{
-			PhysObj.writeBytesForCreateRandom(b, island, x0, y0, w, h);
-			b.writeUTF(userId);
-			b.writeUTF(""),
-			b.writeDouble(0.0),
-			_wordBubbleFadeAnimator.writeTo(b);
-		}
-
 		
 		///////////////////////////////
         // External Interface	     //
@@ -155,7 +141,7 @@ class WordBubbleView extends Sprite {
 	}
 
 	public function set text(val:String):void{
-pp		_field.text = val;
+		_field.text = val;
 	}
 
 	

@@ -15,8 +15,7 @@ package com.croqodile.demos.tankwars {
 			canvas.addChild(_view);
 		}
 
-		override protected function init():void{
-			super.init();
+		protected function paint():void{
 			var w:Number = BlockParticle(_particle).width;
 			var h:Number = BlockParticle(_particle).height;
 			var g:Graphics = _view.graphics;
@@ -60,32 +59,12 @@ package com.croqodile.demos.tankwars {
 			return block;
 		}
 
-
 		public static function createRandom(island:IslandReplica, x0:Number, y0:Number, w:Number, h:Number):Block{
 			var b:ByteArray = new ByteArray();
-			writeBytesForCreateRandom(b, island, x0, y0, w, h);
+			
 			return readFrom(b, island);
 		}
-		protected static function writeBytesForCreateRandom(b:ByteArray, island:IslandReplica, x0:Number, y0:Number, w:Number, h:Number):void{
-			PhysObj.writeBytesForCreateRandom(b, island, x0, y0, w, h);
-			b.writeDouble(island.rand.numInRange(100, 300));
-			b.writeDouble(island.rand.numInRange(100, 300));
-			b.writeDouble(island.rand.numInRange(0, 360));
-		}
-
 
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
