@@ -11,14 +11,14 @@ package com.croqodile.demos.tankwars {
 		protected var _particle:AbstractParticle;
 		protected var _view:Sprite;
 		
-		public function PhysObj(island:IslandReplica){
+		public function PhysObj(island:IslandReplica, particle:AbstractParticle){
 			super(island);
+			_particle = particle;
+			APEngine.addParticle(particle);
 		}
-
+		
 		public function addForce(x:Number, y:Number):void{
 			_particle.addForce(new Vector2D(x,y));
-			paint();
-			render();
 		}
 		
 		public function render():void{}
@@ -53,12 +53,6 @@ package com.croqodile.demos.tankwars {
 			y = b.readDouble();
 			_particle.velocity = new Vector2D(x, y);
 			_particle.visible = b.readBoolean();
-		}
-
-		protected function init():void{
-			APEngine.addParticle(_particle);
-			paint();
-			render();
 		}
 		
     }

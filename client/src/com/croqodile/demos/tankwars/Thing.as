@@ -9,7 +9,16 @@ package com.croqodile.demos.tankwars {
     public class Thing extends PhysObj {
 		
 		public function Thing(island:IslandReplica){
-			super(island);
+			var part:CircleParticle = new CircleParticle(
+				300, //x
+				200, //y
+				10, //radius
+				false, //fixed?
+				0.2, //mass
+				0.3, //elasticity
+				0.1  //friction
+			);
+			super(island, part);
 
 			_view = new Sprite();
 			var g:Graphics = _view.graphics;
@@ -28,11 +37,6 @@ package com.croqodile.demos.tankwars {
 			}
 		}
 
-		override public function readFrom(b:IDataInput):void{
-			_particle = new CircleParticle();
-			super.readFrom(b)
-			init();
-		}
 
 		public static function readFrom(b:IDataInput, island:IslandReplica):Thing{
 			var thing:Thing = new Thing(island);

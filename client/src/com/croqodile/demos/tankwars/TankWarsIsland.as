@@ -101,29 +101,36 @@ package com.croqodile.demos.tankwars {
 			}
 		}
 		
+		
 		////////////////////////
         // External Interface //
         ////////////////////////
 		
 		/* Executed only once, at the beginning of Island-Time.*/
 		override public function sunrise():void {
-
+			
 			var block:Block = null;
 			for(var i:int = 0; i < 3; i ++){
-				block = Block.createRandom(this, 20, 20, ARENA_WIDTH, ARENA_HEIGHT);
+				block = new Block(this,
+					rand.numInRange(20, ARENA_WIDTH),
+					rand.numInRange(20, ARENA_HEIGHT),
+					rand.numInRange(10, 100),
+					rand.numInRange(10, 100),
+					rand.numInRange(0.0, 4.0)
+				);
 				_blocks.push(block);
 			}
 			
 			var thing:Thing = null;
 			for(i = 0; i < 20; i ++){
-				thing = Thing.createRandom(this, 20, 20, ARENA_WIDTH, ARENA_HEIGHT);
+				thing = new Thing(this);
 				_things.push(thing);
 			}
 			futureSend(50, "stepPhysics", []);
 		}
 		
 		public function createAvatar(userId:String):void {
-			var avatar:Avatar = Avatar.create(this, userId);
+			var avatar:Avatar = new Avatar(this, userId);
 			_avatars.push(avatar);
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
 		}
