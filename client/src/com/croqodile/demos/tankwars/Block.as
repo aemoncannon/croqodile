@@ -32,7 +32,6 @@ package com.croqodile.demos.tankwars {
 				friction //friction
 			); 
 			super(island, part);
-
 			_view = new Sprite();
 			var canvas:Sprite = TankWarsIsland(island).canvas;
 			canvas.addChild(_view);

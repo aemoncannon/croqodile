@@ -22,11 +22,8 @@ package com.croqodile.demos.tankwars {
 		
 		public function TankWarsIsland(config:Object){
 			super(config);
-			
 			_canvas = config.canvas;
-			
 			APEngine.init(1.0/3.0);
-			
 			// Create the walls. These will never change.
 			_walls = [
 				new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
@@ -118,12 +115,14 @@ package com.croqodile.demos.tankwars {
 					rand.numInRange(10, 100),
 					rand.numInRange(0.0, 4.0)
 				);
+				block.intern();
 				_blocks.push(block);
 			}
 			
 			var thing:Thing = null;
 			for(i = 0; i < 20; i ++){
 				thing = new Thing(this);
+				thing.intern();
 				_things.push(thing);
 			}
 			futureSend(50, "stepPhysics", []);
@@ -131,6 +130,7 @@ package com.croqodile.demos.tankwars {
 		
 		public function createAvatar(userId:String):void {
 			var avatar:Avatar = new Avatar(this, userId);
+			avatar.intern();
 			_avatars.push(avatar);
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
 		}

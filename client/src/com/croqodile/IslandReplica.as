@@ -21,6 +21,7 @@ package com.croqodile{
 			_msgQ = new MessageQ(this);
 			_islandObjDict = new Dictionary();
 			super(this);
+			intern();
 		}
 
 		public function internIslandObject(obj:IslandObject, guid:String):String{

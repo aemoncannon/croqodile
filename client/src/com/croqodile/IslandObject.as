@@ -7,11 +7,10 @@ package com.croqodile {
     
     public class IslandObject extends Obj{
 		protected var _island:IslandReplica;
-		protected var _guid:String;
+		protected var _guid:String = "";
 		
 		public function IslandObject(island:IslandReplica){
 			_island = island;
-			_guid = _island.internIslandObject(this, island.nextGuid());
 		}
 
 		public function get guid():String{
@@ -32,9 +31,12 @@ package com.croqodile {
 			);
 		}
 
+		public function intern():void{
+			_guid = _island.internIslandObject(this, _island.nextGuid());
+		}
+
 		public function readFrom(b:IDataInput):void {
-			island.clearIslandObjectByGuid(_guid);
-			_guid = internIslandObject(this, b.readUTF());
+			_guid = _island.internIslandObject(this, b.readUTF());
 		}
 		
 		public function writeTo(b:IDataOutput):void {
