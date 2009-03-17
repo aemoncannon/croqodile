@@ -24,6 +24,7 @@ package com.croqodile.demos.tankwars {
 			super(config);
 			_canvas = config.canvas;
 			APEngine.init(1.0/3.0);
+
 			// Create the walls. These will never change.
 			_walls = [
 				new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
