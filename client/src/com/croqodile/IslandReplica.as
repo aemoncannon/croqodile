@@ -23,14 +23,18 @@ package com.croqodile{
 			super(this);
 		}
 
-		public function internIslandObject(obj:IslandObject, guid:String = null):String{
-			var g:String = guid || nextGuid();
-			_islandObjDict[g] = obj;
-			return g;
+		public function internIslandObject(obj:IslandObject, guid:String):String{
+			if(_islandObjDict[guid] == obj) delete _islandObjDict[guid]
+			_islandObjDict[guid] = obj;
+			return guid;
 		}
 
 		public function islandObjectByGuid(guid:String):IslandObject{
 			return IslandObject(_islandObjDict[guid]);
+		}
+
+		public function clearIslandObjectByGuid(guid:String):void{
+			delete _islandObjDict[guid];
 		}
 
 		public function islandObjectByRef(ref:FarRef):IslandObject{
