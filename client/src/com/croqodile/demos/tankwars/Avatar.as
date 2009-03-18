@@ -98,10 +98,17 @@ import flash.text.*;
 class AvatarView extends Sprite {
 	
 	public function AvatarView(){
+		var h:Number = 40; /* lengthwise height of ship */
+		var n:Number = 30; /* lengthwise height of ship without wingtips */
+		var w:Number = 40; /* width wingtip to wingtip*/
+
 		var g:Graphics = this.graphics;
-		g.lineStyle(2.0, 0xff0000, 1.0);
+		g.lineStyle(2.0, 0xffffff, 1.0);
 		g.beginFill(0x000000, 0.0);
-		g.drawCircle(0, 0, 25);
+		g.moveTo(0, -h/2);
+		g.lineTo(w/2, h/2);
+		g.moveTo(0, -h/2);
+		g.lineTo(-w/2, h/2);
 		g.endFill();
 	}
 	
