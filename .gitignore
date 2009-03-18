@@ -3,4 +3,5 @@
 *.swf
 *.db
 *.stackdump
+*.cache
 router/Mnesia.*
