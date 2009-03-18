@@ -2,7 +2,7 @@
 
 -export([start_raw_server/2, run_accept/2]).
 
--define(TCP_OPTIONS,[list, {packet, 0}, {active, false}, {reuseaddr, true}, {recbuf, 5000} ]).
+-define(TCP_OPTIONS,[list, {packet, 0}, {active, false}, {reuseaddr, true}, {recbuf, 50000} ]).
 
 start_raw_server(Port, Fun) ->
     case gen_tcp:listen(Port, ?TCP_OPTIONS) of
@@ -14,7 +14,6 @@ start_raw_server(Port, Fun) ->
 	    io:format("Oops! Error starting flash policy server: ~w.~n", [Other]),
 	    exit(error)
     end.
-
 
 
 run_accept(LSocket, Fun) ->

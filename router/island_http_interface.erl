@@ -2,7 +2,7 @@
 
 -export([start/3, stop/1]).
 
--import(http_driver, [classify/1, send_response/3, begin_response/3]).
+-import(http_driver, [classify/1, send_response/3, begin_response/3, lookup_args/2]).
 -import(lists, [map/2]).
 -import(island_utils, []).
 
@@ -106,13 +106,6 @@ handle_request({post, CLen, _Vsn, "/send_snapshot", Args, _Env}, Socket, DataSoF
     end.
 
 
-lookup_args(Keys, Args) -> lists:map(fun(Key) ->
-					     case lists:keysearch(Key, 1, Args) of
-						 {value, {Key, Val}} -> {Key, Val};
-						 _Else  -> false
-					     end
-				     end, 
-				     Keys).
 
 
 

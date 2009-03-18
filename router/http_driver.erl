@@ -8,6 +8,7 @@
 -export([begin_response/2]).
 -export([begin_response/3]).
 -export([end_response/2]).
+-export([lookup_args/2]).
 
 
 start(Port, Fun) ->
@@ -200,5 +201,12 @@ parse_uri_args(Args) ->
 		end
 	end, Args1).
 
+lookup_args(Keys, Args) -> lists:map(fun(Key) ->
+					     case lists:keysearch(Key, 1, Args) of
+						 {value, {Key, Val}} -> {Key, Val};
+						 _Else  -> false
+					     end
+				     end, 
+				     Keys).
 
 
