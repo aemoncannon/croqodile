@@ -1,10 +1,10 @@
 -module(island_http_interface).
 
--export([start/3, stop/1, run_snapshot_liason/4]).
+-export([start/3, stop/1]).
 
--import(http_driver, [classify/1, send_response/3, begin_response/2, begin_response/3]).
+-import(http_driver, [classify/1, send_response/3, begin_response/3]).
 -import(lists, [map/2]).
--import(island_utils, [socket_pipe/3, read_all/2]).
+-import(island_utils, []).
 
 -include("island_manager.hrl").
 
@@ -62,10 +62,10 @@ handle_request({get, _CLen, _Vsn, "/join_island", Args, _Env}, Socket, _Remainde
 handle_request({get, _CLen, _Vsn, "/get_snapshot", Args, _Env}, Socket, _Remainder, _Docroot, IslandMgrPid) ->
     case lookup_args(["id", "clientId"], Args) of
 	[{"id", IslandId}, {"clientId", ClientId}] ->
-	    %% Liason will be notified if snapshot is not available or will hang around and 
+	    %% Liaison will be notified if snapshot is not available or will hang around and 
 	    %% facilitate data exchange once a partner starts uploading a snapshot..
-	    LiasonPid = create_snapshot_liason(ClientId, IslandId, Socket),
-	    gen_server:cast(IslandMgrPid, { add_snapshot_liason, ClientId, IslandId, LiasonPid });
+	    LiaisonPid = island_snapshot_liaison:start(ClientId, IslandId, Socket),
+	    gen_server:cast(IslandMgrPid, { add_snapshot_liaison, ClientId, IslandId, LiaisonPid });
 	_Else -> 
 	    send_response(Socket, error, <<>>)
     end;
@@ -95,38 +95,15 @@ handle_request({post, CLen, _Vsn, "/send_snapshot", Args, _Env}, Socket, DataSoF
     case lookup_args(["id", "clientId"], Args) of
 	[{"id", IslandId}, {"clientId", ClientId}] ->
 	    send_response(Socket, text, <<>>),
-	    case gen_server:call(IslandMgrPid, { get_snapshot_liason, ClientId, IslandId }) of
-		{response, {liason, LiasonPid, IslandId}} -> 
-		    LiasonPid ! {partner, list_to_binary(DataSoFar), CLen, Socket};
+	    case gen_server:call(IslandMgrPid, { get_snapshot_liaison, ClientId, IslandId }) of
+		{response, {liaison, LiaisonPid, IslandId}} -> 
+		    LiaisonPid ! {partner, list_to_binary(DataSoFar), CLen, Socket};
 		_Else -> 
 		    gen_tcp:close(Socket)
 	    end;
 	_Else -> 
 	    send_response(Socket, error, <<>>)
     end.
-
-create_snapshot_liason(ClientId, IslandId, Socket) ->
-    Pid = spawn_link(?MODULE, run_snapshot_liason, [ClientId, IslandId, self(), Socket]),
-    gen_tcp:controlling_process(Socket, Pid),
-    Pid.
-
-run_snapshot_liason(ClientId, IslandId, ServerPid, Socket) ->
-    receive
-	snapshot_not_available -> 
-	    send_response(Socket, not_found, <<>>),
-	    ok;
-	{partner, DataSoFar, TotalContentLen, PartnerSocket } -> 
-	    gen_tcp:controlling_process(PartnerSocket, self()),
-	    begin_response(Socket, text, TotalContentLen),
-	    ok = gen_tcp:send(Socket, DataSoFar),
-	    io:format("Piped ~w bytes ~s.~n", [size(DataSoFar), DataSoFar]),
-	    ok = socket_pipe(PartnerSocket, Socket, TotalContentLen - size(DataSoFar)),
-	    ok = gen_tcp:close(Socket),
-	    io:format("Finished piping ~w bytes between peers.~n", [TotalContentLen]),
-	    ok
-    end,
-    run_snapshot_liason(ClientId, IslandId, ServerPid, Socket).
-
 
 
 lookup_args(Keys, Args) -> lists:map(fun(Key) ->

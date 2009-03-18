@@ -9,7 +9,7 @@
 	 terminate/2, code_change/3
 	]).
 
--record(manager_state, {islands=[], snapshots=[], liasons=[]}).
+-record(manager_state, {islands=[], snapshots=[], liaisons=[]}).
 
 start_link(Args) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, Args, []).
@@ -51,27 +51,27 @@ handle_call({join_island, ClientId, IslandId, Socket}, _From, State=#manager_sta
 	_else -> {reply, { response, no_such_island }, State}
     end;
 
-handle_call({get_snapshot_liason, _ClientId, IslandId}, _From, State=#manager_state{liasons=Liasons}) ->
-    case liason_by_island_id(IslandId, Liasons) of
-	{value, Liason} -> {reply, {response, Liason}, State};
+handle_call({get_snapshot_liaison, _ClientId, IslandId}, _From, State=#manager_state{liaisons=Liaisons}) ->
+    case liaison_by_island_id(IslandId, Liaisons) of
+	{value, Liaison} -> {reply, {response, Liaison}, State};
 	_else -> {reply, {response, not_found}, State}
     end.
 
 
-handle_cast({add_snapshot_liason, ClientId, IslandId, LiasonPid}, State=#manager_state{islands=Islands, liasons=Liasons}) ->
+handle_cast({add_snapshot_liaison, ClientId, IslandId, LiaisonPid}, State=#manager_state{islands=Islands, liaisons=Liaisons}) ->
     case island_by_id(IslandId, Islands) of
 	{value, Isl} -> 
 	    if 
 		is_pid(Isl#island.router_pid) ->
-		    Isl#island.router_pid ! {snapshot_request, ClientId, LiasonPid},
-		    NewLiason = {liason, LiasonPid, IslandId},
-		    {noreply, State#manager_state{liasons=[NewLiason | Liasons]}};
+		    Isl#island.router_pid ! {snapshot_request, ClientId, LiaisonPid},
+		    NewLiaison = {liaison, LiaisonPid, IslandId},
+		    {noreply, State#manager_state{liaisons=[NewLiaison | Liaisons]}};
 		true ->
-		    LiasonPid ! snapshot_not_available,
+		    LiaisonPid ! snapshot_not_available,
 		    {noreply, State}
 	    end;
 	_else -> 
-	    LiasonPid ! snapshot_not_available,
+	    LiaisonPid ! snapshot_not_available,
 	    {noreply, State}
     end.
 
@@ -99,6 +99,6 @@ island_by_id(Id, Islands) -> lists:keysearch(Id, #island.id, Islands).
 
 update_island(Id, Islands, Island) -> lists:keyreplace(Id, #island.id, Islands, Island).
 
-liason_by_island_id(Id, Liasons) -> lists:keysearch(Id, 3, Liasons).
+liaison_by_island_id(Id, Liaisons) -> lists:keysearch(Id, 3, Liaisons).
 
 
