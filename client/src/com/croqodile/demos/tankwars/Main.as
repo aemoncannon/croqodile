@@ -110,38 +110,8 @@ package com.croqodile.demos.tankwars {
 				_avatarRef.send("addForce", [0,5]);
 				break;
 
-				// 				case CHAT_KEY_CODE:
-				// 				stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-				// 				stage.addEventListener(KeyboardEvent.KEY_DOWN, onChatKeyDown);
-				// 				break;
 			}
 		}
-
-
-		// 		private function onChatKeyDown(evt:KeyboardEvent):void{
-		// 			evt.stopPropagation();
-
-		// 			chatInput.setFocus();
-		
-		// 			switch(evt.keyCode){
-		
-		// 				case Keyboard.ENTER:
-		// 				_avatarRef.send("sayWords", [chatInput.text]);
-		// 				chatInput.visible = false;
-		// 				setFocus(); //Get rid of focus
-		// 				stage.removeEventListener(KeyboardEvent.KEY_DOWN, onChatKeyDown);
-		// 				stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
-		// 				break;
-		// 			}
-		// 		}
-
-
-		// 		private function clearChatInput():void{
-		// 			var range:TextRange = new TextRange(chatInput, false, 0);
-		// 			range.text = "";
-		// 			range.htmlText = "";
-		// 		}
-
 
 		private function onEnterFrame(evt:Event):void{
 			_island.render();
