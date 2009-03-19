@@ -5,12 +5,14 @@ package com.croqodile.demos.tankwars {
     import com.croqodile.*;
     import com.croqodile.demos.tankwars.*;
     import org.cove.ape.*;
+    import flash.ui.Keyboard;
     
     public class Avatar extends PhysObj {
 		
 		private var _userId:String;
 		private var _wordBubbleFadeAnimator:Animator;
 		private var _wordBubble:WordBubbleView;
+		private var _rotation:Number = 0;
 		
 		public function Avatar(island:IslandReplica, userId:String = null){
 			var part:CircleParticle = new CircleParticle(
@@ -72,6 +74,22 @@ package com.croqodile.demos.tankwars {
 			return avatar;
 		}
 
+		protected function rotate(d:Number):void{
+			_rotation += d;
+			_view.rotation = _rotation; 
+		}
+
+		protected function fireBullet():void{
+			
+		}
+
+
+		override public function step():void{
+			rotate(_rotationRate);
+			var r:Number = (_rotation * Math.PI) / 180.0 - (Math.PI / 2.0);
+			_particle.addForce(new Vector2D(_thrust * Math.cos(r), _thrust * Math.sin(r)));
+		}
+
 		
 		///////////////////////////////
         // External Interface	     //
@@ -82,7 +100,57 @@ package com.croqodile.demos.tankwars {
 			_wordBubbleFadeAnimator.restart();
 			_wordBubble.text = "\"" + words + "\"";
 		}
-		
+
+
+		private var _rotationRate:Number = 0;
+		private var _thrust:Number = 0;
+
+		public function keyDown(code:int):void{
+			switch(code){
+				case Keyboard.LEFT:
+				_rotationRate = -5;
+				break;
+
+				case Keyboard.RIGHT:
+				_rotationRate = 5;
+				break;
+
+				case Keyboard.UP:
+				_thrust = 2;
+				break;
+
+				case Keyboard.DOWN:
+				_thrust = -2;
+				break;
+
+				case Keyboard.SPACE:
+				fireBullet();
+				break;
+			}
+		}
+
+
+		public function keyUp(code:int):void{
+			switch(code){
+				case Keyboard.LEFT:
+				_rotationRate = 0;
+				break;
+
+				case Keyboard.RIGHT:
+				_rotationRate = 0;
+				break;
+
+				case Keyboard.UP:
+				_thrust = 0;
+				break;
+
+				case Keyboard.DOWN:
+				_thrust = 0;
+				break;
+			}
+		}
+
+
 		
     }
 }

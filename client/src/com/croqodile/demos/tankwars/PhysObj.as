@@ -17,11 +17,9 @@ package com.croqodile.demos.tankwars {
 			APEngine.addParticle(particle);
 		}
 		
-		public function addForce(x:Number, y:Number):void{
-			_particle.addForce(new Vector2D(x,y));
-		}
-		
 		public function render():void{}
+
+		public function step():void{}
 		
 		override public function writeTo(b:IDataOutput):void{
 			super.writeTo(b);

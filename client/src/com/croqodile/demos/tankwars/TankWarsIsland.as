@@ -15,10 +15,7 @@ package com.croqodile.demos.tankwars {
 		public static const ARENA_WALL_THICKNESS:Number = 5;
 		
 		private var _canvas:Sprite;
-		private var _avatars:Array = [];
-		private var _things:Array = [];
-		private var _blocks:Array = [];
-		private var _walls:Array = [];
+		private var _physObjects:Array = [];
 		
 		public function TankWarsIsland(config:Object){
 			super(config);
@@ -26,35 +23,20 @@ package com.croqodile.demos.tankwars {
 			APEngine.init(1.0/3.0);
 
 			// Create the walls. These will never change.
-			_walls = [
-				new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
-				new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true),
-				new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true),
-				new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true)
-			];
+			_physObjects.push(new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
+			_physObjects.push(new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
+			_physObjects.push(new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
+			_physObjects.push(new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
 		}
 
 
 		override public function writeTo(b:IDataOutput):void{
 			super.writeTo(b);
-
 			var i:int;
-			var len:int = _blocks.length;
+			var len:int = _physObjects.length;
 			b.writeUnsignedInt(len);
 			for(i = 0; i < len; i++){
-				Block(_blocks[i]).writeTo(b);
-			}
-
-			len = _things.length;
-			b.writeUnsignedInt(len);
-			for(i = 0; i < len; i++){
-				Thing(_things[i]).writeTo(b);
-			}
-
-			len = _avatars.length;
-			b.writeUnsignedInt(len);
-			for(i = 0; i < len; i++){
-				Avatar(_avatars[i]).writeTo(b);
+				PhysObj(_physObjects[i]).writeTo(b);
 			}
 		}
 
@@ -64,17 +46,7 @@ package com.croqodile.demos.tankwars {
 			var i:int;
 			var len:int = b.readUnsignedInt();
 			for(i = 0; i < len; i++){
-				_blocks.push(Block.readFrom(b, this));
-			}
-
-			len = b.readUnsignedInt();
-			for(i = 0; i < len; i++){
-				_things.push(Thing.readFrom(b, this));
-			}
-
-			len = b.readUnsignedInt();
-			for(i = 0; i < len; i++){
-				_avatars.push(Avatar.readFrom(b, this));
+				_physObjects.push(PhysObj.readFrom(b, this)); <-- not gonna work
 			}
 		}
 		
@@ -83,19 +55,8 @@ package com.croqodile.demos.tankwars {
 		}
 		
 		public function render():void {
-			for each(var av:Avatar in _avatars){
-				av.render();
-			}
-			for each(var th:Thing in _things){
-				th.render();
-			}
-			
-			for each(var b:Block in _blocks){
-				b.render();
-			}
-			
-			for each(var w:Block in _walls){
-				w.render();
+			for each(var o:PhysObj in _physObjects){
+				o.render();
 			}
 		}
 		
@@ -117,28 +78,31 @@ package com.croqodile.demos.tankwars {
 					rand.numInRange(0.0, 4.0)
 				);
 				block.intern();
-				_blocks.push(block);
+				_physObjects.push(block);
 			}
 			
 			var thing:Thing = null;
 			for(i = 0; i < 20; i ++){
 				thing = new Thing(this);
 				thing.intern();
-				_things.push(thing);
+				_physObjects.push(thing);
 			}
-			futureSend(50, "stepPhysics", []);
+			futureSend(50, "step", []);
 		}
 		
 		public function createAvatar(userId:String):void {
 			var avatar:Avatar = new Avatar(this, userId);
 			avatar.intern();
-			_avatars.push(avatar);
+			_physObjects.push(avatar);
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
 		}
 		
-		public function stepPhysics():void{
+		public function step():void{
 			APEngine.step();
-			futureSend(20, "stepPhysics", []);
+			for each(var o:PhysObj in _physObjects){
+				o.step();
+			}
+			futureSend(20, "step", []);
 		}
 		
 		

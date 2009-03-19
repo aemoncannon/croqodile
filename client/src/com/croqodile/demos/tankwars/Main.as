@@ -52,7 +52,6 @@ package com.croqodile.demos.tankwars {
 						injectArgs: {island: "island"}
 					} 
 				]);
-
 			_controller = config.controller;
 			_controller.addEventListener(RouterConnectionReadyEvent.type, routerConnectionReady);
 			_controller.connect();
@@ -80,38 +79,29 @@ package com.croqodile.demos.tankwars {
 			if(_controller.userId == e.userId){
 				_avatarRef = e.avatarRef;
 				stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+				stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			}
 		}
 
+
+		private var _keyMap:Dictionary = new Dictionary();
 
 		private function onKeyDown(evt:KeyboardEvent):void{
 			evt.stopPropagation();
 			evt.preventDefault();
-
-			switch(evt.keyCode){
-				
-				case Keyboard.LEFT:
-				_avatarRef.send("addForce", [-5,0]);
-				break;
-				
-				case Keyboard.RIGHT:
-				_avatarRef.send("addForce", [5,0]);
-				break;
-
-				case Keyboard.UP:
-				_avatarRef.send("addForce", [0,-5]);
-				break;
-				
-				case Keyboard.DOWN:
-				_avatarRef.send("addForce", [0,5]);
-				break;
-
-				case Keyboard.DOWN:
-				_avatarRef.send("addForce", [0,5]);
-				break;
-
+			if(!_keyMap[evt.keyCode]){
+				_avatarRef.send("keyDown", [evt.keyCode]);
 			}
+			_keyMap[evt.keyCode] = true;
 		}
+
+		private function onKeyUp(evt:KeyboardEvent):void{
+			evt.stopPropagation();
+			evt.preventDefault();
+			_avatarRef.send("keyUp", [evt.keyCode]);
+			_keyMap[evt.keyCode] = false;
+		}
+
 
 		private function onEnterFrame(evt:Event):void{
 			_island.render();
