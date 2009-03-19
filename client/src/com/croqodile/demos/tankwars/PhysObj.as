@@ -14,8 +14,9 @@ package com.croqodile.demos.tankwars {
 		public function PhysObj(island:IslandReplica, particle:AbstractParticle){
 			super(island);
 			_particle = particle;
-			APEngine.addParticle(particle);
 		}
+
+		public function get particle():AbstractParticle{ return _particle; }
 		
 		public function render():void{}
 

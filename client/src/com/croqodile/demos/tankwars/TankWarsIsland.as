@@ -40,13 +40,12 @@ package com.croqodile.demos.tankwars {
 			}
 		}
 
-
 		override public function readFrom(b:IDataInput):void {
 			super.readFrom(b);
 			var i:int;
 			var len:int = b.readUnsignedInt();
 			for(i = 0; i < len; i++){
-				_physObjects.push(PhysObj.readFrom(b, this)); <-- not gonna work
+//				addPhysObj(PhysObj.readFrom(b, this)); // <-- not gonna work
 			}
 		}
 		
@@ -58,6 +57,12 @@ package com.croqodile.demos.tankwars {
 			for each(var o:PhysObj in _physObjects){
 				o.render();
 			}
+		}
+
+		public function addPhysObj(o:PhysObj):void {
+			o.intern();
+			_physObjects.push(o);
+			APEngine.addParticle(o.particle);
 		}
 		
 		
@@ -77,23 +82,20 @@ package com.croqodile.demos.tankwars {
 					rand.numInRange(10, 100),
 					rand.numInRange(0.0, 4.0)
 				);
-				block.intern();
-				_physObjects.push(block);
+				addPhysObj(block)
 			}
 			
 			var thing:Thing = null;
 			for(i = 0; i < 20; i ++){
 				thing = new Thing(this);
-				thing.intern();
-				_physObjects.push(thing);
+				addPhysObj(thing)
 			}
 			futureSend(50, "step", []);
 		}
 		
 		public function createAvatar(userId:String):void {
 			var avatar:Avatar = new Avatar(this, userId);
-			avatar.intern();
-			_physObjects.push(avatar);
+			addPhysObj(avatar);
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
 		}
 		
