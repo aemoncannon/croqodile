@@ -36,7 +36,9 @@ package com.croqodile.demos.tankwars {
 			var len:int = _physObjects.length;
 			b.writeUnsignedInt(len);
 			for(i = 0; i < len; i++){
-				PhysObj(_physObjects[i]).writeTo(b);
+				var o:PhysObj = PhysObj(_physObjects[i]);
+				b.writeUTF(o.typeId);
+				o.writeTo(b);
 			}
 		}
 
@@ -45,7 +47,9 @@ package com.croqodile.demos.tankwars {
 			var i:int;
 			var len:int = b.readUnsignedInt();
 			for(i = 0; i < len; i++){
-//				addPhysObj(PhysObj.readFrom(b, this)); // <-- not gonna work
+				var type:String = b.readUTF();
+				var klass:* = PhysObj.typeById(type);
+				addPhysObj(PhysObj(klass.readFrom(b, this)));
 			}
 		}
 		

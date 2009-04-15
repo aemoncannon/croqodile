@@ -40,6 +40,8 @@ package com.croqodile.demos.tankwars {
 					return step < 10;
 				});
 		}
+
+		override public function get typeId():String{ return "Avatar"; }
 		
 		override public function render():void{
 			if(_particle.px != _view.x || _particle.py != _view.y){

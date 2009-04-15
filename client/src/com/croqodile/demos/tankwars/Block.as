@@ -39,6 +39,8 @@ package com.croqodile.demos.tankwars {
 			render();
 		}
 
+		override public function get typeId():String{ return "Block"; }
+
 		protected function paint():void{
 			var w:Number = BlockParticle(_particle).width;
 			var h:Number = BlockParticle(_particle).height;

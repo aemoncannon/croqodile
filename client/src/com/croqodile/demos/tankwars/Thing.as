@@ -30,6 +30,8 @@ package com.croqodile.demos.tankwars {
 			canvas.addChild(_view);
 		}
 
+		override public function get typeId():String{ return "Thing"; }
+
 		override public function render():void{
 			if(_particle.px != _view.x || _particle.py != _view.y){
 				_view.x = _particle.px;
