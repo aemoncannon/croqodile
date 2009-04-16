@@ -23,10 +23,10 @@ package com.croqodile.demos.tankwars {
 			APEngine.init(1.0/3.0);
 
 			// Create the walls. These will never change.
-			_physObjects.push(new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
-			_physObjects.push(new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
-			_physObjects.push(new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
-			_physObjects.push(new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
+			addPhysObj(new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
+			addPhysObj(new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
+			addPhysObj(new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
+			addPhysObj(new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
 		}
 
 
@@ -64,7 +64,6 @@ package com.croqodile.demos.tankwars {
 		}
 
 		public function addPhysObj(o:PhysObj):void {
-			o.intern();
 			_physObjects.push(o);
 			APEngine.addParticle(o.particle);
 		}
@@ -87,12 +86,14 @@ package com.croqodile.demos.tankwars {
 					rand.numInRange(0.0, 4.0)
 				);
 				addPhysObj(block)
+				block.intern();
 			}
 			
 			var thing:Thing = null;
 			for(i = 0; i < 20; i ++){
 				thing = new Thing(this);
 				addPhysObj(thing)
+				thing.intern();
 			}
 			futureSend(50, "step", []);
 		}
@@ -100,6 +101,7 @@ package com.croqodile.demos.tankwars {
 		public function createAvatar(userId:String):void {
 			var avatar:Avatar = new Avatar(this, userId);
 			addPhysObj(avatar);
+			avatar.intern();
 			signalEvent(new AvatarCreatedEvent(avatar.farRef(), userId));
 		}
 		

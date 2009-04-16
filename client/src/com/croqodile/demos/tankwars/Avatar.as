@@ -56,6 +56,7 @@ package com.croqodile.demos.tankwars {
 		override public function writeTo(b:IDataOutput):void{
 			super.writeTo(b);
 			b.writeUTF(_userId);
+			b.writeDouble(_rotation);
 			b.writeUTF(_wordBubble.text),
 			b.writeDouble(_wordBubble.alpha),
 			_wordBubbleFadeAnimator.writeTo(b);
@@ -64,6 +65,7 @@ package com.croqodile.demos.tankwars {
 		override public function readFrom(b:IDataInput):void{
 			super.readFrom(b)
 			_userId = b.readUTF();
+			_rotation = b.readDouble();
 			_wordBubble.text = b.readUTF();
 			_wordBubble.alpha = b.readDouble();
 			_wordBubbleFadeAnimator.readFrom(b);

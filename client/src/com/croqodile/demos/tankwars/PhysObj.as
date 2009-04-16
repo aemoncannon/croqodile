@@ -16,13 +16,12 @@ package com.croqodile.demos.tankwars {
 			_particle = particle;
 		}
 
-		private static var _typeMap:Object = {
-			"Avatar" : Avatar,
-			"Block" : Block,
-			"Thing" : Thing
-		};
 		public static function typeById(str:String):Class{
-			return _typeMap[str];
+			return ({
+					"Avatar" : Avatar,
+					"Block" : Block,
+					"Thing" : Thing
+				})[str];
 		}
 
 		public function get typeId():String{ throw new Error("Subclass responsibility"); return null;}
