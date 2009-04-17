@@ -21,12 +21,6 @@ package com.croqodile.demos.tankwars {
 			super(config);
 			_canvas = config.canvas;
 			APEngine.init(1.0/3.0);
-
-			// Create the walls. These will never change.
-			addPhysObj(new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
-			addPhysObj(new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 0, 5.0, 0, true));
-			addPhysObj(new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
-			addPhysObj(new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 0, 5.0, 0, true));
 		}
 
 
@@ -63,9 +57,10 @@ package com.croqodile.demos.tankwars {
 			}
 		}
 
-		public function addPhysObj(o:PhysObj):void {
+		public function addPhysObj(o:PhysObj):PhysObj {
 			_physObjects.push(o);
 			APEngine.addParticle(o.particle);
+			return o;
 		}
 		
 		
@@ -75,7 +70,19 @@ package com.croqodile.demos.tankwars {
 		
 		/* Executed only once, at the beginning of Island-Time.*/
 		override public function sunrise():void {
-			
+
+
+			// Create the walls. These will never change.
+			addPhysObj(new Block(this, ARENA_WIDTH/2, ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 
+					0, 5.0, 0, true)).intern();
+			addPhysObj(new Block(this, ARENA_WIDTH/2, ARENA_HEIGHT - ARENA_WALL_THICKNESS/2, ARENA_WIDTH, ARENA_WALL_THICKNESS, 
+					0, 5.0, 0, true)).intern();
+			addPhysObj(new Block(this, ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 
+					0, 5.0, 0, true)).intern();
+			addPhysObj(new Block(this, ARENA_WIDTH - ARENA_WALL_THICKNESS/2, ARENA_HEIGHT/2, ARENA_WALL_THICKNESS, ARENA_HEIGHT, 
+					0, 5.0, 0, true)).intern();
+
+			// Random blocks
 			var block:Block = null;
 			for(var i:int = 0; i < 3; i ++){
 				block = new Block(this,
@@ -89,12 +96,15 @@ package com.croqodile.demos.tankwars {
 				block.intern();
 			}
 			
+			// Random circles
 			var thing:Thing = null;
 			for(i = 0; i < 20; i ++){
 				thing = new Thing(this);
 				addPhysObj(thing)
 				thing.intern();
 			}
+
+			// Start the physics
 			futureSend(50, "step", []);
 		}
 		

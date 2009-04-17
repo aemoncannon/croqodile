@@ -37,7 +37,11 @@ package com.croqodile.demos.tankwars {
 			b.writeBoolean(_particle.collidable);
 			b.writeBoolean(_particle.fixed);
 			b.writeDouble(_particle.friction);
+			trace("write friction: " + _particle.friction)
+			b.writeDouble(_particle.elasticity);
+			trace("write elasticity: " + _particle.elasticity)
 			b.writeDouble(_particle.mass);
+			trace("write mass: " + _particle.mass)
 			b.writeDouble(_particle.position.x);
 			b.writeDouble(_particle.position.y);
 			b.writeDouble(_particle.px);
@@ -52,7 +56,11 @@ package com.croqodile.demos.tankwars {
 			_particle.collidable = b.readBoolean();
 			_particle.fixed = b.readBoolean();
 			_particle.friction = b.readDouble();
+			trace("read friction: " + _particle.friction)
+			_particle.elasticity = b.readDouble();
+			trace("read elasticity: " + _particle.elasticity)
 			_particle.mass = b.readDouble();
+			trace("read mass: " + _particle.mass)
 			var x:Number = b.readDouble();
 			var y:Number = b.readDouble();
 			_particle.position = new Vector2D(x, y);
